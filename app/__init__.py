@@ -1,10 +1,12 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+# from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 import os
 from dotenv import load_dotenv
 
 db = SQLAlchemy()
+# ma = Marshmallow()
 migrate = Migrate()
 load_dotenv()
 
@@ -29,8 +31,12 @@ def create_app(test_config=None):
 
     # Setup DB
     db.init_app(app)
+    # ma.init_app(app)
+  
     migrate.init_app(app, db)
 
     #Register Blueprints Here
+    from .routes import video_bp
+    app.register_blueprint(video_bp)
 
     return app
