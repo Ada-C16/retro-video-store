@@ -1,9 +1,45 @@
-from flask import Blueprint, jsonify, make_response, request
+from flask import Blueprint, jsonify, request
 from app import db 
 from app.models.customer import Customer 
 from datetime import datetime
 
 customers_bp = Blueprint("customer", __name__, url_prefix="/customers")
+
+CUSTOMER_REQUIRED_CATEGORIES = ["name", "phone", "postal_code"]
+
+# helper methods for validation 
+def customer_id_is_valid(customer_id):
+    '''
+    returns two values: a customer object or "invalid", and an error message; 
+    if no error is present, the error message is None
+    '''
+    if not customer_id.isnumeric():
+        return "invalid", ("", 400)
+    
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        return "invalid", ({"message": 
+                            f"Customer {customer_id} was not found"}, 
+                            404)  
+
+    # no error was caught; the customer_id is valid 
+    return customer, None 
+
+def request_has_all_required_categories():
+    '''
+    returns two values: request data in json format, and an error message;
+    if no error is present, the error message is None 
+    '''
+    request_data = request.get_json()
+    for required_category in CUSTOMER_REQUIRED_CATEGORIES:
+        if required_category not in request_data: 
+            return request_data, (jsonify({ 
+                    "details" : 
+                    f"Request body must include {required_category}." }
+                ), 400)
+
+    # no error was caught; all required categories are present 
+    return request_data, None  
 
 @customers_bp.route("", methods=["GET"])
 def customers():
@@ -13,18 +49,14 @@ def customers():
 
 @customers_bp.route("", methods=["POST"])
 def add_customer():
-    request_body = request.get_json()
-    if "name" not in request_body:
-        return jsonify({ "details" : "Request body must include name." }), 400
-    if "postal_code" not in request_body:
-        return jsonify({ "details" : "Request body must include postal_code." }), 400 
-    if "phone" not in request_body:
-        return jsonify({ "details" : "Request body must include phone." }), 400 
+    request_data, error_msg = request_has_all_required_categories()
+    if error_msg is not None:
+        return error_msg
     
     new_customer = Customer(
-        name=request_body["name"], 
-        postal_code=request_body["postal_code"],
-        phone=request_body["phone"],
+        name=request_data["name"], 
+        postal_code=request_data["postal_code"],
+        phone=request_data["phone"],
         register_at = datetime.now()
     )
     
@@ -35,26 +67,21 @@ def add_customer():
 
 @customers_bp.route("/<customer_id>", methods=["GET"])
 def customer(customer_id):
-    if not customer_id.isnumeric():
-        return "", 400 
-    
-    customer = Customer.query.get(customer_id)
-    if not customer:
-        return {"message": f"Customer {customer_id} was not found"}, 404 
-
+    customer, error_msg = customer_id_is_valid(customer_id)
+    if error_msg is not None:
+        return error_msg 
+        
     return jsonify(customer.to_json()), 200
 
 @customers_bp.route("/<customer_id>", methods=["PUT"])
 def update_customer(customer_id):
-    customer = Customer.query.get(customer_id)
-    if customer is None:
-        return make_response(
-            {"message": f"Customer {customer_id} was not found"}, 404)
+    customer, error_msg = customer_id_is_valid(customer_id)
+    if error_msg is not None:
+        return error_msg 
 
-    request_data = request.get_json()
-    for required_category in ["name", "phone", "postal_code"]:
-        if required_category not in request_data: 
-            return "", 400 
+    request_data, error_msg = request_has_all_required_categories()
+    if error_msg is not None:
+        return error_msg
 
     customer.name = request_data["name"]
     customer.phone = request_data["phone"]
@@ -65,9 +92,9 @@ def update_customer(customer_id):
 
 @customers_bp.route("/<customer_id>", methods=["DELETE"])
 def delete_customer(customer_id):
-    customer = Customer.query.get(customer_id)
-    if not customer:
-        return {"message": f"Customer {customer_id} was not found"}, 404 
+    customer, error_msg = customer_id_is_valid(customer_id)
+    if error_msg is not None:
+        return error_msg 
     
     db.session.delete(customer)
     db.session.commit()
