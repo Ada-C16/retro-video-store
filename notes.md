@@ -96,9 +96,6 @@ json
     }
 
 
-
-
-
 1. DELETE `/customers/<id>`
 
 Response: 200 
