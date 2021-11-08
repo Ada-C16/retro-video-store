@@ -5,7 +5,7 @@ class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     phone = db.Column(db.String)
-    postcode = db.Column(db.Integer)
+    post_code = db.Column(db.Integer)
     register_at = db.Column(db.DateTime, default=datetime.now)
 
     def to_dict(self):
@@ -13,7 +13,7 @@ class Customer(db.Model):
             "id": self.id,
             "name": self.name,
             "phone": self.phone,
-            "postcode": self.postcode,
+            "post_code": self.post_code,
             "register_at": self.register_at,
         }
         
