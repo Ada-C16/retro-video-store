@@ -81,5 +81,13 @@ def handle_video_by_id(video_id):
         }
         return make_response(response_value, 200)
 
+    if request.method == "GET":
+        response_body = {"id": video.id,
+            "title": video.title,
+            "total_inventory": video.total_inventory}
+        return jsonify(response_body), 200
 
-
+    elif request.method == "DELETE":
+        db.session.delete(video)
+        db.session.commit()
+        return make_response({"id":int(video_id)}, 200)
