@@ -44,15 +44,15 @@ def handle_videos():
 @videos_bp.route("<video_id>", methods=["GET", "PUT", "DELETE"])
 
 def handle_a_video(video_id):
+    
+    if not video_id.isnumeric():
+        return make_response({"details": "Invalid data"},400)
     video = Video.query.get(video_id)
     if video is None:
         return make_response({'message': f'Video {video_id} was not found'},404)
 
     elif request.method == "GET":
-        if not type(video.id)==int:
-            return make_response({"details": "Invalid data"},400)
-        else:
-            return make_response({
+        return make_response({
                     "id": video.id,
                     "title": video.title,
                     "release_date":video.release_date,
