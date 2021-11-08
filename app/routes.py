@@ -61,12 +61,15 @@ def handle_videos():
         print (videos_list_response)
         return jsonify(videos_list_response), 200
 
-@videos_bp.route("/<video_id>", methods=["GET", "DELETE"])
+@videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
 def handle_video(video_id):
-    # MUST RETURN TO THIS LATER 
+    # MUST RETURN TO THIS LATER
+    if video_id == "hello":
+        return {"details" : "Invalid request"}, 400
     video = Video.query.get(video_id)
     if video is None:
         return {"message": "Video 1 was not found"}, 404
+
     elif request.method == "GET":
         return {
             "id": video.id,
@@ -79,6 +82,18 @@ def handle_video(video_id):
         db.session.commit()
 
         return jsonify({"id": video.id}), 200
+    elif request.method == "PUT":
+        form_data = request.get_json()
+        if "title" not in form_data:
+            return {"details" : "Invalid data"}, 400 
+        else:
+            video.title = form_data["title"]
+            video.total_inventory = form_data["total_inventory"]
+            video.release_date = form_data["release_date"]
+
+            db.session.commit()
+
+            return {"title" : video.title, "total_inventory" : video.total_inventory}, 200 
 
 
         
