@@ -4,9 +4,9 @@ from datetime import datetime
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(200))
-    postal_code = db.Column(db.String(10)) # Up to 10 chars in case using extended postal code
+    postal_code = db.Column(db.String(50))
     registered_at = db.Column(db.DateTime)
-    phone = db.Column(db.String(30))
+    phone = db.Column(db.String(50))
     __tablename__ = "customers"
 
     def to_dict(self):
@@ -21,9 +21,9 @@ class Customer(db.Model):
     @classmethod
     def from_json(cls, request_body):
         return cls(
-            name = request_body["name"],
-            postal_code = request_body["postal_code"],
-            phone = request_body["phone"],
+            name = str(request_body["name"]),
+            postal_code = str(request_body["postal_code"]),
+            phone = str(request_body["phone"]),
             registered_at = datetime.now()
         )
 
@@ -47,5 +47,11 @@ class Customer(db.Model):
         required_fields = ["name", "postal_code", "phone"]
 
         for field in required_fields:
-            if field not in request_body or not isinstance(request_body[field], str):
-                return { "details" : f"Request body must include {field}"}, 400
+            if field not in request_body:
+                return { "details" : f"Request body must include {field}."}, 400
+
+        if len(request_body["postal_code"]) > 50 or len(request_body["phone"]) > 50 or len(request_body["name"]) > 200:
+            return {
+                "details" : "Input length exceeds database capacity."
+            }, 400
+
