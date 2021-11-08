@@ -1,4 +1,5 @@
 from app import db
+from flask import abort, make_response
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -15,4 +16,19 @@ class Customer(db.Model):
             "postal_code": self.postal_code,
             "phone": self.phone
         }
-   
+
+    @classmethod
+    def get_by_id(cls, id):
+        try:
+            int(id)
+        except ValueError:
+            abort(400)
+
+        customer = cls.query.get(id)
+        if not customer:
+            abort(make_response({"message": f"Customer {id} was not found"}, 404))
+            
+        return customer
+
+
+
