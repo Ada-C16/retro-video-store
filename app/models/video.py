@@ -1,9 +1,5 @@
 from app import db
 
-# class Video(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-
-
 class Video(db.Model):
     video_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(100))
