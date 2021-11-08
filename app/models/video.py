@@ -1,3 +1,4 @@
+from _typeshed import Self
 from app import db
 
 class Video(db.Model):
@@ -7,4 +8,6 @@ class Video(db.Model):
     total_inventory = db.Column(db.Integer)
 
     def video_dict(self):
-        title 
+        title = self.title
+        release_date = self.release_date
+        inventory = self.inventory
