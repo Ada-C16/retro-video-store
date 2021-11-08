@@ -12,6 +12,6 @@ class Customer(db.Model):
             "id": self.id,
             "name": self.name,
             "registered_at": self.registered_at,
-        
-
+            "postal_code":self.postal_code,
+            "phone":self.phone_number,
         }

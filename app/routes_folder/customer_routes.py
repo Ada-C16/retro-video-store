@@ -11,7 +11,12 @@ customer_bp = Blueprint("customer", __name__, url_prefix="/customers")
 # Get all customers
 @customer_bp.route("", methods =["GET"])
 def read_all_customers():
-    pass
-    # customers = Customer.query.all()
+    customers = Customer.query.all()
 
-    # customers_response = []
+    customers_response = []
+    for customer in customers:
+        customers_response.append(
+            customers.to_dict()
+        )
+
+    return jsonify(customers_response), 200
