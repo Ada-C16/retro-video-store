@@ -70,3 +70,21 @@ def handle_video_by_id(video_id):
         db.session.delete(video)
         db.session.commit()
         return make_response({"id":int(video_id)}, 200)
+
+
+@customers_bp.route("", methods=["GET", "POST"])
+def handle_cusomters():
+    pass
+
+@customers_bp.route("/<customer_id>", methods=["GET", "DELETE", "PUT"])
+def handle_customer_by_id(customer_id):
+    try:
+        int(customer_id)
+    except:
+        return_message = {"message": f"Customer {customer_id} was not found"}
+        return make_response(return_message, 400)
+
+    customer= Customer.query.get(customer_id)
+    if customer == None:
+        return_message = {"message": f"Customer {customer_id} was not found"}
+        return make_response(return_message, 404)
