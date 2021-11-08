@@ -65,4 +65,11 @@ def handle_customer(cust_id):
         return customer.to_dict(), 200
 
     elif request.method == "DELETE":
-        pass
+        
+        db.session.delete(customer)
+        db.session.commit()
+
+        return {
+            "id": customer.id,
+            "status": "deleted"
+        }
