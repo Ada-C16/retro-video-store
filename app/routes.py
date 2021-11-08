@@ -48,6 +48,10 @@ def handle_videos():
 
 @videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
 def handle_video_by_id(video_id):
+    if type(video_id) != int:
+        return_message = {"message": f"Video {video_id} was not found"}
+        return make_response(return_message, 400)
+
     video= Video.query.get(video_id)
     if video == None:
         return_message = {"message": f"Video {video_id} was not found"}
