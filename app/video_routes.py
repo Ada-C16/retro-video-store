@@ -21,7 +21,7 @@ def get_all():
     return jsonify([video.to_dict() for video in videos])
 
 
-@videos_bp.route("", methods=["GET"])
+@videos_bp.route("/<id>", methods=["GET"])
 def get_one(id):
 
     video = validate(id)
