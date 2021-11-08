@@ -1,5 +1,4 @@
 from app import db
-from app.models.customer import Customer
 from app.models.video import Video
 from flask import Blueprint, request, jsonify
 from datetime import datetime
@@ -73,7 +72,6 @@ def update_video(video_id):
         return {"details": "Request body must include release_date."}, 400
     if "total_inventory" not in request_body:
         return {"details": "Request body must include total_inventory."}, 400
-
 
     video.title = request_body["title"]
     video.total_inventory = request_body["total_inventory"]
