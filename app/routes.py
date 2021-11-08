@@ -2,12 +2,11 @@
 from marshmallow import schema
 from app import db
 from app.models.video import Video
-
-from flask import Blueprint, jsonify, make_response, request, abort
-from datetime import date 
-
-import datetime, requests, os
 from app.models.customer import Customer
+from flask import Blueprint, jsonify, make_response, request, abort
+
+from datetime import date 
+import datetime, requests, os
 
 from dotenv import load_dotenv
 
@@ -201,9 +200,9 @@ def update_customer(customer_id):
     db.session.commit()
 
     return jsonify({
-        "name": f"Updated ${customer.name}",
-        "phone": f"Updated ${customer.phone}",
-        "postal_code": f"Updated ${customer.postal_code}"
+        "name": f"{customer.name}",
+        "phone": f"{customer.phone}",
+        "postal_code": f"{customer.postal_code}"
         }        
     )
     
