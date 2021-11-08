@@ -10,9 +10,11 @@ class Customer(db.Model):
 
     def to_dict(self):
         new_dict = {
+            "id": self.id,
             "name": self.name,
             "phone": self.phone,
-            "postcode": self.postcode
+            "postcode": self.postcode,
+            "register_at": self.register_at,
         }
         
         return new_dict
