@@ -15,3 +15,19 @@ class Customer(db.Model):
             "postal_code": self.postal_code,
             "phone": self.phone_number
         }
+
+    @classmethod
+    def is_data_valid(cls, dict):
+        types = {
+            "name": str,
+            "postal_code": int,
+            "phone": str
+        }
+        for input_type in types:
+            if type(dict.get(input_type)) != types[input_type]:
+                return False
+        return True
+
+    @classmethod
+    def from_json(cls, dict):
+        return Customer(name=dict["name"], postal_code=dict["postal_code"], phone_number=dict["phone"])
