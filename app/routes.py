@@ -2,7 +2,10 @@ from flask import Blueprint, json, jsonify, request, make_response
 from app.models.customer import Customer
 from app.models.video import Video
 from app import db
+from flask_sqlalchemy import model
+import requests
 
+customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
 @videos_bp.route("", methods=["GET", "POST"])
@@ -43,7 +46,13 @@ def handle_videos():
             
         return jsonify(response_body), 201
 
+@videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
+def handle_video_by_id(video_id):
+    video= Video.query.get(video_id)
+    if video == None:
+        return_message = {"message": f"Video {video_id} was not found"}
+        return make_response(return_message, 404)
 
 
-customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
+
 
