@@ -28,7 +28,7 @@ def create_app(test_config=None):
     from app.models.customer import Customer
     from app.models.video import Video
     from app.models.rental import Rental
-    from .routes import videos_bp
+    from .video_routes import videos_bp
 
     # Setup DB
     db.init_app(app)
