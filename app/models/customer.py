@@ -5,6 +5,7 @@ class Customer(db.Model):
     name = db.Column(db.String)
     postal_code = db.Column(db.Integer)
     register_at = db.Column(db.Datetime)
+    rentals = db.relationship('Rental', backref = 'customer', lazy = True)
 
     def customer_dict(self):
         name = self.name
