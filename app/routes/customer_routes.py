@@ -33,7 +33,7 @@ def add_customer():
     new_customer = Customer(
         name = request_body["name"],
         phone = request_body["phone"],
-        post_code = request_body["post_code"]
+        postal_code = request_body["postal_code"]
     )
     
     db.session.add(new_customer)
