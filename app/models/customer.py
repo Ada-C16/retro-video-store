@@ -4,7 +4,7 @@ from flask import abort, make_response
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name=db.Column(db.String)
-    postal_code=db.Column(db.Integer)
+    postal_code=db.Column(db.String)
     phone=db.Column(db.Integer)
     registered_at=db.Column(db.DateTime)
 
