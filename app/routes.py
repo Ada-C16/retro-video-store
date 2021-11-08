@@ -56,7 +56,7 @@ def put_one_video(id):
     if not video:
         return {"message":f"Video {id} was not found"}, 404   
     request_data=request.get_json()
-    errors = put_video_schema.validate(request.get_json())
+    errors = put_video_schema.validate(request_data)
     if errors:
     # if "title" not in request_data: 
     #     invalid_data={"details": "Request body must include title."}
