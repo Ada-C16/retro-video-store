@@ -12,10 +12,16 @@ videos_bp = Blueprint("videos",__name__,url_prefix = "/videos")
 
 @videos_bp.route("", methods=["GET", "POST"])
 def handle_videos():
-
     if request.method == "POST":
         request_body = request.get_json()
-        new_video = Video(
+        if "title" not in request_body: 
+            return jsonify({"details":"Request body must include title."}), 400
+        if "release_date" not in request_body: 
+            return jsonify({"details":"Request body must include release_date."}), 400
+        if "total_inventory" not in request_body: 
+            return jsonify({"details":"Request body must include total_inventory."}), 400
+        else:
+            new_video = Video(
             title= request_body["title"],
             release_date=request_body["release_date"],
             total_inventory =request_body["total_inventory"])
@@ -55,24 +61,29 @@ def handle_videos():
         print (videos_list_response)
         return jsonify(videos_list_response), 200
 
-@videos_bp.route("/<video_id>", methods=["GET"])
+@videos_bp.route("/<video_id>", methods=["GET", "DELETE"])
 def handle_video(video_id):
-    if video_id != int:
-        return jsonify ("Bad Request"), 400
-    videos_table = Video.query.get(video_id)
-    if videos_table is None:
+    # MUST RETURN TO THIS LATER 
+    video = Video.query.get(video_id)
+    if video is None:
         return {"message": "Video 1 was not found"}, 404
     elif request.method == "GET":
         return {
-            "id": videos_table.id,
-            "title": videos_table.title,
-            "release_date": videos_table.release_date,
-            "total_inventory": videos_table.total_inventory
+            "id": video.id,
+            "title": video.title,
+            "release_date": video.release_date,
+            "total_inventory": video.total_inventory
         }, 200
+    elif request.method == "DELETE":
+        db.session.delete(video)
+        db.session.commit()
+
+        return jsonify({"id": video.id}), 200
 
 
         
-
+# elif video_id.isalpha:
+#         return jsonify ("Bad Request"), 400
 
 
 @customers_bp.route("", methods=["GET"])
