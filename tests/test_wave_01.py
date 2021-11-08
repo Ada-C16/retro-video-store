@@ -17,182 +17,182 @@ CUSTOMER_PHONE = "123-123-1234"
 # --------------------------------
 
 # READ
-# def test_get_videos_no_saved_videos(client):
-#     # Act
-#     response = client.get("/videos")
-#     response_body = response.get_json()
+def test_get_videos_no_saved_videos(client):
+    # Act
+    response = client.get("/videos")
+    response_body = response.get_json()
 
-#     # Assert
-#     assert response.status_code == 200
-#     assert response_body == []
+    # Assert
+    assert response.status_code == 200
+    assert response_body == []
 
-# def test_get_videos_one_saved_video(client, one_video):
-#     # Act
-#     response = client.get("/videos")
-#     response_body = response.get_json()
+def test_get_videos_one_saved_video(client, one_video):
+    # Act
+    response = client.get("/videos")
+    response_body = response.get_json()
 
-#     # Assert
-#     assert response.status_code == 200
-#     assert len(response_body) == 1
-#     assert response_body[0]["title"] == VIDEO_TITLE
-#     assert response_body[0]["id"] == VIDEO_ID
-#     assert response_body[0]["total_inventory"] == VIDEO_INVENTORY
+    # Assert
+    assert response.status_code == 200
+    assert len(response_body) == 1
+    assert response_body[0]["title"] == VIDEO_TITLE
+    assert response_body[0]["id"] == VIDEO_ID
+    assert response_body[0]["total_inventory"] == VIDEO_INVENTORY
 
-# def test_get_video(client, one_video):
-#     # Act
-#     response = client.get("/videos/1")
-#     response_body = response.get_json()
+def test_get_video(client, one_video):
+    # Act
+    response = client.get("/videos/1")
+    response_body = response.get_json()
 
-#     # Assert
-#     assert response.status_code == 200
-#     assert response_body["title"] == VIDEO_TITLE
-#     assert response_body["id"] == VIDEO_ID
-#     assert response_body["total_inventory"] == VIDEO_INVENTORY
+    # Assert
+    assert response.status_code == 200
+    assert response_body["title"] == VIDEO_TITLE
+    assert response_body["id"] == VIDEO_ID
+    assert response_body["total_inventory"] == VIDEO_INVENTORY
 
-# def test_get_video_not_found(client):
-#     # Act
-#     response = client.get("/videos/1")
-#     response_body = response.get_json()
+def test_get_video_not_found(client):
+    # Act
+    response = client.get("/videos/1")
+    response_body = response.get_json()
 
-#     # Assert
-#     assert response.status_code == 404
-#     assert response_body == {"message": "Video 1 was not found"}
+    # Assert
+    assert response.status_code == 404
+    assert response_body == {"message": "Video 1 was not found"}
 
-# def test_get_invalid_video_id(client, one_video):
-#     # Act
-#     response = client.get("/videos/hello")
-#     response_body = response.get_json()
+def test_get_invalid_video_id(client, one_video):
+    # Act
+    response = client.get("/videos/hello")
+    response_body = response.get_json()
 
-#     # Assert
-#     assert response.status_code == 400
+    # Assert
+    assert response.status_code == 400
 
 
-# # CREATE
-# def test_create_video(client):
-#     # Act
-#     response = client.post("/videos", json={
-#         "title": VIDEO_TITLE,
-#         "release_date": VIDEO_RELEASE_DATE,
-#         "total_inventory": VIDEO_INVENTORY
-#     })
+# CREATE
+def test_create_video(client):
+    # Act
+    response = client.post("/videos", json={
+        "title": VIDEO_TITLE,
+        "release_date": VIDEO_RELEASE_DATE,
+        "total_inventory": VIDEO_INVENTORY
+    })
 
-#     response_body = response.get_json()
+    response_body = response.get_json()
 
-#     # Assert
-#     assert response.status_code == 201
-#     assert response_body["title"] == VIDEO_TITLE
-#     assert response_body["id"] == VIDEO_ID
-#     assert response_body["total_inventory"] == VIDEO_INVENTORY
+    # Assert
+    assert response.status_code == 201
+    assert response_body["title"] == VIDEO_TITLE
+    assert response_body["id"] == VIDEO_ID
+    assert response_body["total_inventory"] == VIDEO_INVENTORY
 
-#     new_video = Video.query.get(1)
+    new_video = Video.query.get(1)
 
-#     assert new_video
-#     assert new_video.title == VIDEO_TITLE
+    assert new_video
+    assert new_video.title == VIDEO_TITLE
 
-# def test_create_video_must_contain_title(client):
-#     # Act
-#     response = client.post("/videos", json={
-#         "release_date": VIDEO_RELEASE_DATE,
-#         "total_inventory": VIDEO_INVENTORY
-#     })
-#     response_body = response.get_json()
+def test_create_video_must_contain_title(client):
+    # Act
+    response = client.post("/videos", json={
+        "release_date": VIDEO_RELEASE_DATE,
+        "total_inventory": VIDEO_INVENTORY
+    })
+    response_body = response.get_json()
 
-#     # Assert
-#     assert "details" in response_body
-#     assert "Request body must include title." in response_body["details"]
-#     assert response.status_code == 400
-#     assert Video.query.all() == []
+    # Assert
+    assert "details" in response_body
+    assert "Request body must include title." in response_body["details"]
+    assert response.status_code == 400
+    assert Video.query.all() == []
 
-# def test_create_video_must_contain_release_date(client):
-#     # Act
-#     response = client.post("/videos", json={
-#         "title": VIDEO_TITLE,
-#         "total_inventory": VIDEO_INVENTORY
-#     })
-#     response_body = response.get_json()
+def test_create_video_must_contain_release_date(client):
+    # Act
+    response = client.post("/videos", json={
+        "title": VIDEO_TITLE,
+        "total_inventory": VIDEO_INVENTORY
+    })
+    response_body = response.get_json()
 
-#     # Assert
-#     assert "details" in response_body
-#     assert "Request body must include release_date." in response_body["details"]
-#     assert response.status_code == 400
-#     assert Video.query.all() == []
+    # Assert
+    assert "details" in response_body
+    assert "Request body must include release_date." in response_body["details"]
+    assert response.status_code == 400
+    assert Video.query.all() == []
 
-# def test_create_video_must_contain_inventory(client):
-#     # Act
-#     response = client.post("/videos", json={
-#         "title": VIDEO_TITLE,
-#         "release_date": VIDEO_RELEASE_DATE
-#     })
-#     response_body = response.get_json()
+def test_create_video_must_contain_inventory(client):
+    # Act
+    response = client.post("/videos", json={
+        "title": VIDEO_TITLE,
+        "release_date": VIDEO_RELEASE_DATE
+    })
+    response_body = response.get_json()
 
-#     assert "details" in response_body
-#     assert "Request body must include total_inventory." in response_body["details"]
-#     assert response.status_code == 400
-#     assert Video.query.all() == []
+    assert "details" in response_body
+    assert "Request body must include total_inventory." in response_body["details"]
+    assert response.status_code == 400
+    assert Video.query.all() == []
 
-# # DELETE
-# def test_delete_video(client, one_video):
-#     # Act
-#     response = client.delete("/videos/1")
-#     response_body = response.get_json()
-#     print("********", response)
+# DELETE
+def test_delete_video(client, one_video):
+    # Act
+    response = client.delete("/videos/1")
+    response_body = response.get_json()
+    print("********", response)
 
-#     # Assert
-#     assert response_body["id"] == 1
-#     assert response.status_code == 200
-#     assert Video.query.get(1) == None
+    # Assert
+    assert response_body["id"] == 1
+    assert response.status_code == 200
+    assert Video.query.get(1) == None
 
-# def test_delete_video_not_found(client):
-#     # Act
-#     response = client.delete("/videos/1")
-#     response_body = response.get_json()
+def test_delete_video_not_found(client):
+    # Act
+    response = client.delete("/videos/1")
+    response_body = response.get_json()
 
-#     # Assert
-#     assert response_body == {"message": "Video 1 was not found"}
-#     assert response.status_code == 404
-#     assert Video.query.all() == []
+    # Assert
+    assert response_body == {"message": "Video 1 was not found"}
+    assert response.status_code == 404
+    assert Video.query.all() == []
 
-# def test_update_video(client, one_video):
-#     # Act
-#     response = client.put("/videos/1", json={
-#         "title": "Updated Video Title",
-#         "total_inventory": 2,
-#         "release_date": "01-01-2021"
-#     })
-#     response_body = response.get_json()
+def test_update_video(client, one_video):
+    # Act
+    response = client.put("/videos/1", json={
+        "title": "Updated Video Title",
+        "total_inventory": 2,
+        "release_date": "01-01-2021"
+    })
+    response_body = response.get_json()
 
-#     # Assert
-#     assert response.status_code == 200
-#     assert response_body["title"] == "Updated Video Title"
-#     assert response_body["total_inventory"] == 2
+    # Assert
+    assert response.status_code == 200
+    assert response_body["title"] == "Updated Video Title"
+    assert response_body["total_inventory"] == 2
 
-#     video = Video.query.get(1)
+    video = Video.query.get(1)
 
-#     assert video.title == "Updated Video Title"
-#     assert video.total_inventory == 2
+    assert video.title == "Updated Video Title"
+    assert video.total_inventory == 2
 
-# def test_update_video_not_found(client):
-#     # Act
-#     response = client.put("/videos/1", json={
-#         "title": "Updated Video Title",
-#         "total_inventory": 2,
-#         "release_date": "01-01-2021"
-#     })
-#     response_body = response.get_json()
+def test_update_video_not_found(client):
+    # Act
+    response = client.put("/videos/1", json={
+        "title": "Updated Video Title",
+        "total_inventory": 2,
+        "release_date": "01-01-2021"
+    })
+    response_body = response.get_json()
 
-#     # Assert
-#     assert response.status_code == 404
-#     assert response_body == {"message": "Video 1 was not found"}
+    # Assert
+    assert response.status_code == 404
+    assert response_body == {"message": "Video 1 was not found"}
 
-# def test_update_video_invalid_data(client, one_video):
-#     # Act
-#     response = client.put("/videos/1", json={
-#         "total_inventory": 2,
-#         "release_date": "01-01-2021"
-#     })
+def test_update_video_invalid_data(client, one_video):
+    # Act
+    response = client.put("/videos/1", json={
+        "total_inventory": 2,
+        "release_date": "01-01-2021"
+    })
 
-#     # Assert
-#     assert response.status_code == 400
+    # Assert
+    assert response.status_code == 400
 
 
 # --------------------------------
@@ -263,7 +263,7 @@ def test_create_customer(client):
 
     # Assert
     assert response.status_code == 201
-    # assert response_body["id"] == CUSTOMER_ID # This line doesn't work 
+    assert response_body["id"] == CUSTOMER_ID
 
     new_customer = Customer.query.get(1)
 

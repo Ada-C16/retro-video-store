@@ -16,3 +16,4 @@ class Customer(db.Model):
             "phone" : self.phone,
             "register_at" : self.register_at
         }
+

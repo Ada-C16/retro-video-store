@@ -13,10 +13,10 @@ def customer_id_is_valid(customer_id):
     returns two values: a customer object or "invalid", and an error message; 
     if no error is present, the error message is None
     '''
-    if not customer_id.isnumeric():
+    if not customer_id.isnumeric(): 
         return "invalid", ("", 400)
     
-    customer = Customer.query.get(customer_id)
+    customer = Customer.query.get(customer_id) 
     if not customer:
         return "invalid", ({"message": 
                             f"Customer {customer_id} was not found"}, 
@@ -33,14 +33,14 @@ def request_has_all_required_categories():
     request_data = request.get_json()
     for required_category in CUSTOMER_REQUIRED_CATEGORIES:
         if required_category not in request_data: 
-            return request_data, (jsonify({ 
-                    "details" : 
-                    f"Request body must include {required_category}." }
-                ), 400)
+            return request_data, ({"details" : 
+                    f"Request body must include {required_category}."}, 
+                    400)
 
     # no error was caught; all required categories are present 
     return request_data, None  
 
+# routes 
 @customers_bp.route("", methods=["GET"])
 def customers():
     customers = Customer.query.all()
@@ -63,14 +63,14 @@ def add_customer():
     db.session.add(new_customer)
     db.session.commit()
     
-    return jsonify({ "customer" : new_customer.to_json() }), 201
+    return jsonify(new_customer.to_json()), 201
 
 @customers_bp.route("/<customer_id>", methods=["GET"])
 def customer(customer_id):
     customer, error_msg = customer_id_is_valid(customer_id)
     if error_msg is not None:
         return error_msg 
-        
+
     return jsonify(customer.to_json()), 200
 
 @customers_bp.route("/<customer_id>", methods=["PUT"])
