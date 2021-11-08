@@ -7,7 +7,7 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     register_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
-
+    videos_checked_out = db.Column(db.Integer)
 
     def customer_dict(self):
         return {

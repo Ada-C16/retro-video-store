@@ -1,5 +1,6 @@
 from app import db
 from flask import request
+from app.models.rental import Rental
 
 
 class Video(db.Model):
@@ -7,14 +8,7 @@ class Video(db.Model):
     title = db.Column(db.String, nullable=False)
     release_date = db.Column(db.Date, nullable=False)
     total_inventory = db.Column(db.Integer, nullable=False)
-
-    def create_dict(self):
-        return {
-            "id": self.id,
-            "title": self.title,
-            "release_date": self.release_date,
-            "total_inventory": self.total_inventory
-        }
+    customer = db.relationship("Customer", secondary=Rental, backref="videos")
 
     @classmethod
     def from_json(cls):
