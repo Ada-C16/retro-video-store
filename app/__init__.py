@@ -32,12 +32,9 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
 
     #Register Blueprints Here
-<<<<<<< HEAD
-    from app.routes import customers_bp
+    from app.customer_route import customers_bp
     app.register_blueprint(customers_bp)
-=======
-    from .video_route import videos_bp
+    from app.video_route import videos_bp
     app.register_blueprint(videos_bp)
->>>>>>> origin/mariamas-new-branch
 
     return app
