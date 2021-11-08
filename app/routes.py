@@ -48,7 +48,9 @@ def handle_videos():
 
 @videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
 def handle_video_by_id(video_id):
-    if type(video_id) != int:
+    try:
+        int(video_id)
+    except:
         return_message = {"message": f"Video {video_id} was not found"}
         return make_response(return_message, 400)
 
@@ -57,6 +59,27 @@ def handle_video_by_id(video_id):
         return_message = {"message": f"Video {video_id} was not found"}
         return make_response(return_message, 404)
 
+    if request.method == "PUT":
+        form_data = request.get_json()
+        try:
+            form_data["title"]
+            form_data["release_date"]
+            form_data["total_inventory"]
+        except:
+            return make_response("You done goofed.", 400)
+        video.title = form_data["title"]
+        video.release_date = form_data["release_date"]
+        video.total_inventory = form_data["total_inventory"]
+
+        db.session.commit()
+
+        response_value = {
+            "id": video_id,
+            "title": video.title,
+            "release_date": video.release_date,
+            "total_inventory": video.total_inventory
+        }
+        return make_response(response_value, 200)
 
 
 
