@@ -64,17 +64,40 @@ def handle_videos():
 @videos_bp.route("/<video_id>", methods=["GET", "DELETE"])
 def handle_video(video_id):
     # MUST RETURN TO THIS LATER 
-    video = Video.query.get(video_id)
+    video = Video.query.scalar()
+    
+
     if video is None:
         return {"message": "Video 1 was not found"}, 404
-    elif request.method == "GET":
-        return {
-            "id": video.id,
-            "title": video.title,
-            "release_date": video.release_date,
-            "total_inventory": video.total_inventory
-        }, 200
-    elif request.method == "DELETE":
+
+    if video:
+        if video == '<Video 1>':
+            if request.method == "GET":
+                return {
+                    "id": video.id,
+                    "title": video.title,
+                    "release_date": video.release_date,
+                    "total_inventory": video.total_inventory
+                }, 200
+        elif type(video) == int :
+            return {
+                    "id": video.id,
+                    "title": video.title,
+                    "release_date": video.release_date,
+                    "total_inventory": video.total_inventory
+                }, 200
+        else:
+            return ("bad request"), 400
+        # elif video == int:
+        #     return  {
+        #             "id": video.id,
+        #             "title": video.title,
+        #             "release_date": False,
+        #             "total_inventory": video.total_inventory
+        #         }, 200
+        
+    
+    if request.method == "DELETE":
         db.session.delete(video)
         db.session.commit()
 
