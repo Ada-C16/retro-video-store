@@ -14,8 +14,10 @@ itsdangerous==1.1.0
 Jinja2==2.11.3
 Mako==1.1.4
 MarkupSafe==1.1.1
+marshmallow==3.14.0
 packaging==21.2
 pluggy==1.0.0
+psycopg2==2.9.1
 psycopg2-binary==2.8.6
 py==1.10.0
 pycodestyle==2.6.0
