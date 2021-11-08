@@ -64,7 +64,7 @@ def handle_videos():
 @videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
 def handle_video(video_id):
     # MUST RETURN TO THIS LATER
-    if video_id == "hello":
+    if video_id.isalpha():
         return {"details" : "Invalid request"}, 400
     video = Video.query.get(video_id)
     if video is None:
