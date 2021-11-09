@@ -22,3 +22,15 @@ def handle_videos():
 
     return jsonify(videos_response), 200
 
+@videos_bp.route("/<video_id>", methods = ["GET"])
+def handle_video(video_id):
+    video_id = int(video_id)
+    video = Video.query.get(video_id)
+    if not video:
+        return make_response({"message": f"Video {video_id} was not found"}, 404)
+    return {
+        "id": video.id,
+        "title": video.title,
+        "release_date": video.release_date,
+        "total_inventory": video.total_inventory
+    }
