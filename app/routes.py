@@ -8,6 +8,7 @@ from datetime import datetime
 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 
 # --------------------------------
@@ -32,9 +33,6 @@ def get_all_customers():
     return jsonify(customers_response), 200
 
 
-
-
-
 # GET CUSTOMER BY ID
 @customers_bp.route("/<id>", methods=["GET"])
 def get_customer(id):
@@ -53,7 +51,6 @@ def get_customer(id):
         #      "name": customer.name,
         #      "registered_at": customer.registered_at,"postal_code": customer.postal_code,
         #      "phone": customer.phone}), 200
-
 
 
 # POST CUSTOMER
@@ -109,3 +106,34 @@ def delete_customer(id):
         db.session.delete(customer)
         db.session.commit()
         return jsonify({"id": customer.id}), 200
+    
+    
+    
+
+# --------------------------------
+# ----------- RENTALS ----------
+# --------------------------------
+
+
+
+
+# POST /rentals/check-out
+
+@rentals_bp.route("/check_out", methods=["POST"])
+def checkout_video():
+
+
+
+# POST /rentals/check-in
+
+@rentals_bp.route("/check_in", methods=["POST"])
+def checkin_video():
+    
+    
+# GET /customers/<id>/rentals  FOR A SPECIFIC CUSTOMER, GET ALL VIDEO RENTALS
+@customers_bp.route("/<id>/rentals", methods=["GET"])
+
+
+
+# GET /videos/<id>/rentals  FOR A SPECIFIC VIDEO, GET ALL CUSTOMERS CURRENTLY RENTING
+@videos_bp.route("/<id>/rentals", methods=["GET"])

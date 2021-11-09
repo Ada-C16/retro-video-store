@@ -7,8 +7,9 @@ class Customer(db.Model):
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime)
     
+    rentals = db.relationship('Rental', back_populates='customer')
+    
     def to_json(self):
-
         return {
             "id": self.id,
             "name": self.name,
