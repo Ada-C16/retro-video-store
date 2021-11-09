@@ -4,8 +4,8 @@ from datetime import datetime
 class Rental(db.Model):
     __tablename__ = "rentals"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), primary_key=True, nullable=False)
-    video_id = db.Column(db.Integer, db.ForeignKey('video.id'), primary_key=True, nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), primary_key=True, nullable=False)
+    video_id = db.Column(db.Integer, db.ForeignKey('videos.video_id'), primary_key=True, nullable=False)
     due_date = db.Column(db.DateTime)
     checked_out = db.Column(db.Boolean)
  
