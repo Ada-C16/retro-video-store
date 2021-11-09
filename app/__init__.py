@@ -5,7 +5,9 @@ import os
 from dotenv import load_dotenv
 
 db = SQLAlchemy()
-migrate = Migrate()
+# the passed in parameter allows 
+# type changes for model/class type changes
+migrate = Migrate(compare_type=True)
 load_dotenv()
 
 def create_app(test_config=None):
@@ -32,5 +34,10 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
 
     #Register Blueprints Here
+    from app.routes import video_bp
+    app.register_blueprint(video_bp)
+
+    from app.routes import customer_bp
+    app.register_blueprint(customer_bp)
 
     return app
