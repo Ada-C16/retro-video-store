@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, make_response, request, abort
+from werkzeug.exceptions import RequestEntityTooLarge
 from app import db
 from app.models.customer import Customer
 
@@ -13,7 +14,11 @@ def valid_int(number, parameter_type):
 
 def get_customer_from_id(customer_id):
     valid_int(customer_id, "customer_id")
-    return Customer.query.get_or_404(customer_id, description="{'message':f'Customer {customer_id} was not found'}")
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        abort(make_response({"message":f"Customer {customer_id} was not found"}, 404))
+    
+    return customer
 
 # CUSTOMER ROUTES
 
