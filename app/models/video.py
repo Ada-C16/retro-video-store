@@ -5,3 +5,4 @@ class Video(db.Model):
     title = db.Column(db.String)
     total_inventory = db.Column(db.Integer)
     release_date = db.Column(db.DateTime, nullable=True)
+    number_rented = db.relationship("Rental", backref="video_id")

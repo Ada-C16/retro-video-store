@@ -106,6 +106,9 @@ def handle_video(video_id):
 
         #add code for edge case where inputs all there but one or more=invalid, for example toatal inventory is not an integer
 
+# "The API should return back a 400 Bad Request response for missing or invalid fields in the request body.
+# For example, if total_inventory is missing or is not a number"
+
         video.title = request_body["title"]
         video.release_date = request_body["release_date"]
         video.total_inventory = request_body["total_inventory"]
