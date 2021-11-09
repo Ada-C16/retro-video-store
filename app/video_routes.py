@@ -1,5 +1,5 @@
 from app import db
-from app.models import Video
+from app.models.video import Video
 from flask import Blueprint, jsonify, request, make_response
 
 videos_bp = Blueprint('videos', __name__, url_prefix='/videos')
