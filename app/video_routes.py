@@ -2,7 +2,6 @@ from flask import Blueprint, jsonify, request
 from app import db
 from app.models.video import Video
 from app.models.customer import Customer
-from app.models.rental import Rental
 
 
 videos_bp = Blueprint("videos_bp", __name__, url_prefix="/videos")
@@ -67,20 +66,31 @@ def delete_video(video_id):
 
 @videos_bp.route("/<video_id>", methods=["PUT"])
 def put_video_by_id(video_id):
-
-    video = Video.query.get(video_id)
-    if not video:
-        return jsonify({"message": f"Video {video_id} was not found"}), 404
     form_data = request.get_json()
     if "title" not in form_data or "release_date" not in form_data or "total_inventory" not in form_data:
         error_dict = {"details": "Invalid data"}
         return jsonify(error_dict), 400
+    video = Video.query.get(video_id)
+    if not video:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
 
-    video.title = form_data["title"]
-    video.release_date = form_data["release_date"]
-    video.total_inventory = form_data["total_inventory"]
-
-    db.session.commit()
+    video.update(form_data)
 
     response_body = video.create_dict()
+    return jsonify(response_body), 200
+
+
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def rentals_by_id(video_id):
+
+    video = Video.query.get(video_id)
+    if not video:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
+
+    rental_response = [rental.id for rental in video.rentals]
+    if not rental_response:
+        return jsonify([]), 200
+
+    response_body = [Customer.query.get(
+        customer).customer_dict() for customer in rental_response]
     return jsonify(response_body), 200
