@@ -1,46 +1,11 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 from app import db 
 from app.models.customer import Customer 
 from datetime import datetime
+from .helpers import id_is_valid, request_has_all_required_categories
 
 customers_bp = Blueprint("customer", __name__, url_prefix="/customers")
 
-CUSTOMER_REQUIRED_CATEGORIES = ["name", "phone", "postal_code"]
-
-# helper methods for validation 
-def customer_id_is_valid(customer_id):
-    '''
-    returns two values: a customer object or "invalid", and an error message; 
-    if no error is present, the error message is None
-    '''
-    if not customer_id.isnumeric(): 
-        return "invalid", ("", 400)
-    
-    customer = Customer.query.get(customer_id) 
-    if not customer:
-        return "invalid", ({"message": 
-                            f"Customer {customer_id} was not found"}, 
-                            404)  
-
-    # no error was caught; the customer_id is valid 
-    return customer, None 
-
-def request_has_all_required_categories():
-    '''
-    returns two values: request data in json format, and an error message;
-    if no error is present, the error message is None 
-    '''
-    request_data = request.get_json()
-    for required_category in CUSTOMER_REQUIRED_CATEGORIES:
-        if required_category not in request_data: 
-            return request_data, ({"details" : 
-                    f"Request body must include {required_category}."}, 
-                    400)
-
-    # no error was caught; all required categories are present 
-    return request_data, None  
-
-# routes 
 @customers_bp.route("", methods=["GET"])
 def customers():
     customers = Customer.query.all()
@@ -49,7 +14,7 @@ def customers():
 
 @customers_bp.route("", methods=["POST"])
 def add_customer():
-    request_data, error_msg = request_has_all_required_categories()
+    request_data, error_msg = request_has_all_required_categories("customer")
     if error_msg is not None:
         return error_msg
     
@@ -67,7 +32,7 @@ def add_customer():
 
 @customers_bp.route("/<customer_id>", methods=["GET"])
 def customer(customer_id):
-    customer, error_msg = customer_id_is_valid(customer_id)
+    customer, error_msg = id_is_valid(customer_id, "customer")
     if error_msg is not None:
         return error_msg 
 
@@ -75,11 +40,11 @@ def customer(customer_id):
 
 @customers_bp.route("/<customer_id>", methods=["PUT"])
 def update_customer(customer_id):
-    customer, error_msg = customer_id_is_valid(customer_id)
+    customer, error_msg = id_is_valid(customer_id, "customer")
     if error_msg is not None:
         return error_msg 
 
-    request_data, error_msg = request_has_all_required_categories()
+    request_data, error_msg = request_has_all_required_categories("customer")
     if error_msg is not None:
         return error_msg
 
@@ -92,7 +57,7 @@ def update_customer(customer_id):
 
 @customers_bp.route("/<customer_id>", methods=["DELETE"])
 def delete_customer(customer_id):
-    customer, error_msg = customer_id_is_valid(customer_id)
+    customer, error_msg = id_is_valid(customer_id, "customer")
     if error_msg is not None:
         return error_msg 
     
