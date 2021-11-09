@@ -11,7 +11,7 @@ def get_customers():
     customers = Customer.query.all()
     customers_response = []
     for customer in customers:
-        customers_response.append(customer.to_dict)
+        customers_response.append(customer.to_dict())
 
     return jsonify(customers_response),200
 
