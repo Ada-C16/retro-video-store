@@ -67,7 +67,7 @@ def handle_video(video_id):
         return {"details" : "Invalid request"}, 400
     video = Video.query.get(video_id)
     if video is None:
-        return {"message": "Video 1 was not found"}, 404
+        return {"message": f"Video {video_id} was not found"}, 404
 
     elif request.method == "GET":
         return {
@@ -94,26 +94,31 @@ def handle_video(video_id):
 
             return {"title" : video.title, "total_inventory" : video.total_inventory}, 200 
 
-
-        
-
-
-
 @customers_bp.route("", methods=["GET"])
 def handle_customers():
-
     customers_database = Customer.query.all() # searching for all the customers in the database 
     customers_list = [] # empty list 
     for each_customer in customers_database:
             customers_list.append(
                 {
-
-                "id": each_customer.id,
                 "name": each_customer.name,
-                "registered_at": True
-
-
-
-
+                "id" : each_customer.id,
+                "phone" : each_customer.phone,
+                "registered_at" : each_customer.registered_at,
+                "postal_code": each_customer.postal_code
             })
+    return jsonify(customers_list), 200 
 
+@customers_bp.route("/<customer_id>", methods=["GET"])
+def handle_customer(customer_id):
+    customer = Customer.query.get(customer_id)
+    if customer is None:
+        return {"message": f"Customer {customer_id} was not found"}, 404
+    elif request.method == "GET":
+        return {
+            "id": customer.id,
+            "name" : customer.name,
+            "registered_at" : customer.registered_at,
+            "phone" : customer.phone,
+            "postal_code" : customer.postal_code
+        }, 200
