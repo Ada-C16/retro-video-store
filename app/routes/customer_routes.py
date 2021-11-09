@@ -106,7 +106,7 @@ def delete_customer(customer_id):
 
 
 # CUSTOMER RENTAL ROUTE
-@customers_bp.route("/<customer_id>/rentals", mehthods=["GET"])
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def get_videos_checked_out(customer_id):
     customer = get_customer_data_with_id(customer_id)
     
