@@ -14,12 +14,7 @@ def handle_videos():
         videos = Video.query.all()
         videos_response = []
         for video in videos:
-            videos_response.append({
-                "id": video.id,
-                "title": video.title,
-                "release_date": video.release_date,
-                "total_inventory": video.total_inventory
-            })
+            videos_response.append(video.to_dict())
 
         return jsonify(videos_response), 200
     elif request.method == "POST":
@@ -59,12 +54,8 @@ def handle_video(video_id):
     if not video:
         return make_response({"message": f"Video {video_id} was not found"}, 404)
     if request.method == "GET":
-        return {
-            "id": video.id,
-            "title": video.title,
-            "release_date": video.release_date,
-            "total_inventory": video.total_inventory
-        }
+        return video.to_dict()
+        
     elif request.method == "PUT":
         request_body = request.get_json()
         if "title" not in request_body or "release_date" not in request_body or "total_inventory" not in request_body:
@@ -80,9 +71,5 @@ def handle_video(video_id):
     elif request.method == "DELETE":
         db.session.delete(video)
         db.session.commit()
-        return make_response({ 
-            "id": video.id,
-            "title": video.title,
-            "release_date": video.release_date,
-            "total_inventory": video.total_inventory}, 200)
+        return make_response(video.to_dict(), 200)
 
