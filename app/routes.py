@@ -137,7 +137,7 @@ def handle_customers():
 
 @customers_bp.route("/<customer_id>", methods=["GET"])
 def handle_customer(customer_id):
-    if customer_id.isnumeric != True:
+    if customer_id.isnumeric() != True:
         return("Invalid Request"), 400
 
     customer = Customer.query.get(customer_id)
