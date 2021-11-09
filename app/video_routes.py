@@ -31,14 +31,19 @@ def handle_videos():
             db.session.add(new_video)
             return jsonify({"video": new_video.to_dict()}), 201
 
-@videos_bp.route('/<int:id_num>', methods=['GET', 'PUT', 'DELETE'])
+@videos_bp.route('/<id_num>', methods=['GET', 'PUT', 'DELETE'])
 def handle_video(id_num):
-    video = Video.query.get_or_404(id_num)
+    try:
+        id_num = int(id_num)
+    except ValueError:
+        return make_response(jsonify({"error": "Invalid ID"}), 400)
+
+    video = Video.query.get(id_num)
     if not video:
-        return make_response(jsonify({"message": "Video not found"}), 404)
+        return make_response(jsonify({"message": f"Video {id_num} was not found"}), 404)
     
     if request.method == 'GET':
-        return jsonify({"video": video.to_dict()}), 200
+        return jsonify(video.to_dict()), 200
 
     elif request.method == 'PUT':
         request_body = request.get_json()
