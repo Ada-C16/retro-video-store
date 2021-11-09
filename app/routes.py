@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, make_response, request
+from flask import Blueprint, jsonify, make_response, request, abort
 from app.models.video import Video
 from app import db
 from datetime import datetime, timezone
@@ -12,17 +12,27 @@ def is_input_valid(number):
     try:
         int(number)
     except:
-        return make_response(f"{number} is not an int!", 400)
+        abort(400)
 
 
 def is_parameter_found(model, parameter_id):
     if is_input_valid(parameter_id):
         return is_input_valid(parameter_id)
-    elif model.query.get(parameter_id) is None:
-        response_body = f"Video {parameter_id} was not found"
+    if model.query.get(parameter_id) is None:
         response_dict = {}
-        response_dict["message"] = response_body  
+        response_dict["message"] = f"Video {parameter_id} was not found"
         return make_response(response_dict, 404)
+    # return model.query.get(parameter_id)
+
+
+# def get_customer_from_id(customer_id):
+#     valid_int(customer_id, "customer_id")
+#     customer = Customer.query.get(customer_id)
+#     if not customer:
+#         abort(make_response(
+#             {"message": f"Customer {customer_id} was not found"}, 404))
+
+#     return customer
 
 
 @videos_bp.route("", methods=["POST"])
