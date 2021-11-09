@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
 from dotenv import load_dotenv
+# from flask import make_response, jsonify
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -33,13 +34,12 @@ def create_app(test_config=None):
 
 
     #Register Blueprints Here
-    from routes.customer_routes import customer_bp
+    from app.routes.customer_routes import customer_bp
     app.register_blueprint(customer_bp)
-    return app
+
 
     # Register Blueprints Here
     from routes.video_routes import video_bp
     app.register_blueprint(video_bp)
 
     return app
-
