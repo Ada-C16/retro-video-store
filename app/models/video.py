@@ -8,7 +8,7 @@ class Video(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": self.video_id,
             "title": self.title,
             "release_date": self.release_date,
             "total_inventory": self.total_inventory
