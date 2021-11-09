@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
 from dotenv import load_dotenv
+# from flask import make_response, jsonify
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -20,7 +21,11 @@ def create_app(test_config=None):
         app.config["TESTING"] = True
         app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
             "SQLALCHEMY_TEST_DATABASE_URI")
-
+    
+    # @app.errorhandler(404)
+    # def not_found(error):
+    #     return make_response(jsonify({'message': f'Customer {error} was not found'}), 404)
+    
     
     # import models for Alembic Setup
     from app.models.customer import Customer
@@ -32,6 +37,7 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
 
     #Register Blueprints Here
-    from routes.customer_routes import customer_bp
+    from app.routes.customer_routes import customer_bp
     app.register_blueprint(customer_bp)
+    
     return app
