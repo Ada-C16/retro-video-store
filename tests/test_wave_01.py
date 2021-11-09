@@ -377,9 +377,3 @@ def test_update_customer_invalid_data(client, one_customer):
 
     # Assert
     assert response.status_code == 400
-
-
-
-
-
-
