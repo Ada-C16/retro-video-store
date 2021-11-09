@@ -49,3 +49,15 @@ def read_items():
     for item in items:
         items_response.append(item.to_dict())
     return jsonify(items_response), 200
+
+@customer_bp.route("/<id>", methods=["GET"])
+@video_bp.route("/<id>", methods=["GET"])
+def read_item(id):
+    model = g.model
+    item = model.get_by_id(id)
+    return jsonify(item.to_dict()), 200
+
+# @customer_bp.route("/<id>", methods=["DELETE"])
+# @video_bp.route("/<id>", methods=["DELETE"])
+# def delete_item():
+#     model = g.model
