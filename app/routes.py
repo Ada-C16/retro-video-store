@@ -6,13 +6,10 @@ from app.models.video import Video
 from .models.customer import Customer
 from app import db
 from sqlalchemy import exc
-# from sqlalchemy.exc import DataError
+from sqlalchemy.exc import DataError
 # from sqlalchemy.sql.operators import custom_op
 # import re
 # from flask.blueprints import Blueprint
-
-
-
 
 videos_bp = Blueprint("videos", __name__, url_prefix ="/videos")
 
