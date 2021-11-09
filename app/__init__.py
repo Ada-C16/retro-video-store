@@ -38,8 +38,12 @@ def create_app(test_config=None):
     app.register_blueprint(customer_bp)
 
 
+
     # Register Blueprints Here
     from app.routes.video_routes import video_bp
     app.register_blueprint(video_bp)
+
+    from app.routes.rental_routes import rental_bp
+    app.register_blueprint(rental_bp)
 
     return app
