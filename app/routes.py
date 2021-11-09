@@ -18,8 +18,8 @@ def get_customers():
 @customers_bp.route("", methods=["POST"], strict_slashes=False)
 def post_customers():
     response_body = request.get_json()
-    if not Customer.is_data_valid(response_body):
-        return {"details": "invalid data"}, 404
+    if not Customer.is_data_valid(response_body)[0]:
+        return Customer.is_data_valid(response_body)[1], 400
     else:
         new_customer = Customer.from_json(response_body)
     
@@ -29,19 +29,39 @@ def post_customers():
 
 @customers_bp.route("/<customer_id>", methods=["GET"], strict_slashes=False)
 def get_customer(customer_id):
-    customer_id = int(customer_id)
-    customer = Customer.query.get_or_404(customer_id)
-    return customer.to_dict(), 200
+    if not Customer.is_int(customer_id):
+        return {'message': f'{customer_id} is not a valid customer id'}, 400
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        return {'message': f'Customer {customer_id} was not found'}, 404
+    else:
+        return customer.to_dict(), 200
 
 @customers_bp.route("/<customer_id>", methods=["PUT"], strict_slashes=False)
 def update_customer(customer_id):
-    customer_id = int(customer_id)
-    customer = Customer.query.get_or_404(customer_id)
-    response_body = request.get_json()
-    if not Customer.is_data_valid(response_body):
-        return {"details": "invalid data"}, 404
+    if not Customer.is_int(customer_id):
+        return {'message': f'{customer_id} is not a valid customer id'}, 400
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        return {'message': f'Customer {customer_id} was not found'}, 404
+    else:
+        response_body = request.get_json()
+    if not Customer.is_data_valid(response_body)[0]:
+        return Customer.is_data_valid(response_body)[1], 400
     customer.name = response_body["name"]
     customer.postal_code = response_body["postal_code"]
-    customer.phone_number = response_body["phone"]
+    customer.phone = response_body["phone"]
     db.session.commit()
     return customer.to_dict(), 200
+
+@customers_bp.route("/<customer_id>", methods=["DELETE"], strict_slashes=False)
+def delete_customer(customer_id):
+    if not Customer.is_int(customer_id):
+        return {'message': f'{customer_id} is not a valid customer id'}, 400
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        return {'message': f'Customer {customer_id} was not found'}, 404
+    else:
+        db.session.delete(customer)
+        db.session.commit()
+        return {"id": customer.customer_id}, 200
