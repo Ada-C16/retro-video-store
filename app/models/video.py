@@ -8,7 +8,6 @@ class Video(db.Model):
     title = db.Column(db.String, nullable=False)
     release_date = db.Column(db.Date, nullable=False)
     total_inventory = db.Column(db.Integer, nullable=False)
-    customer = db.relationship("Customer", secondary=Rental, backref="videos")
     rentals = db.relationship("Rental", backref="video")
     
     @classmethod
