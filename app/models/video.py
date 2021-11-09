@@ -3,7 +3,7 @@ from app import db
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(200))
-    release_date = db.Column(db.DateTime)
+    release_date = db.Column(db.Date)
     total_inventory = db.Column(db.Integer)
 
     def to_dict(self):
