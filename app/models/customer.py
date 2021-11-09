@@ -15,11 +15,12 @@ class Customer(db.Model):
             "name": self.name,
             "phone": self.phone,
             "postal_code": self.postal_code,
-            "registered_at": self.registered_at.strftime("%a, %d %b %Y %I %z") if self.registered_at else None
+            "registered_at": self.registered_at.strftime("%a, %d %b %Y %H:%M:%S") if self.registered_at else None
         }
 
     @classmethod
     def from_json(cls, request_body):
+
         return cls(
             name = str(request_body["name"]),
             postal_code = str(request_body["postal_code"]),
