@@ -44,12 +44,12 @@ def handle_videos():
         db.session.add(new_video)
         db.session.commit()
         return make_response(
-            f"Book {new_video.title} successfully created", 201
+            new_video.to_dict(), 201
         )
             
 
 
-@videos_bp.route("/<video_id>", methods = ["GET"])
+@videos_bp.route("/<video_id>", methods = ["GET", "PUT", "DELETE"])
 def handle_video(video_id):
     try:
         video_id = int(video_id)
@@ -58,10 +58,23 @@ def handle_video(video_id):
     video = Video.query.get(video_id)
     if not video:
         return make_response({"message": f"Video {video_id} was not found"}, 404)
-    return {
-        "id": video.id,
-        "title": video.title,
-        "release_date": video.release_date,
-        "total_inventory": video.total_inventory
-    }
+    if request.method == "GET":
+        return {
+            "id": video.id,
+            "title": video.title,
+            "release_date": video.release_date,
+            "total_inventory": video.total_inventory
+        }
+    elif request.method == "PUT":
+        request_body = request.get_json()
+        video.title = request_body["title"]
+        video.release_date = request_body["release_date"]
+        video.total_inventory = request_body["total_inventory"]
+        db.session.commit()
+        return jsonify(video.to_dict()), 200
+
+    elif request.method == "DELETE":
+        db.session.delete(video)
+        db.session.commit()
+        return make_response({"details": f'Video {video.video_id} successfully deleted'})
 
