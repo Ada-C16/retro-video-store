@@ -1,15 +1,15 @@
-from flask.helpers import total_seconds
 from app import db
 from app.models import Video
 from flask import Blueprint, jsonify, request, make_response
 
-videos_bp = Blueprint('videos', __name__, url_prefix="/videos")
+videos_bp = Blueprint('videos', __name__, url_prefix='/videos')
 
-@videos_bp.route('/', methods=['GET', 'POST'])
+@videos_bp.route('', methods=['GET', 'POST'])
 def handle_videos():
     if request.method == 'GET':
         videos = Video.query.all()
-        return jsonify([video.to_dict() for video in videos])
+        return jsonify([video.to_dict() for video in videos]), 200
+
     elif request.method == 'POST':
         request_body = request.get_json()
         #checks for list if we want to post multiple videos
