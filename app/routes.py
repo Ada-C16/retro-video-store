@@ -63,13 +63,8 @@ def handle_videos():
 
 @videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
 def handle_video(video_id):
-    # MUST RETURN TO THIS LATER
-    # if int(video_id):
-    try:
-        int(video_id)
-    except:
-        return {"message": "video_id must be an int"}, 400
-        # return {"details" : "Invalid request"}, 400
+    if video_id.isnumeric() != True:
+        return {"details" : "Invalid request"}, 400
     video = Video.query.get(video_id)
     if video is None:
         return {"message": "Video 1 was not found"}, 404
@@ -101,8 +96,7 @@ def handle_video(video_id):
 
 
         
-# elif video_id.isalpha:
-#         return jsonify ("Bad Request"), 400
+
 
 
 @customers_bp.route("", methods=["GET"])
@@ -114,12 +108,14 @@ def handle_customers():
             customers_list.append(
                 {
 
-                "id": each_customer.id,
+                
                 "name": each_customer.name,
-                "registered_at": True
+                "id": each_customer.id,
+                "phone": each_customer.phone,
+                "postal_code": each_customer.postal_code
 
 
 
 
-            })
-
+            }), 200
+    return jsonify (customers_list)
