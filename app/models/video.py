@@ -1,6 +1,6 @@
 from app import db
 from flask import request
-from app.models.rental import Rental
+# from app.models.rental import Rental
 
 
 class Video(db.Model):
