@@ -1,12 +1,21 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, abort
 from flask.helpers import make_response
 from app.models.video import Video
 from app import db
-# GET /videos
-# GET /videos/<id>
-# POST /videos
-# PUT /videos/<id>
-# DELETE /videos/<id>
+
+# helper functions
+def validate_id(id, id_type):
+    try:
+        int(id)
+    except:
+        abort(make_response({"error": f"{id_type} must be an int"}, 400))
+
+def get_video_from_id(id):
+    validate_id(id, 'video id')
+    selected_video = Video.query.get(id)
+    if not selected_video:
+        abort(make_response({'message': f'Video {id} was not found'}, 404))
+    return selected_video
 
 videos_bp = Blueprint('videos', __name__, url_prefix='/videos')
 
@@ -36,3 +45,30 @@ def create_video():
     db.session.add(new_video)
     db.session.commit()
     return make_response(new_video.to_dict(), 201)
+
+# Individual video routes
+
+@videos_bp.route('/<video_id>', methods=['GET'], strict_slashes=False)
+def get_video(video_id):
+    video = get_video_from_id(video_id)
+    return make_response(video.to_dict(), 200)
+
+@videos_bp.route('/<video_id>', methods=['PUT'], strict_slashes=False)
+def update_video(video_id):
+    video = get_video_from_id(video_id)
+    request_body = request.get_json()
+    # check if request body is valid
+    if 'title' not in request_body or 'release_date' not in request_body or 'total_inventory' not in request_body:
+        abort(make_response(jsonify('Bad request'), 400))
+    video.title = request_body['title']
+    video.release_date = request_body['release_date']
+    video.total_inventory = request_body['total_inventory']
+    db.session.commit()
+    return make_response(video.to_dict(), 200)
+
+@videos_bp.route('<video_id>', methods=['DELETE'], strict_slashes=False)
+def delete_video(video_id):
+    video = get_video_from_id(video_id)
+    db.session.delete(video)
+    db.session.commit()
+    return make_response(video.to_dict(), 200)
