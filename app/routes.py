@@ -19,14 +19,22 @@ def is_parameter_found(model, parameter_id):
     if is_input_valid(parameter_id):
         return is_input_valid(parameter_id)
     elif model.query.get(parameter_id) is None:
-        return make_response(f"{parameter_id} was not found!", 404)
+        response_body = f"Video {parameter_id} was not found"
+        response_dict = {}
+        response_dict["message"] = response_body  
+        return make_response(response_dict, 404)
 
 
 @videos_bp.route("", methods=["POST"])
 def create_video():
     request_body = request.get_json()
-    if "title" not in request_body or "release_date" not in request_body or "total_inventory" not in request_body:
-        return jsonify({"details": "Invalid data"}), 400
+    if "title" not in request_body: 
+        return jsonify({"details": "Request body must include title."}), 400
+    elif "release_date" not in request_body: 
+        return jsonify({"details": "Request body must include release_date."}), 400
+    elif "total_inventory" not in request_body:
+        return jsonify({"details": "Request body must include total_inventory."}), 400
+
     new_video = Video(title=request_body["title"],
                     release_date=request_body["release_date"],
                     total_inventory=request_body["total_inventory"]
@@ -34,7 +42,7 @@ def create_video():
 
     db.session.add(new_video)
     db.session.commit()
-    return jsonify({"id": new_video.id}), 201
+    return jsonify(new_video.to_dict()), 201
 
 
 @videos_bp.route("", methods=["GET"])
@@ -62,8 +70,7 @@ def read_video(video_id):
     if check_not_found:
         return check_not_found
     video = Video.query.get(video_id)
-    video_response = {}
-    video_response["video"] = video.to_dict()
+    video_response = video.to_dict()
     return jsonify(video_response), 200
 
 
@@ -83,8 +90,7 @@ def update_video(video_id):
     video.total_inventory = request_body["total_inventory"]
     db.session.commit()
 
-    response_body = {}
-    response_body["video"] = video.to_dict()
+    response_body = video.to_dict()
     return jsonify(response_body), 200
 
 

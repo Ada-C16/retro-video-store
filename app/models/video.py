@@ -7,24 +7,11 @@ class Video(db.Model):
     total_inventory = db.Column(db.Integer)
 
 
-def to_dict(self):
-    # if not self.completed_at:
-    #     self.completed_at = None
-    # if not self.completed_at:
-        # task_dict = {
-        #     "id": self.task_id,
-        #     "title": self.title,
-        #     "description": self.description,
-        #     "is_complete": False
-        # }
-        # if self.goal_id:
-        #     task_dict["goal_id"] = self.goal_id
-        # return task_dict
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "total_inventory": self.total_inventory
+        }
 
-    # elif self.completed_at:
-    return {
-        "id": self.id,
-        "title": self.title,
-        "release_date": self.release_date,
-        "total_inventory": self.inventory
-    }
+
