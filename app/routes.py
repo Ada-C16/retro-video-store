@@ -135,11 +135,10 @@ def handle_customers():
                     }
             return jsonify (new_customer_response), 201
 
-@customers_bp.route("/<customer_id>", methods=["GET"])
+@customers_bp.route("/<customer_id>", methods=["GET", "DELETE", "PUT"])
 def handle_customer(customer_id):
     if customer_id.isnumeric() != True:
         return("Invalid Request"), 400
-
     customer = Customer.query.get(customer_id)
     if customer is None:
         return {"message": f"Customer {customer_id} was not found"}, 404
@@ -151,3 +150,20 @@ def handle_customer(customer_id):
             "phone" : customer.phone,
             "postal_code" : customer.postal_code
         }, 200
+    elif request.method == "DELETE":
+        db.session.delete(customer)
+        db.session.commit()
+
+        return jsonify({"id": customer.id}), 200
+    elif request.method == "PUT":
+        form_data = request.get_json()
+        if "name" not in form_data:
+            return {"details" : "Invalid data"}, 400 
+    
+        customer.name = form_data["name"]
+        customer.phone = form_data["phone"]
+        customer.postal_code = form_data["postal_code"]
+
+        db.session.commit()
+
+        return {"name" : customer.name, "phone" : customer.phone, "postal_code": customer.postal_code}, 200
