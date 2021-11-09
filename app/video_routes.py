@@ -12,44 +12,15 @@ def handle_videos():
 
     elif request.method == 'POST':
         request_body = request.get_json()
-        
-        #checks for list if we want to post multiple videos
-        if isinstance(request_body, list):
-            for video in request_body:
-                if validate_video(video) != True:
-                    return validate_video(video)
-                
-                new_video = Video(
-                    title = video['title'],
-                    release_date = video['release_date'],
-                    total_inventory = video['total_inventory']
-                )
-                db.session.add(new_video)
-                return jsonify({"video": video.to_dict()} for video in request_body), 201
-        
-        else:
-            if validate_video(request_body) != True:
-                return validate_video(request_body)
-            
-            new_video = Video(
-                title = request_body['title'],
-                release_date = request_body['release_date'],
-                total_inventory = request_body['total_inventory']
-            )
-            db.session.add(new_video)
-            db.session.commit()
-            return jsonify(new_video.to_dict()), 201
+        return post_single_or_multiple_video(request_body)
 
 @videos_bp.route('/<id_num>', methods=['GET', 'PUT', 'DELETE'])
 def handle_video(id_num):
-    try:
-        id_num = int(id_num)
-    except ValueError:
-        return make_response(jsonify({"error": "Invalid ID"}), 400)
-
+    
+    if validate_video_id(id_num) != True:
+        return validate_video_id(id_num)
+    
     video = Video.query.get(id_num)
-    if not video:
-        return make_response(jsonify({"message": f"Video {id_num} was not found"}), 404)
     
     if request.method == 'GET':
         return jsonify(video.to_dict()), 200
@@ -62,7 +33,7 @@ def handle_video(id_num):
         for key, value in request_body.items():
             if key in Video.__table__.columns.keys():
                 setattr(video, key, value)
-                
+
         db.session.commit()
         return jsonify(video.to_dict()), 200
     
@@ -71,7 +42,7 @@ def handle_video(id_num):
         db.session.commit()
         return jsonify({"id": video.id}), 200
 
-
+# HELPER FUNCTIONS
 def validate_video(response_body):
     if not response_body:
         return make_response(jsonify({"error": "No data was sent"}), 400)
@@ -81,5 +52,45 @@ def validate_video(response_body):
         return make_response(jsonify({"details": "Request body must include release_date."}), 400)
     elif 'total_inventory' not in response_body:
         return make_response(jsonify({"details": "Request body must include total_inventory."}), 400)
+    else:
+        return True
+
+def create_video(data):
+    new_video = Video(
+        title = data['title'],
+        release_date = data['release_date'],
+        total_inventory = data['total_inventory']
+    )
+    return new_video
+
+def post_single_or_multiple_video(request_body):
+    #checks for list if we want to post multiple videos
+    if isinstance(request_body, list):
+        for video in request_body:
+            if validate_video(video) != True:
+                return validate_video(video)
+                
+            new_video = create_video(video)
+            db.session.add(new_video)
+            return jsonify({"video": video.to_dict()} for video in request_body), 201
+        
+    else:
+        if validate_video(request_body) != True:
+            return validate_video(request_body)
+            
+        new_video = create_video(request_body)
+        db.session.add(new_video)
+        db.session.commit()
+        return jsonify(new_video.to_dict()), 201
+
+def validate_video_id(id_num):
+    try:
+        id_num = int(id_num)
+    except ValueError:
+        return make_response(jsonify({"error": "Invalid ID"}), 400)
+
+    video = Video.query.get(id_num)
+    if not video:
+        return make_response(jsonify({"message": f"Video {id_num} was not found"}), 404)
     else:
         return True
