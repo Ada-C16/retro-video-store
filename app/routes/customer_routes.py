@@ -1,5 +1,6 @@
 from app import db
 from app.models.customer import Customer
+from app.models.video import Video
 from flask import Blueprint, jsonify, make_response, request, abort
 
 # BLUEPRINT
@@ -23,7 +24,7 @@ def get_customer_data_with_id(customer_id):
     return customer
 
 
-# GENERAL ROUTES
+# GENERAL CUSTOMER ROUTES
 @customers_bp.route("", methods=["GET"])
 def get_all_customers():
     customer_data = []
@@ -67,6 +68,7 @@ def get_one_customer(customer_id):
 
     return jsonify(customer.to_dict())
 
+
 @customers_bp.route("/<customer_id>", methods=["PUT"])
 def update_one_customer(customer_id):
     request_body = request.get_json()
@@ -101,3 +103,17 @@ def delete_customer(customer_id):
     db.session.commit()
 
     return make_response({"id": customer.id}, 200)
+
+
+# CUSTOMER RENTAL ROUTE
+@customers_bp.route("/<customer_id>/rentals", mehthods=["GET"])
+def get_videos_checked_out(customer_id):
+    customer = get_customer_data_with_id(customer_id)
+    
+    video_list = []
+    video_query = Video.query.filter_by(id=customer_id)
+
+    for video in video_query:
+        video_list.append(video.to_dict())
+    
+    return jsonify(video_list)
