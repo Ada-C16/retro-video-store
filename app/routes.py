@@ -8,19 +8,46 @@ import os
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos_bp", __name__, url_prefix="/videos")
 
-@videos_bp.route("", methods = ["GET"])
+@videos_bp.route("", methods = ["GET", "POST"])
 def handle_videos():
-    videos = Video.query.all()
-    videos_response = []
-    for video in videos:
-        videos_response.append({
-            "id": video.id,
-            "title": video.title,
-            "release_date": video.release_date,
-            "total_inventory": video.total_inventory
-        })
+    if request.method == "GET":
+        videos = Video.query.all()
+        videos_response = []
+        for video in videos:
+            videos_response.append({
+                "id": video.id,
+                "title": video.title,
+                "release_date": video.release_date,
+                "total_inventory": video.total_inventory
+            })
 
-    return jsonify(videos_response), 200
+        return jsonify(videos_response), 200
+    elif request.method == "POST":
+        request_body = request.get_json()
+        if "title" not in request_body:
+            return make_response(
+               {"details": "Request body must include title."}, 400
+            )
+        elif "release_date" not in request_body:
+            return make_response(
+               {"details": "Request body must include release_date."}, 400
+            )
+        elif "total_inventory" not in request_body:
+            return make_response(
+               {"details": "Request body must include total_inventory."}, 400
+            )
+        new_video = Video(
+            title = request_body["title"],
+            release_date = request_body["release_date"],
+            total_inventory = request_body["total_inventory"]
+        )
+        db.session.add(new_video)
+        db.session.commit()
+        return make_response(
+            f"Book {new_video.title} successfully created", 201
+        )
+            
+
 
 @videos_bp.route("/<video_id>", methods = ["GET"])
 def handle_video(video_id):
@@ -34,3 +61,4 @@ def handle_video(video_id):
         "release_date": video.release_date,
         "total_inventory": video.total_inventory
     }
+
