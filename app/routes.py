@@ -67,6 +67,10 @@ def handle_video(video_id):
         }
     elif request.method == "PUT":
         request_body = request.get_json()
+        if "title" not in request_body or "release_date" not in request_body or "total_inventory" not in request_body:
+            return make_response(
+               {"message": "Invalid data"}, 400
+            )
         video.title = request_body["title"]
         video.release_date = request_body["release_date"]
         video.total_inventory = request_body["total_inventory"]
@@ -76,5 +80,9 @@ def handle_video(video_id):
     elif request.method == "DELETE":
         db.session.delete(video)
         db.session.commit()
-        return make_response({"details": f'Video {video.video_id} successfully deleted'})
+        return make_response({ 
+            "id": video.id,
+            "title": video.title,
+            "release_date": video.release_date,
+            "total_inventory": video.total_inventory}, 200)
 
