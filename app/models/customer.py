@@ -26,6 +26,8 @@ class Customer(db.Model):
         for input_type in types:
             if type(dict.get(input_type)) != types[input_type]:
                 return False
+            if not dict.get(input_type):
+                return False
         return True
 
     @classmethod

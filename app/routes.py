@@ -27,3 +27,21 @@ def post_customers():
     db.session.commit()
     return {"id": new_customer.customer_id}, 201
 
+@customers_bp.route("/<customer_id>", methods=["GET"], strict_slashes=False)
+def get_customer(customer_id):
+    customer_id = int(customer_id)
+    customer = Customer.query.get_or_404(customer_id)
+    return customer.to_dict(), 200
+
+@customers_bp.route("/<customer_id>", methods=["PUT"], strict_slashes=False)
+def update_customer(customer_id):
+    customer_id = int(customer_id)
+    customer = Customer.query.get_or_404(customer_id)
+    response_body = request.get_json()
+    if not Customer.is_data_valid(response_body):
+        return {"details": "invalid data"}, 404
+    customer.name = response_body["name"]
+    customer.postal_code = response_body["postal_code"]
+    customer.phone_number = response_body["phone"]
+    db.session.commit()
+    return customer.to_dict(), 200
