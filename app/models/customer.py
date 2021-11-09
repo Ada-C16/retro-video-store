@@ -8,7 +8,8 @@ class Customer(db.Model):
     phone = db.Column(db.String)
     register_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     videos_checked_out = db.Column(db.Integer)
-
+    rentals = db.relationship("Rental", backref="customer")
+    
     def customer_dict(self):
         return {
             "id": self.customer_id,
