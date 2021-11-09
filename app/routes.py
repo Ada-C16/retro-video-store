@@ -2,6 +2,7 @@ from app import db
 from flask import Blueprint
 from app.models.customer import Customer
 from app.models.video import Video
+from app.models.rental import Rental
 from flask import Blueprint, jsonify, request, make_response
 from datetime import datetime
 
@@ -114,26 +115,52 @@ def delete_customer(id):
 # ----------- RENTALS ----------
 # --------------------------------
 
-
-
-
 # POST /rentals/check-out
 
-@rentals_bp.route("/check_out", methods=["POST"])
-def checkout_video():
+# @rentals_bp.route("/check_out", methods=["POST"])
+# def checkout_video():
 
 
 
 # POST /rentals/check-in
 
-@rentals_bp.route("/check_in", methods=["POST"])
-def checkin_video():
+# @rentals_bp.route("/check_in", methods=["POST"])
+# def checkin_video():
     
     
-# GET /customers/<id>/rentals  FOR A SPECIFIC CUSTOMER, GET ALL VIDEO RENTALS
+# GET /customers/<id>/rentals  
+# FOR A SPECIFIC CUSTOMER, GET ALL VIDEO RENTALS
 @customers_bp.route("/<id>/rentals", methods=["GET"])
+def rentals_by_specific_customer():
+    
+    #get the customer
+    customer = Customer.query.get(id)
+    if customer is None:
+        # return jsonify({"message": (f"Customer {id} was not found")}), 404
+        return 404
+    
+    #get all the rentals and filter for that customer
+    rentals = ...
+    
+    #make formated list of rentals for response
+    
+  
 
 
 
-# GET /videos/<id>/rentals  FOR A SPECIFIC VIDEO, GET ALL CUSTOMERS CURRENTLY RENTING
-@videos_bp.route("/<id>/rentals", methods=["GET"])
+# GET /videos/<id>/rentals  
+# FOR A SPECIFIC VIDEO, GET ALL CUSTOMERS CURRENTLY RENTING
+# @videos_bp.route("/<id>/rentals", methods=["GET"])
+def rentals_of_specific_video():
+   
+    #get the specific video
+    video = Video.query.get(id)
+    if video is None:
+        # return jsonify({"message": (f"Customer {id} was not found")}), 404
+        return 404
+    
+    #get all the rentals for that specific video
+    rentals = ...
+    
+    # find and make a list of all the customers for all the returned rentals of the specific video
+    customers = []
