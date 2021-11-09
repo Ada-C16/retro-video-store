@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request, make_response
 from app import db
 from app.models.rental import Rental
 from app.models.customer import Customer
-import datetime
+from datetime import datetime
 import requests
 import os 
 
@@ -46,7 +46,7 @@ def handle_customers():
             name=request_body["name"],
             postal_code=request_body["postal_code"],
             phone=request_body["phone"],
-            registered_at=datetime.datetime.now()
+            registered_at=datetime.now()
         )
         db.session.add(new_customer)
         db.session.commit()
