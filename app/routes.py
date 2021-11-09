@@ -23,7 +23,13 @@ def handle_videos():
 
 @video_bp.route('/<video_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_one_video(video_id):
-
+    # Even though the end-user may type a number as an argument for video_id, its data type isn't automatically int.
+    # The try/except clause coerces the typed argument to be an int. If it is a non-numeric value, then a ValueError will be raised.
+    # Alternatively, can also use isnumeric(). This will return a boolean, so no need for try/except. An if/else clause will suffice.
+    try:
+        id = int(video_id)
+    except ValueError:
+        return jsonify({"details": "Invalid data"}), 400
 
     video = Video.query.get(video_id)
 
@@ -33,7 +39,7 @@ def handle_one_video(video_id):
     one_video = {"title": video.title,
                 "id": video.id,
                 "total_inventory": video.total_inventory}
-    
+
     if request.method == 'GET':
         return one_video
     elif request.method == 'PUT':
