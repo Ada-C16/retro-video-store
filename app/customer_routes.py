@@ -17,9 +17,9 @@ def get_customers():
 
 @customers_bp.route("/<customer_id>",methods=["GET"])
 def get_customer_by_id(customer_id):
-    customer = Customer.query.get_or_404(customer_id)
+    customer = Customer.query.get(customer_id)
     if not customer:
-        return make_response(jsonify({f"message": "Customer {customer_id} was not found"}),404)
+        return make_response(jsonify({'message': f'Customer {customer_id} was not found'}),404)
     return customer.to_dict(),200
 
 @customers_bp.route("",methods=["POST"])
