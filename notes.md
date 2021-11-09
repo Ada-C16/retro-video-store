@@ -1,3 +1,88 @@
+# Wave 02
+ 
+## Models
+`Rental` model
+`customer_id` Foreign key (int)
+`video_id` foreign key (int)
+`due_date` 7 days from the current date (guessing DateTime)
+`status` checked in / checked out
+
+## Routes
+1. `POST /rentals/check-out`
+   - Sets the due date of the rental to 7 days from the current date
+   - Required body parameters:
+     - `customer_id` | integer | ID of the customer attempting to check out this video
+     - `video_id` | integer | ID of the video to be checked out
+
+   Success reponse: (200)
+     {
+       "customer_id": 122581016,
+       "video_id": 235040983,
+       "due_date": "2020-06-31",
+       "videos_checked_out_count": 2,
+       "available_inventory": 5
+     }
+
+   If customer not found: 404
+   If video not found: 404
+   If video does not have any inventory: 400
+
+2. `POST /rentals/check-in`
+   - either delete the rental or change it's status to `"checked_in"`.
+   - required body parameters 
+    `customer_id` | integer | ID of the customer attempting to check out this video
+    `video_id` | integer | ID of the video to be checked out
+
+  - Response: 200
+    {
+    "customer_id": 122581016,
+    "video_id": 277419103,
+    "videos_checked_out_count": 1,
+    "available_inventory": 6
+    }
+
+3. `GET /customers/<customer_id>/rentals`
+   List the videos a customer currently has checked out.
+
+   Typical success response is a list of videos with the due date:
+
+  Success: status: `200` 
+
+  [
+      {
+          "release_date": "Wed, 01 Jan 1958 00:00:00 GMT",
+          "title": "Vertigo",
+          "due_date": "Thu, 13 May 2021 19:27:47 GMT",
+      },
+      {
+          "release_date": "Wed, 01 Jan 1941 00:00:00 GMT",
+          "title": "Citizen Kane",
+          "due_date": "Thu, 13 May 2021 19:28:00 GMT",
+      }
+  ]
+
+4. `GET /videos/<id>/rentals`
+
+  List the customers who _currently_ have the video checked out
+
+  Success: 200
+  [
+      {
+          "due_date": "Thu, 13 May 2021 21:36:38 GMT",
+          "name": "Edith Wong",
+          "phone": "(555) 555-5555",
+          "postal_code": "99999",
+      },
+      {
+          "due_date": "Thu, 13 May 2021 21:36:47 GMT",
+          "name": "Ricarda Mowery",
+          "phone": "(555) 555-5555",
+          "postal_code": "99999",
+      }
+  ]
+
+
+
 # Wave 01
 
 ## Models
@@ -6,6 +91,7 @@
   - Zip code (int)
   - Phone number (string)
   - Register_at datetime (when customer was added to the system)
+  - 
 
 - Methods:
   - To dict
