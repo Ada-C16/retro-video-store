@@ -89,3 +89,21 @@ def update_single_video(video_id):
     except AttributeError:
         response_body = {'message': f'Video {video_id} was not found'}
         return make_response(jsonify(response_body), 404)
+
+@video_bp.route('/<video_id>', methods=['DELETE'])
+def delete_single_video(video_id):
+    if not video_id.isnumeric():
+        response_body = {
+            'details': 'Invalid video id'
+        }
+        return make_response(jsonify(response_body), 400)
+
+    video_to_delete = Video.query.get(video_id)
+    if not video_to_delete:
+        response_body = {'message': f'Video {video_id} was not found'}
+        return make_response(jsonify(response_body), 404)
+    db.session.delete(video_to_delete)
+    db.session.commit()
+    response_body = video_to_delete.to_dict()
+    return make_response(jsonify(response_body), 200)
+    
