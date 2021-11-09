@@ -13,3 +13,10 @@ class Video(db.Model):
             'release_date': self.release_date,
             'total_inventory': self.total_inventory
         }
+def video_from_json(request_body):
+    video = Video(
+        title=request_body['title'],
+        release_date=request_body['release_date'],
+        total_inventory=request_body['total_inventory']
+    )
+    return video
