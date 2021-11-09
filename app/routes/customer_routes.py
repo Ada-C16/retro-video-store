@@ -72,9 +72,22 @@ def update_one_customer(customer_id):
     request_body = request.get_json()
     customer = get_customer_data_with_id(customer_id)
 
+    if request_body == None:
+        return make_response("You much include name, phone and postcode in order to add customer data.", 404)
+
+    if "name" not in request_body:
+        return make_response({"details":"Request body must include name."}, 400)
+    elif "phone" not in request_body:
+        return make_response({"details":"Request body must include phone."}, 400)
+    elif "postal_code" not in request_body:
+        return make_response({"details":"Request body must include postal_code."}, 400)
+
+
     customer.name = request_body["name"]
     customer.phone = request_body["phone"]
     customer.postal_code = request_body["postal_code"]
+
+    db.session.commit()
 
     return jsonify(customer.to_dict())
 
