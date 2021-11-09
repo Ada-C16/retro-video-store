@@ -26,3 +26,15 @@ def get_video(video_id):
         return jsonify({"message": "Video 1 was not found"}), 404
     response_body = video.to_dict()
     return jsonify(response_body)
+
+# @video_bp.route("", methods=["POST"])
+# def create_video():
+#     request_body = request.get_json()
+#     if "title" not in request_body or "release_date" not in request_body or "total_inventory" not in request_body:
+#         response_body = {}
+#         if "title" not in request_body:
+#             response_body["details"] = "Request body must include title."
+#         elif "release_date" not in request_body:
+#             response_body["details"] = "Request body must include release_date."
+#         elif "t"]
+#         return jsonify()
