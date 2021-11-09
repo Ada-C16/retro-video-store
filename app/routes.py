@@ -51,7 +51,10 @@ def handle_videos():
 
 @videos_bp.route("/<video_id>", methods = ["GET"])
 def handle_video(video_id):
-    video_id = int(video_id)
+    try:
+        video_id = int(video_id)
+    except ValueError:
+        return {"Error": "Id must be numeric"}, 400
     video = Video.query.get(video_id)
     if not video:
         return make_response({"message": f"Video {video_id} was not found"}, 404)
