@@ -2,24 +2,20 @@ from flask import current_app
 from app import db
 
 class Customer(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    postal_code = db.Column(db.Integer)
+    postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime, nullable=True)
 
 
     def to_dict(self):
-        # self.is_complete = False if not self.completed_at else True
-
-        # self.is_complete
-
         customer_dict = {
-            "id": self.id,
+            "id": self.customer_id,
             "name": self.name,
             "postal_code": self.postal_code,
             "phone": self.phone,
-            "registered_at": self.register_at,
+            "registered_at": self.registered_at,
             }
         # example for how the conditional to change the form of the dictionary is
         # if self.goal_id is not None:
