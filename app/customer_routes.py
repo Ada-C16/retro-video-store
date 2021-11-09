@@ -83,4 +83,4 @@ def customer_delete(customer_id):
     db.session.delete(customer)
     db.session.commit()
 
-    return jsonify({"id": {customer_id}})
+    return jsonify({"id": f"{customer.customer_id}"})
