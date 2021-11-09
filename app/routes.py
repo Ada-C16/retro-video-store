@@ -47,7 +47,7 @@ def post_all_videos():
     db.session.commit()
     return jsonify(new_video.to_dict()), 201
 
-#WV1 Invalid Video ID, Get Video Not Found, Get Video
+#WV1: Invalid Video ID, Get Video Not Found, Get Video
 @videos_bp.route("/<video_id>", methods=["GET"])
 def get_one_video(video_id):
     try:
@@ -60,6 +60,36 @@ def get_one_video(video_id):
     else:
         return jsonify(video.to_dict()), 200
 
+#WV1: Update Video, Update Video Not Found, Invalid Data
+@videos_bp.route("/<video_id>", methods=["PUT"])
+def update_one_video(video_id):
+    video_id = int(video_id)
+    video = Video.query.get(video_id)
+    input_data = request.get_json()
+    if video is None:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
+    try:
+        video.title = input_data["title"]
+        video.release_date = input_data["release_date"]
+        video.total_inventory = input_data["total_inventory"]
+    except KeyError:
+        if "title" not in input_data:
+            return {}, 400
+        if "release_date" not in input_data:
+            return {}, 400
+        if "total_inventory" not in input_data:
+            return {}, 400
+    db.session.commit()
+    return jsonify(video.to_dict()), 200
 
-
-
+#WV1: Delete Video, Delete Video Not Found
+@videos_bp.route("/<video_id>", methods=["DELETE"])
+def delete_one_video(video_id):
+    video_id = int(video_id)
+    video = Video.query.get(video_id)
+    if video is None:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
+    else:
+        db.session.delete(video)
+        db.session.commit()
+        return {"id": video_id}, 200
