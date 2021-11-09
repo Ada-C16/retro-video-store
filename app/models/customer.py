@@ -6,3 +6,13 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime)
+    
+    def to_json(self):
+
+        return {
+            "id": self.id,
+            "name": self.name,
+            "postal_code": self.postal_code,
+            "phone": self.phone,
+            "registered_at": self.registered_at
+          }

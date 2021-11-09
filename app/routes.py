@@ -9,6 +9,7 @@ from datetime import datetime
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
+
 # --------------------------------
 # ----------- CUSTOMERS ----------
 # --------------------------------
@@ -19,13 +20,15 @@ videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 def get_all_customers():
     customers = Customer.query.all()
     customers_response = []
+    
     for customer in customers:
-        customers_response.append({
-        "id": customer.id,
-        "name": customer.name,
-        "registered_at": customer.registered_at, 
-        "postal_code": customer.postal_code, 
-        "phone": customer.phone})
+        customers_response.append(customer.to_json())
+    #     customers_response.append({
+    #     "id": customer.id,
+    #     "name": customer.name,
+    #     "registered_at": customer.registered_at, 
+    #     "postal_code": customer.postal_code, 
+    #     "phone": customer.phone})
     return jsonify(customers_response), 200
 
 
@@ -43,11 +46,13 @@ def get_customer(id):
     #     return 400
     
     else:
-        jsonify(
-            {"id": customer.id,
-             "name": customer.name,
-             "registered_at": customer.registered_at,"postal_code": customer.postal_code,
-             "phone": customer.phone}), 200
+        jsonify(customer.to_json()), 200
+        
+        # jsonify(
+        #     {"id": customer.id,
+        #      "name": customer.name,
+        #      "registered_at": customer.registered_at,"postal_code": customer.postal_code,
+        #      "phone": customer.phone}), 200
 
 
 
@@ -87,10 +92,11 @@ def update_customer(id):
     customer.phone=request_body["phone"] 
     
     db.session.commit()
-    return jsonify({
-    "name": customer.name,
-    "postal_code": customer.postal_code,
-    "phone": customer.phone}), 200
+    return jsonify(customer.to_json()), 200
+    # return jsonify({
+    # "name": customer.name,
+    # "postal_code": customer.postal_code,
+    # "phone": customer.phone}), 200
 
 
 # DELETE CUSTOMER
