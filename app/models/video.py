@@ -1,5 +1,4 @@
 from app import db
-from flask import request
 
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -9,12 +8,12 @@ class Video(db.Model):
 
     # Return response body
     def get_video_dict(self):
-            return {
-                "id": self.id,
-                "title": self.title,
-                "total_inventory": self.total_inventory
-            }
+        return {
+            "id": self.id,
+            "title": self.title,
+            "total_inventory": self.total_inventory
+        }
 
     # Guard Clause 
-    def video_guard_clause(self):
-        pass
+    
+

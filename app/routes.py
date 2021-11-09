@@ -55,6 +55,9 @@ def handle_videos():
 # GET, PUT, DELETE ONE VIDEO AT A TIME
 @videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE"])
 def handle_one_video_at_a_time(video_id):
+    if not video_id.isnumeric():
+        return jsonify(None), 400
+
     video = Video.query.get(video_id)
 
     if video is None:
@@ -68,14 +71,14 @@ def handle_one_video_at_a_time(video_id):
 
         if "title" not in video_update_request_body:
             return jsonify(None), 400
-
+        
         video.title = video_update_request_body["title"],
         video.release_date = video_update_request_body["release_date"],
         video.total_inventory = video_update_request_body["total_inventory"]
             
         db.session.commit()
 
-        updated_video_response = {video.get_video_dict()}
+        updated_video_response = video.get_video_dict()
 
         return jsonify(updated_video_response), 200
 
@@ -87,6 +90,7 @@ def handle_one_video_at_a_time(video_id):
         video_delete_response = video.get_video_dict()
         
         print("********", video_delete_response), 200
+        return jsonify(video_delete_response), 200
 
 # CUSTOMER ROUTES
 @customers_bp.route("", methods=["GET", "POST"])
@@ -134,17 +138,23 @@ def handle_customers():
         if customers_response == []:
             return jsonify(customers_response), 200
 
+        print("**************")
+        print(customers_response)
         return jsonify(customers_response), 200
     
 # GET, PUT, DELETE ONE CUSTOMER AT A TIME
 @customers_bp.route("/<customer_id>", methods=["GET", "PUT", "DELETE"])
 def handle_one_customer_at_a_time(customer_id):
+    if not customer_id.isnumeric():
+        return jsonify(None), 400
+
     customer = Customer.query.get(customer_id)
+    
     if customer is None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
     
     if request.method == "GET":
-        return jsonify(customer.get_customer_dict()), 200
+        return jsonify(customer.get_cust_dict()), 200 
 
     elif request.method == "PUT":
         put_request_body = request.get_json()
@@ -153,24 +163,22 @@ def handle_one_customer_at_a_time(customer_id):
             return jsonify(None), 400
 
         customer.name = put_request_body["name"]
-        customer.postal_code = put_request_body["postal_code"]
         customer.phone = put_request_body["phone"]
+        customer.postal_code = put_request_body["postal_code"]
 
         db.session.commit()
 
         updated_customer_response = {
-            "name": f"Updated ${customer.name}",
-            "phone": f"Updated ${customer.phone}",
-            "postal_code": f"Updated ${customer.postal_code}"
+            "name": customer.name,
+            "phone": customer.phone,
+            "postal_code": customer.postal_code
         }
 
-        return jsonify(updated_customer_response),  200
+        return jsonify(updated_customer_response), 200
 
     elif request.method == "DELETE":
-
         db.session.delete(customer)
         db.session.commit()
-
 
         if customer == []:
             cust_invalid_delete_response = {"message": f"Customer {customer_id} was not found"}
