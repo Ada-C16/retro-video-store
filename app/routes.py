@@ -8,3 +8,17 @@ import os
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos_bp", __name__, url_prefix="/videos")
 
+@videos_bp.route("", methods = ["GET"])
+def handle_videos():
+    videos = Video.query.all()
+    videos_response = []
+    for video in videos:
+        videos_response.append({
+            "id": video.id,
+            "title": video.title,
+            "release_date": video.release_date,
+            "total_inventory": video.total_inventory
+        })
+
+    return jsonify(videos_response), 200
+
