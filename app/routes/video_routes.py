@@ -36,13 +36,13 @@ def handle_videos():
                 "total_inventory": video.total_inventory
             })
 
-        return jsonify(tasks_response), 200
+        return jsonify(videos_response), 200
 
 
     elif request.method == "POST":
         request_body = request.get_json()
         
-        if "title" not in request_body or "total_inventory" not in request_body:
+        if "title" not in request_body or "release_date" not in request_body or "total_inventory" not in request_body:
 
             return jsonify({
                 "details": "Invalid data"
@@ -54,121 +54,71 @@ def handle_videos():
         db.session.add(new_video)
         db.session.commit()
        
-       #START AGAIN HEREEEEE
-        # return jsonify(
-        #     {
-        #         "task": {
-        #         "id": new_task.task_id,
-        #         "title": new_task.title,
-        #         "description": new_task.description,
-        #         "is_complete": new_task.completed_at != None  
+       
+        return jsonify(
+            {
+                "id": new_video.id
+            }), 201
+
+@videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE"])
+def handle_video(video_id):
+    video = Video.query.get(video_id)
+
+    if video is None:
+        return make_response(f"Video {video_id} not found", 404)
+
+    if request.method == "GET":
+        # if video.goal_id:
+        #     return {
+        #     "task": {
+        #         "id": video.id,
+        #         "goal_id": task.goal_id,
+        #         "title": task.title,
+        #         "description": task.description,
+        #         "is_complete": task.completed_at != None  
         #         }
-        #     }), 201
-
-# @tasks_bp.route("/<task_id>", methods=["GET", "PUT", "DELETE"])
-# def handle_task(task_id):
-#     task = Task.query.get(task_id)
-
-#     if task is None:
-#         return make_response(f"Task {task_id} not found", 404)
-
-#     if request.method == "GET":
-#         if task.goal_id:
-#             return {
-#             "task": {
-#                 "id": task.task_id,
-#                 "goal_id": task.goal_id,
-#                 "title": task.title,
-#                 "description": task.description,
-#                 "is_complete": task.completed_at != None  
-#                 }
-#             }
-#         else:
-#             return {
-#                 "task": {
-#                     "id": task.task_id,
-#                     "title": task.title,
-#                     "description": task.description,
-#                     "is_complete": task.completed_at != None  
-#                     }
-#                 }
+        #     }
+        # else:
+        return jsonify({
+            
+                "id": video.id,
+                "title": video.title,
+                "release_date": video.release_date,
+                "total_inventory": video.total_inventory   
+                
+            }), 200
     
-#     elif request.method == "PUT":
-#         form_data = request.get_json()
+    elif request.method == "PUT":
+        form_data = request.get_json()
 
-#         task.title = form_data["title"]
-#         task.description = form_data["description"]
+        if "title" not in form_data or "release_date" not in form_data or "total_inventory" not in form_data:
 
-#         db.session.commit()
+            return jsonify({
+                "details": "Invalid data"
+            }), 400
 
-#         return jsonify({
-#         "task": {
-#             "id": task.task_id,
-#             "title": task.title,
-#             "description": task.description,
-#             "is_complete": task.completed_at != None  
-#             }
-#         })
+        #add code for edge case where inputs all there but one or more=invalid, for example toatal inventory is not an integer
 
-#     elif request.method == "DELETE":
-#         db.session.delete(task)
-#         db.session.commit()
-#         return jsonify({
-#         "details": (f'Task {task.task_id} "{task.title}" successfully deleted')
-#         })
+        video.title = form_data["title"]
+        video.release_date = form_data["release_date"]
+        video.total_inventory = form_data["total_inventory"]
 
+        db.session.commit()
 
-# @tasks_bp.route("/<task_id>/mark_complete", methods=["PATCH"])
-# def handle_mark_complete(task_id):
-#     task = Task.query.get(task_id)
-
-#     if task is None:
-#         return make_response(f"Task {task_id} not found", 404)
-    
-#     if request.method == "PATCH":
-#         task.completed_at = datetime.now()
+        return jsonify({
         
-#         db.session.commit()
+            "id": video.id,
+            "title": video.title,
+            "release_date": video.release_date,
+            "total_inventory": video.total_inventory  
+            
+        })
 
-#         SLACK_API_KEY = os.environ.get("SLACK_API_KEY")
+    elif request.method == "DELETE":
+        db.session.delete(video)
+        db.session.commit()
+        return jsonify({
+            "details": (f'Video {video.id} "{video.title}" successfully deleted')
+            })
 
-#         header={"Authorization": SLACK_API_KEY} 
 
-#         path = "https://slack.com/api/chat.postMessage"
-
-#         query_params= {
-#             "channel": "slack-api-test-channel",
-#             "text": f"Someone just completed the task {task.title}"
-#         }
-
-#         requests.post(path, data=query_params, headers=header)  
-
-#         return jsonify({
-#         "task": {
-#             "id": task.task_id,
-#             "title": task.title,
-#             "description": task.description,
-#             "is_complete": task.completed_at != None
-#             }
-#         })
-
-# @tasks_bp.route("/<task_id>/mark_incomplete", methods=["PATCH"])
-# def handle_mark_incomplete(task_id):
-#     task = Task.query.get(task_id)
-
-#     if task is None:
-#         return make_response(f"Task {task_id} not found", 404)
-    
-#     if request.method == "PATCH":
-#         task.completed_at = None
-        
-#         db.session.commit()
-
-#         return jsonify({
-#         "task": {
-#             "id": task.task_id,
-#             "title": task.title,
-#             "description": task.description,
-#             "is_complete": task.completed_at != None
-#             }
-#         })
