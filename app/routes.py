@@ -28,14 +28,9 @@ def get_model_and_label():
 def create_item():
     model = g.model
     req = request.get_json()
-
-    try:
-        new_item = model.new_from_dict(req)
-    except KeyError:
-        abort(400)
+    new_item = model.new_from_dict(req)
 
     db.session.add(new_item)
-
     db.session.commit()
 
     return jsonify(new_item.to_dict()), 201
@@ -57,7 +52,21 @@ def read_item(id):
     item = model.get_by_id(id)
     return jsonify(item.to_dict()), 200
 
-# @customer_bp.route("/<id>", methods=["DELETE"])
-# @video_bp.route("/<id>", methods=["DELETE"])
-# def delete_item():
-#     model = g.model
+@customer_bp.route("/<id>", methods=["DELETE"])
+@video_bp.route("/<id>", methods=["DELETE"])
+def delete_item(id):
+    model = g.model
+    item = model.get_by_id(id)
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify(item.to_dict()), 200
+
+@customer_bp.route("/<id>", methods=["PUT"])
+@video_bp.route("/<id>", methods=["PUT"])
+def update_item(id):
+    model = g.model
+    item = model.get_by_id(id)
+    req = request.get_json()
+    item = item.update(req)
+    db.session.commit()
+    return jsonify(item.to_dict()), 200

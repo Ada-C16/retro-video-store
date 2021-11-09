@@ -18,17 +18,28 @@ class Customer(db.Model):
             "phone": self.phone
         }
 
+    def update(self, customer_dict):
+        self.validate_input(customer_dict)
+        self.name = customer_dict["name"]
+        self.postal_code = customer_dict["postal_code"]
+        self.phone = customer_dict["phone"]
+        return self
+
     @classmethod
-    def new_from_dict(cls, customer_dict):
-        "This method creates a new customer object from a dictionary of attributes"
-
-
+    def validate_input(cls,customer_dict):
         if "name" not in customer_dict:
             abort(make_response({"details": "Request body must include name."}, 400))
         if "postal_code" not in customer_dict:
             abort(make_response({"details": "Request body must include postal_code."}, 400))
         if "phone" not in customer_dict:
             abort(make_response({"details": "Request body must include phone."}, 400))
+
+
+    @classmethod
+    def new_from_dict(cls, customer_dict):
+        "This method creates a new customer object from a dictionary of attributes"
+        
+        cls.validate_input(customer_dict)
         
         return cls(
             name=customer_dict["name"],
