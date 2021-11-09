@@ -2,13 +2,16 @@ from flask import abort, Blueprint, jsonify, make_response, request
 from app import db
 from app.models.video import Video
 from app.models.customer import Customer
+from app.models.rental import Rental
 from dotenv import load_dotenv
 import os
 from sqlalchemy import desc 
 
 
+
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos_bp", __name__, url_prefix="/videos")
+rentals_bp = Blueprint("rentals_bp", __name__, url_prefix="/rentals")
 
 
 def validate_id_int(id):
