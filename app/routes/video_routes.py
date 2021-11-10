@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request, abort
 from flask.helpers import make_response
 from app.models.video import Video
 from app import db
+from sqlalchemy.exc import DataError
 
 # helper functions
 def validate_id(id, id_type):
@@ -17,6 +18,17 @@ def get_video_from_id(id):
         abort(make_response({'message': f'Video {id} was not found'}, 404))
     return selected_video
 
+def confirm_all_video_fields_present(request_body):
+    missing_fields = []
+    if 'title' not in request_body:
+        missing_fields.append('Request body must include title.')
+    if 'release_date' not in request_body:
+        missing_fields.append('Request body must include release_date.')
+    if 'total_inventory' not in request_body:
+        missing_fields.append('Request body must include total_inventory.')
+    if missing_fields:
+        abort(make_response({'details': missing_fields}, 400))
+
 videos_bp = Blueprint('videos', __name__, url_prefix='/videos')
 
 @videos_bp.route('', methods=['GET'], strict_slashes=False)
@@ -28,22 +40,18 @@ def get_all_videos():
 @videos_bp.route('', methods=['POST'], strict_slashes=False)
 def create_video():
     request_body = request.get_json()
-    missing_fields = []
-    if 'title' not in request_body:
-        missing_fields.append('Request body must include title.')
-    if 'release_date' not in request_body:
-        missing_fields.append('Request body must include release_date.')
-    if 'total_inventory' not in request_body:
-        missing_fields.append('Request body must include total_inventory.')
-    if missing_fields:
-        return make_response({'details': missing_fields}, 400)
-    new_video = Video(
-        title = request_body['title'],
-        release_date = request_body['release_date'],
-        total_inventory = request_body['total_inventory']
-    )
-    db.session.add(new_video)
-    db.session.commit()
+    confirm_all_video_fields_present(request_body)
+    try:
+        new_video = Video(
+            title = request_body['title'],
+            release_date = request_body['release_date'],
+            total_inventory = request_body['total_inventory']
+        )
+        db.session.add(new_video)
+        db.session.commit()
+    except DataError:
+        db.session.rollback()
+        return make_response({'error':'Invalid data type in request body'}, 400)
     return make_response(new_video.to_dict(), 201)
 
 # Individual video routes
@@ -57,13 +65,15 @@ def get_video(video_id):
 def update_video(video_id):
     video = get_video_from_id(video_id)
     request_body = request.get_json()
-    # check if request body is valid
-    if 'title' not in request_body or 'release_date' not in request_body or 'total_inventory' not in request_body:
-        abort(make_response(jsonify('Bad request'), 400))
+    confirm_all_video_fields_present(request_body)
     video.title = request_body['title']
     video.release_date = request_body['release_date']
     video.total_inventory = request_body['total_inventory']
-    db.session.commit()
+    try:
+        db.session.commit()
+    except DataError:
+        db.session.rollback()
+        return make_response({'error':'Invalid data type in request body'}, 400)
     return make_response(video.to_dict(), 200)
 
 @videos_bp.route('<video_id>', methods=['DELETE'], strict_slashes=False)
