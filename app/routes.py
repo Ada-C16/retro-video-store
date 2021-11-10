@@ -55,6 +55,61 @@ def get_all_videos():
     
     return jsonify(videos_response), 200
 
+@videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE", "PATCH"])
+def CRUD_one_video(video_id):
+# this is a guard clause to make sure a video_id is an int, or can be converted to an int    
+    try:
+        int(video_id)
+    except ValueError:
+        return make_response({"details": "video_id must be valid integer"}, 400)
+    video = Video.query.get(video_id) #either get Video back or None, video here is an object
+    if video is None:
+        return make_response({"message": f"Video {video_id} was not found"}, 404)
+# returning the object's info in the desired data structure format    
+    if request.method == "GET":        
+        return make_response({"id": video.id,
+                        "title": video.title,
+                        "release_date": video.release_date,
+                        "total_inventory": video.total_inventory}, 200)
+# PUT will replace the entire record with an entire new record, all fields
+    elif request.method == "PUT":
+    # form data is a local variable to hold the body of the HTTP request
+        form_data = request.get_json()
+# checking that form_data has all required fields
+        if "title" not in form_data or "release_date" not in form_data \
+        or "total_inventory" not in form_data:
+            return make_response({"details": "all fields must be present"}, 400)
+
+    # reassigning attributes of the video object using the dict values that came over 
+    # in the request body
+        video.title = form_data["title"]
+        video.release_date = form_data["release_date"]
+        video.total_inventory = form_data["total_inventory"]
+
+        db.session.commit()
+
+        return make_response({"id": video.id,
+                        "title": video.title,
+                        "release_date": video.release_date,
+                        "total_inventory": video.total_inventory}, 200)
+# PATCH will change just one part of the record, not the whole record
+# not required but adding a patch for total_inventory on 11.9.21
+    elif request.method == "PATCH":
+        form_data = request.get_json()
+        if "total_inventory" in form_data:
+            video.total_inventory = form_data["total_inventory"]
+        db.session.commit()
+        return make_response({"video": {"id": video.id,
+                        "title": video.title,
+                        "release_date": video.release_date,
+                        "total_inventory": video.total_inventory}}, 200)
+    elif request.method == "DELETE":
+        db.session.delete(video)
+        db.session.commit()
+        return make_response({'id': video.id}, 200)
+        
+
+# begin endpoints/ functions for Customer Model
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 
 def make_customer_dict(customer): 
@@ -87,7 +142,7 @@ def handle_customers():
             return {"details": "Request body must include phone."}, 400
         elif "name" not in request_body:
             return {"details": "Request body must include name."}, 400
-        # if all required values are given in the request body, return the task info with 201
+        # if all required values are given in the request body, return the video info with 201
         else: 
             new_customer = Customer(
             name=request_body["name"],
