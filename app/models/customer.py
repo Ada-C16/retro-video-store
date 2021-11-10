@@ -5,4 +5,4 @@ class Customer(db.Model):
     name = db.Column(db.String)
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
-    register_at = db.Column(db.DateTime, nullable = True)
+    registered_at = db.Column(db.DateTime, nullable = True)
