@@ -4,11 +4,13 @@ from app.models.video import Video
 from app import db
 from datetime import date
 import requests
-import os
 from dotenv import load_dotenv
 
+# Blueprints
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
+
+#Videos routes
 
 @videos_bp.route("", methods=["GET"])
 def get_all_videos():
@@ -20,16 +22,59 @@ def get_all_videos():
     
     return make_response(jsonify(video_list), 200)
 
-# Customers Routes
-def validate_customer_data(request_body):
-    required_attributes = ["postal_code", "name", "phone"]
 
-    for attribute in required_attributes:
-        if attribute not in request_body:
-            abort(make_response({"details": f"Request body must include {attribute}."}, 400))
+@videos_bp.route("/<video_id>", methods=["GET"])
+def get_one_video(video_id):
 
-    return request_body
+    video_id = is_id_valid(video_id)
+    video = Video.query.get(video_id)
 
+    if not video:
+        return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404) 
+    else:
+        return make_response(jsonify(video.to_dict()), 200)
+
+@videos_bp.route("/<video_id>", methods=["DELETE"])
+def delete_one_video(video_id):
+    video = Video.query.get(video_id)
+    if not video:
+        return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404) 
+    else:
+        db.session.delete(video)
+        db.session.commit()
+        return make_response(jsonify({"id": int(video_id)}), 200)
+
+@videos_bp.route("", methods=["POST"])
+def create_new_video():
+    request_body = video_has_required_attributes(request.get_json())
+
+    new_video = Video(title = request_body["title"],
+                    release_date = request_body["release_date"],
+                    total_inventory = request_body["total_inventory"]    
+)
+    db.session.add(new_video)
+    db.session.commit()
+
+    return make_response(jsonify(new_video.to_dict()), 201)
+
+@videos_bp.route("/<video_id>", methods=["PUT"])
+def update_video(video_id):
+    video = Video.query.get(video_id)
+    request_body = video_has_required_attributes(request.get_json())
+
+    if not video:
+        return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404) 
+
+    video.title = request_body["title"]
+    video.total_inventory = request_body["total_inventory"]
+    video.release_date = request_body["release_date"]
+
+    db.session.commit()
+
+    return make_response(jsonify(video.to_dict()), 200)
+
+
+# customer routes
 # create new customer
 @customers_bp.route("", methods=["POST"])
 def create_customer():
@@ -62,12 +107,10 @@ def get_all_customers():
 @customers_bp.route("/<customer_id>", methods=["GET", "DELETE", "PUT"])
 def handle_one_customer(customer_id):
     
-    if customer_id.isdigit():
-        customer = Customer.query.get(customer_id)
-        customer_id = int(customer_id)
-    else:
-        return make_response("", 400)
-    
+    customer_id = is_id_valid(customer_id)
+    customer = Customer.query.get(customer_id)
+    customer_id = int(customer_id)
+
     if not customer:
         return make_response({"message": f"Customer {customer_id} was not found"}, 404)
 
@@ -89,3 +132,27 @@ def handle_one_customer(customer_id):
         db.session.commit()
 
         return make_response(jsonify(customer.to_dict()), 200)
+
+#Helper Functions
+
+def is_id_valid(video_id):
+    try:
+        int(video_id)
+    except:
+        abort(make_response(jsonify({"message": "Please input valid id number"}), 400))
+    return video_id
+
+def video_has_required_attributes(request_body):
+    required_attributes = ["title", "release_date", "total_inventory"]
+    for attribute in required_attributes:
+        if attribute not in request_body:
+            abort(make_response(jsonify({"details": f"Request body must include {attribute}."}), 400))
+    return request_body
+
+def validate_customer_data(request_body):
+    required_attributes = ["postal_code", "name", "phone"]
+    for attribute in required_attributes:
+        if attribute not in request_body:
+            abort(make_response({"details": f"Request body must include {attribute}."}, 400))
+
+    return request_body
