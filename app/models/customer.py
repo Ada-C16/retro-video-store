@@ -10,7 +10,8 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime, default=datetime.utcnow())
-    videos_checked_out_count = db.Column(db.Integer, default = 0, nullable = False)
+    
+    videos_checked_out_count = db.Column(db.Integer, default = 0, nullable = True)
     rentals = db.relationship('Rental',backref='customers', lazy=True)
 
     def to_dict(self):
