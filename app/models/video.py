@@ -3,10 +3,13 @@ from marshmallow import Schema, fields
 
 
 class Video(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title=db.Column(db.String)
-    release_date=db.Column(db.DateTime, auto_now_add=True)
+    release_date=db.Column(db.DateTime)
     total_inventory=db.Column(db.Integer)
+    available_inventory=db.Column(db.Integer, nullable=True)
+    video_rentals=db.relationship("Customer", secondary="rental", backref="videos")
+   
 
 
     def to_dict(self):
@@ -17,10 +20,9 @@ class Video(db.Model):
             "total_inventory": self.total_inventory
         }
         return video_dict
-
-# class VideoSchema(ma.SQLAlchemyAutoSchema):
-#     class Meta:
-#         model = Video
+    
+    def calculate_inventory(self):
+        return self.total_inventory-self.available_inventory
 
 class PutVideoInputSchema(Schema):
     """ 

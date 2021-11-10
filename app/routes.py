@@ -3,6 +3,7 @@ from marshmallow import schema
 from app import db
 from app.models.video import Video
 from app.models.customer import Customer
+from app.models.rental import Rental
 from flask import Blueprint, jsonify, make_response, request, abort
 
 from datetime import date 
@@ -30,7 +31,8 @@ def create_video():
     elif "total_inventory" not in request_data:
         invalid_data={"details": "Request body must include total_inventory."}
         return jsonify(invalid_data),400
-    new_video=Video(title=request_data["title"], release_date=request_data["release_date"], total_inventory=request_data["total_inventory"])
+    
+    new_video=Video(title=request_data["title"], release_date=request_data["release_date"], total_inventory=request_data["total_inventory"], available_inventory=request_data["available_inventory"])
     db.session.add(new_video)
     db.session.commit()
 
@@ -128,7 +130,8 @@ def create_customer():
     new_customer = Customer(
         name = request_body["name"],
         postal_code = request_body["postal_code"],
-        phone = request_body["phone"]
+        phone = request_body["phone"],
+        videos_checked_out_count = request_body["videos_checked_out_count"]
     )
 
     db.session.add(new_customer)
@@ -228,3 +231,42 @@ def delete_customer(customer_id):
 
     # return {"id": customer.id}, 200
 
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
+
+# checks out a video to a customer, and updates the data in the database
+    # request should:
+    # create a rental for the specific video and customer
+    # create a due date (7 days from current date)
+    
+@rentals_bp.route("/check-out", methods=["POST"], strict_slashes=False)
+def create_check_out():
+    request_body = request.get_json()
+
+    video=Video.query.get(request_body["video_id"])
+    customer=Customer.query.get(request_body["customer_id"])
+
+    # if video is None or customer is None:
+    #     return{"message": "No video or no customer"}
+    
+    # # check video's available_inventory
+    # if not zero, create Rental
+
+    new_rental = Rental(
+        video_id = request_body["video_id"],
+        customer_id = request_body["customer_id"]
+    )
+
+    customer.videos_checked_out_count += 1
+    video.available_inventory-=1
+    
+
+
+    db.session.add(new_rental)
+    db.session.commit()
+    return jsonify({
+        "customer_id": new_rental.customer_id,
+        "video_id": new_rental.video_id,
+        "due_date": new_rental.due_date,
+        "videos_checked_out_count": customer.videos_checked_out_count,
+        "available_inventory": video.available_inventory
+        }), 201
