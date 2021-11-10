@@ -1,8 +1,8 @@
-"""db with timezone
+"""empty message
 
-Revision ID: e326fe5243ef
+Revision ID: 91cf8ae0a3d4
 Revises: 
-Create Date: 2021-11-10 14:48:01.486692
+Create Date: 2021-11-10 15:07:55.712542
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e326fe5243ef'
+revision = '91cf8ae0a3d4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -37,7 +37,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('customer_id', sa.Integer(), nullable=False),
     sa.Column('video_id', sa.Integer(), nullable=False),
-    sa.Column('due_date', sa.DateTime(), nullable=True),
+    sa.Column('due_date', sa.DateTime(timezone=True), nullable=True),
     sa.Column('checked_out', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['customer_id'], ['customers.id'], ),
     sa.ForeignKeyConstraint(['video_id'], ['videos.video_id'], ),

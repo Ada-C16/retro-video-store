@@ -1,13 +1,14 @@
 from app import db
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from .video import Video
 
 class Rental(db.Model):
+
     __tablename__ = "rentals"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), primary_key=True, nullable=False)
     video_id = db.Column(db.Integer, db.ForeignKey('videos.video_id'), primary_key=True, nullable=False)
-    due_date = db.Column(db.DateTime)
+    due_date = db.Column(db.DateTime(timezone=True))
     checked_out = db.Column(db.Boolean)
 
     def to_dict(self):
@@ -16,14 +17,14 @@ class Rental(db.Model):
             "customer_id": self.customer_id,
             "video_id": self.video_id,
             "checked_out": self.checked_out,
-            "due_date": self.due_date.strftime("%Y-%m-%d") if self.due_date else None,
+            "due_date": self.due_date.strftime("%Y-%m-%d"),
         }
 
     def to_dict_check_out(self):
         return {
             "customer_id": self.customer_id,
             "video_id": self.video_id,
-            "due_date": self.due_date.strftime("%Y-%m-%d") if self.due_date else None,
+            "due_date": self.due_date.strftime("%Y-%m-%d"),
             "videos_checked_out_count": Rental.get_customer_number_videos_checked_out(self.customer_id),
             "available_inventory": Rental.get_available_video_inventory(self.video_id)
         }
@@ -42,19 +43,17 @@ class Rental(db.Model):
         return {
             "release_date": video.release_date,
             "title": video.title,
-            "due_date": self.due_date.strftime("%Y-%m-%d") if self.due_date else None,
+            "due_date": self.due_date.strftime("%Y-%m-%d"),
         }
 
     @classmethod
     def from_json(cls, customer_id, video_id):
 
-        now = datetime.now()
-
         new_rental = cls(
             customer_id = customer_id,
             video_id = video_id,
             checked_out = True,
-            due_date = now + timedelta(days=7)
+            due_date = datetime.utcnow() + timedelta(days=7)
         )
 
         return new_rental
