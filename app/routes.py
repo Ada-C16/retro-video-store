@@ -77,34 +77,18 @@ def get_tasks():
 def get_one_customer(customer_id):
 
     # customer = Customer.query.get_or_404(customer_id)
+    if customer_id.isnumeric() != True:
+        return jsonify({"error": "Invalid Data"}), 400
+
     customer = Customer.query.get(customer_id)
-    if customer_id.is_numeric():
-        if customer is None:
-            return {"message" : f"Customer {customer_id} was not found"}, 404
-
-
-        # acconting for the descrepancy in wave 6 where it was saying to implement goal_id in thisresponse body.
-        # fixed this by essentially "if there is a goal id at this task, then return that, if not, then return it without the goal id
-        else:
-            # if not task.goal_id:
-            #     return {"task": {
-            #         "id": task.task_id,
-            #         "title": task.title,
-            #         "description": task.description,
-            #         "is_complete" : (False
-            #         if task.completed_at == None else True)
-            #         }},200
-
-
-            # refactor with helper function
-            response_body = {
-                    "id": customer.customer_id,
-                    "name": customer.name,
-                    "registered_at": customer.registered_at,
-                    "postal_code": customer.postal_code,
-                    "phone": customer.phone,}
-            return  jsonify(response_body), 200
-    else:
-        return make_response("", 400)
-
-    
+                                                                                          
+    if customer is None:
+        return {"message" : f"Customer {customer_id} was not found"}, 404
+        # refactor with helper function
+    response_body = {
+            "id": customer.customer_id,
+            "name": customer.name,
+            "registered_at": customer.registered_at,
+            "postal_code": customer.postal_code,
+            "phone": customer.phone}
+    return  jsonify(response_body), 200    
