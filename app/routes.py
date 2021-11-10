@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, make_response, request, abort
+from werkzeug.exceptions import NotFound
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
@@ -27,7 +28,6 @@ def validate_customer_id(id):
         abort(400, {"message": f"Customer {id} was not found"})
     return Customer.query.get_or_404(id)
 
-
 #----------- CREATE ---------------------
 @video_bp.route("", methods=["POST"])
 def create_video():
@@ -44,8 +44,7 @@ def create_video():
         title=request_body["title"],
         release_date = request_body["release_date"],
         total_inventory = request_body["total_inventory"],
-    )
-
+        )
     db.session.add(new_video)
     db.session.commit()
 
@@ -84,7 +83,10 @@ def get_all_videos():
 
 @video_bp.route("/<id>", methods=["GET"])
 def get_one_video(id):
-    video = validate_video_id(id)
+    try:
+        video = validate_video_id(id)
+    except NotFound:
+        return make_response(jsonify({"message": f"Video {id} was not found"}),404)
     request_body = request.get_json
     return jsonify(video.to_dict())
 
@@ -108,6 +110,24 @@ def get_one_customer(id):
 
 #----------- UPDATE ---------------------
 
+@video_bp.route("/<id>", methods=["PUT"])
+def update_video(id):
+    try:
+        video = validate_video_id(id)
+    except NotFound:
+        return make_response(jsonify({"message": f"Video {id} was not found"}), 404)
+    request_body = request.get_json()
+
+    if request_body.get("title") and request_body.get("release_date") and request_body.get("total_inventory"):
+        video.title = request_body["title"]
+        video.release_date = request_body["release_date"]
+        video.total_inventory = request_body["total_inventory"]
+    else:
+        return make_response((jsonify({"message": f"Attribute missing from video"}), 400))
+    
+    db.session.commit()
+    return video.to_dict()
+
 @customer_bp.route("/<id>", methods=["PUT"]) 
 def update_customer(id):
     try:
@@ -130,6 +150,19 @@ def update_customer(id):
 
 #----------- DELETE ---------------------
 
+@video_bp.route("/<id>",methods=["DELETE"])
+def delete_video(id):
+    try:
+        video = validate_video_id(id)
+    except NotFound:
+        return make_response(jsonify({"message": f"Video {id} was not found"}), 404)
+    video = video.query.get(id)
+    db.session.delete(video)
+    db.session.commit()
+
+    response_body = ({'id':video.id, 'details' : f'Video {video.id} successfully deleted'})
+    return make_response(response_body, 200)
+
 @customer_bp.route("/<id>", methods=["DELETE"]) 
 def delete_customer(id):
     try:
@@ -143,3 +176,11 @@ def delete_customer(id):
     
     response_body = ({'id':customer.id, 'details': f'Customer {customer.id} successfully deleted'})
     return make_response(jsonify(response_body),200) 
+    try:
+        video = validate_video_id(id)
+    except NotFound:
+
+        return make_response(jsonify({"message": f"Video {id} was not found"}), 404)
+    return jsonify(video.to_dict())
+
+
