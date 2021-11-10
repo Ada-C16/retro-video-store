@@ -149,3 +149,20 @@ def handle_customer(cust_id):
             "status": "deleted"
         }
 
+@rentals_bp.route("/check-out", methods=["POST"])
+def handle_rental_checkout():
+
+    request_body = request.get_json()
+
+    if "customer_id" not in request_body or "video_id" not in request_body:
+        return { "message" : "missing information "}, 400
+
+    customer_id = request_body["customer_id"]
+    customer_id_error = Customer.validate_id(customer_id)
+    if customer_id_error:
+        return customer_id_error
+
+    video_id = request_body["video_id"]
+    video_id_error = Video.validate_id(video_id)
+    if video_id_error:
+        return video_id_error
