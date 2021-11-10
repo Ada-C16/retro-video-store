@@ -59,29 +59,17 @@ def customer_get(customer_id):
 # WORK IN PROGRESS
 @customers_bp.route("/<customer_id>", methods=["PUT"])
 def customer_put(customer_id):
-    # customer = Customer.query.get(customer_id)
-    try:
-        customer = Customer.query.get(customer_id)
-    except:
-        return jsonify({"message": f"Customer {customer_id} was not found"}), 400
-
+    customer = Customer.query.get(customer_id)
     if customer == None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
 
     request_body = request.get_json()
+    if "name" not in request_body or "phone" not in request_body or "postal_code" not in request_body:
+        return jsonify(), 400 
 
-    # merge conflict 
-    # customer.name = request_body["name"]
-    # customer.phone = request_body["phone"]
-    # customer.postal_code = request_body["postal_code"]
-    # # is registered not required?
-    # response_body = {customer.customer_dict()}
-    # if "name" in request_body:
-    #     customer.name = request_body["name"]
-    # if "phone" in request_body:
-    #     customer.phone = request_body["phone"]
-    # if "postal_code" in request_body:
-    #     customer.postal_code = request_body["postal_code"]
+    customer.name = request_body["name"]
+    customer.phone = request_body["phone"]
+    customer.postal_code = request_body["postal_code"]
 
     if "name" in request_body or "phone" in request_body or "postal_code" in request_body:
         response_body ={}
@@ -89,11 +77,7 @@ def customer_put(customer_id):
         response_body["phone"] = customer.phone 
         response_body["postal_code"] = customer.postal_code 
 
-    # db.session.commit()
-    try:
-        db.session.commit()
-    except:
-        return jsonify("Invalid"), 400
+    db.session.commit()
 
     return jsonify(response_body), 200
 

@@ -52,9 +52,11 @@ def get_video(video_id):
     ## or
     # if not video_id.is_integer():
     #     return jsonify(), 400
-    # maybe try-except? for invalid id test 
-
-    video = Video.query.get(video_id)
+    # maybe try-except? for invalid id test
+    try: 
+        video = Video.query.get(video_id)
+    except:
+        return jsonify(), 400
     if video is None:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
     response_body = video.to_dict()
