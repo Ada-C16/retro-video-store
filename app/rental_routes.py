@@ -25,14 +25,10 @@ def check_out():
     if video.total_inventory == 0:
         response_body = {"message": "Could not perform checkout"}
         return jsonify(response_body), 400
-    new_inventory_total = video.total_inventory - 1
-    video.total_inventory = new_inventory_total
 
     customer = Customer.query.get(customer_id)
     if not customer:
         return jsonify(None), 404
-    videos_checked_out = customer.videos_checked_out + 1
-    customer.videos_checked_out = videos_checked_out
 
     new_rental = Rental(
         video_id=request_body["video_id"],
@@ -41,5 +37,7 @@ def check_out():
 
     db.session.add(new_rental)
     db.session.commit()
+    customer.videos_checked_out = len(customer.rentals)
+    video.total_inventory = video.total_inventory - len(video.rentals)
     response_body = new_rental.rental_dict()
     return jsonify(response_body), 200

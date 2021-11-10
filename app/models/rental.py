@@ -15,14 +15,12 @@ class Rental(db.Model):
     due_date = db.Column(db.DateTime, nullable=False,
                          default=datetime.datetime.utcnow() + datetime.timedelta(days=7))
 
-    # customer = db.relationship("Customer", backref="rentals")
-    # video = db.relationship("Video", backref="rentals")
     def rental_dict(self):
         video = Video.query.get(self.video_id)
         available_inventory = video.total_inventory
 
         customer = Customer.query.get(self.customer_id)
-        videos_checked_out = customer.videos_checked_out
+        videos_checked_out = len(customer.rentals)
         return {
             "video_id": self.video_id,
             "customer_id": self.customer_id,
