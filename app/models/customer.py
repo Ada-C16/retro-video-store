@@ -7,7 +7,10 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime, nullable=True)
-    videos_checked_out = db.relationship("Rental", backref="customer_id")
+
+    #we do not want an attirbute because it wouldn't allow us to track changes happening\
+    #simultaneously and would be harder to update
+    # videos_checked_out = db.relationship("Rental", backref="customer_id")
 
     def to_dict(self):
         customer_dict = {
@@ -17,8 +20,11 @@ class Customer(db.Model):
             "phone": self.phone,
             "registered_at": self.registered_at,
             }
-        # example for how the conditional to change the form of the dictionary is
-        # if self.goal_id is not None:
-        #     task_dict["goal_id"] = self.goal_id
         
         return customer_dict
+
+    #instance method for videos_checked_out here
+    #query rentals db for all instances connected to customer_id
+    #sort by those currently checked_out
+    #get length of list
+    #return length of list

@@ -15,24 +15,27 @@ rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 def handle_rentals():
     
     request_body = request.get_json()
-    #CHECK FOR VALID INPUTS
+
+    #CHECK FOR VALID INPUT TYPE HERE
 
     if "customer_id" not in request_body:
         return jsonify({"details": "Request body must include customer_id."}), 400
     elif "video_id" not in request_body:
         return jsonify({"details": "Request body must include video_id."}), 400
 
-    new_rental = Rental(customer_id=request_body["customer_id"], video_id=request_body["video_id"],
-    due_date=datetime.now())
+    new_rental = Rental(customer_id=request_body["customer_id"],\
+        video_id=request_body["video_id"],
+        due_date=datetime.now())
+
 
     db.session.add(new_rental)
     db.session.commit()
-    #for some reason this test asks for the dict to be returned instead of the id
-    new_video_dict = {
+
+    response_body = {
             "customer_id": new_rental.customer_id,
             "video_id": new_rental.video_id,
             "due_date": new_rental.due_date,
             "videos_checked_out_count": None,
             "available_inventory": None
         }
-    return new_video_dict, 201
+    return response_body, 201
