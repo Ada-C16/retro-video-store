@@ -25,7 +25,7 @@ def customer_create():
 
     # response_body = {new_customer.customer_dict()}
     # return jsonify(response_body), 201
-    return jsonify({"id": new_customer.customer_id})
+    return jsonify({"id": new_customer.customer_id}), 201
 
 
 @customers_bp.route("", methods=["GET"])
