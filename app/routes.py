@@ -3,6 +3,7 @@ from werkzeug.exceptions import NotFound
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
+from app.models.rental import Rental
 from datetime import datetime, timezone
 import requests
 import os
@@ -12,6 +13,7 @@ from werkzeug.exceptions import NotFound
 #DEFINE BLUEPRINTS
 customer_bp = Blueprint("customers", __name__, url_prefix="/customers")
 video_bp = Blueprint("videos", __name__, url_prefix="/videos")
+rental_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 #----------- HELPER FUNCTIONS -----------
 def validate_video_id(video_id):
@@ -71,6 +73,19 @@ def create_customer():
     db.session.commit()
 
     return make_response(jsonify(new_customer.to_dict()),201)
+
+@rental_bp.route("/check-out",methods=["POST"])
+def new_rental(customer_id, video_id):
+    customer = Customer.query.get(customer_id)
+    video = Video.query.get(video_id)
+
+    new_rental = Rental({"customer_id": customer.id,
+    "video_id": video.id,
+    "due_date": Rental.generate_due_date(),
+    "videos_checked_out_count": Rental.videos_checked_out(customer_id),
+    "available_inventory": Rental.get_available_inventory(video_id)})
+
+    return new_rental
 
 #----------- GET ---------------------
 @video_bp.route("", methods=["GET"])
