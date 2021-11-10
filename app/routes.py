@@ -10,6 +10,11 @@ video_bp = Blueprint("video", __name__, url_prefix="/videos")
 customer_bp = Blueprint("customer", __name__, url_prefix="/customers")
 load_dotenv()
 
+def validate_video(request_body):
+    '''Helper Function to validate video request_body'''
+    if "title" not in request_body or "release_date" not in request_body or "total_inventory" not in request_body:
+        return jsonify({"details": "Request body must include title, release_date, and total_inventory."}), 400
+
 # Get all Videos
 @video_bp.route("", methods=["GET"])
 def get_videos():
@@ -63,8 +68,7 @@ def update_video(video_id):
         return jsonify({"message": f"Video {video_id} was not found"}), 404
 
     request_body = request.get_json()
-    if "title" not in request_body or "release_date" not in request_body or "total_inventory" not in request_body:
-        return jsonify({"details": "Request body must include title, release_date, and total_inventory."}), 400
+    validate_video(request_body)
 
     video.title = request_body["title"]
     video.release_date = request_body["release_date"]
