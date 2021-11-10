@@ -11,8 +11,12 @@ def customer_create():
     request_body = request.get_json()
 
     # is the registered_at not required?
-    if "name" not in request_body or "phone" not in request_body or "postal_code" not in request_body:
-        return jsonify({"details": "Invalid data"}), 400
+    if "name" not in request_body:
+        return jsonify({"details": "Request body must include name."}), 400
+    elif "phone" not in request_body:
+        return jsonify({"details": "Request body must include phone."}), 400
+    elif "postal_code" not in request_body:
+        return jsonify({"details": "Request body must include postal_code."}), 400
 
     new_customer = Customer(
         name=request_body["name"],
@@ -36,11 +40,11 @@ def handle_customers():
     #     response_body.append({customers.customer_dict()})
     for customer in customers:
         response_body.append({
-            "id": customers.customer_id,
-            "name": customers.name,
+            "id": customer.customer_id,
+            "name": customer.name,
             # "registered_at": customers.registered_at,
-            "postal_code": customers.postal_code,
-            "phone": customers.phone
+            "postal_code": customer.postal_code,
+            "phone": customer.phone
 })
 
     return jsonify(response_body), 200
@@ -49,10 +53,10 @@ def handle_customers():
 @customers_bp.route("/<customer_id>", methods=["GET"])
 def customer_get(customer_id):
     customer = Customer.query.get(customer_id)
-    if customer == None:
-        return jsonify("Not Found", 404)
+    if customer is None:
+        return jsonify({"message": f"Customer {customer_id} was not found"}), 404
 
-    return jsonify(customer.customer_dict), 200
+    return jsonify(customer.customer_dict()), 200
 
 
 @customers_bp.route("/<customer_id>", methods=["PUT"])
@@ -60,7 +64,7 @@ def customer_put(customer_id):
     customer = Customer.query.get(customer_id)
 
     if customer == None:
-        return jsonify("Not Found", 404)
+        return jsonify({"message": f"Customer {customer_id} was not found"}), 404
 
     request_body = request.get_json()
 
@@ -68,7 +72,7 @@ def customer_put(customer_id):
     customer.phone = request_body["phone"]
     customer.postal_code = request_body["postal_code"]
     # is registered not required?
-    response_body = {customer.customer_dict}
+    response_body = {customer.customer_dict()}
 
     return jsonify(response_body), 200
 
