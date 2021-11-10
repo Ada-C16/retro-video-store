@@ -184,4 +184,8 @@ def handle_rental_checkout():
 
     return new_rental.to_dict_check_out(), 200
 
+@customer_bp.route("<customer_id>/rentals")
+def handle_customer_rentals(cust_id):
+    pass
+
 
