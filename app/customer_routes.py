@@ -10,38 +10,37 @@ customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 def customer_create():
     request_body = request.get_json()
 
-    # is the registered_at not required?
     if "name" not in request_body or "phone" not in request_body or "postal_code" not in request_body:
         return jsonify({"details": "Invalid data"}), 400
-
+    
     new_customer = Customer(
         name=request_body["name"],
         phone=request_body["phone"],
         postal_code=request_body["postal_code"],
-        registered_at=request_body["registered_at"]
+        registered_at=["registered_at"]
     )
     db.session.add(new_customer)
     db.session.commit()
 
     # response_body = {new_customer.customer_dict()}
     # return jsonify(response_body), 201
-    return jsonify({"id": new_customer.customer_id})
+    return jsonify({"id": new_customer.customer_id}), 201
 
 
 @customers_bp.route("", methods=["GET"])
 def handle_customers():
     customers = Customer.query.all()
     response_body = []
-    # for customer in customers:
-    #     response_body.append({customers.customer_dict()})
     for customer in customers:
-        response_body.append({
-            "id": customers.customer_id,
-            "name": customers.name,
-            # "registered_at": customers.registered_at,
-            "postal_code": customers.postal_code,
-            "phone": customers.phone
-})
+        response_body.append({customers.customer_dict()})
+#     for customer in customers:
+#         response_body.append({
+#             "id": customers.customer_id,
+#             "name": customers.name,
+#             # "registered_at": customers.registered_at,
+#             "postal_code": customers.postal_code,
+#             "phone": customers.phone
+# })
 
     return jsonify(response_body), 200
 
