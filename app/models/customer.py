@@ -18,5 +18,15 @@ class Customer(db.Model):
             "registered_at": self.register_at
         }
 
+    def customer_rentals(self):
+        rentals = []
+        for video in self.videos:
+            rentals.append({
+                "title": video.title,
+                "release_date": video.release_date,
+                "due_date": rental.due_date
+            })
+        return rentals
+
 
 

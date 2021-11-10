@@ -15,9 +15,4 @@ class Rental(db.Model):
             "available_inventory": None
         }
 
-
-
-    #         assert response_body["video_id"] == 1
-    # assert response_body["customer_id"] == 1
-    # assert response_body["videos_checked_out_count"] == 1
-    # assert response_body["available_inventory"] == 0
+    

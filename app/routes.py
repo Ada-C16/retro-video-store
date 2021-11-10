@@ -135,6 +135,20 @@ def handle_one_customer(customer_id):
 
         return make_response(jsonify(customer.to_dict()), 200)
 
+
+@customers_bp.route('/<customer_id>/rentals', methods=["GET"])
+def get_rentals_for_customer(customer_id):
+    customer_id = is_id_valid(customer_id)
+    customer = Customer.query.get(customer_id)
+
+    if not customer:
+        return make_response(jsonify({"message": f"Customer {customer_id} was not found"}), 404)
+
+    rentals = customer.customer_rentals() 
+    return make_response(jsonify(rentals), 200)
+
+
+
 #Helper Functions
 
 def is_id_valid(video_id):
@@ -176,7 +190,7 @@ def rental_status(rental_status):
             customer.number_of_rentals += 1
         else:
             customer.number_of_rentals += 1
-            
+
         rental = Rental(customer_id = request_body["customer_id"],
                         video_id = request_body["video_id"],
                         due_date = date.today() + timedelta(days=7))
