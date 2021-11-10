@@ -2,7 +2,7 @@ from app import db
 from app.models.rental import Rental
 
 class Video(db.Model):
-    video_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    video_id = db.Column(db.Integer, primary_key=True, autoincrement=True, unique=True)
     title = db.Column(db.String)
     total_inventory = db.Column(db.Integer)
     release_date = db.Column(db.DateTime, nullable=True)

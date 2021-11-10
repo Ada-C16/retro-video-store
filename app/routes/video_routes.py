@@ -133,3 +133,30 @@ def handle_video(video_id):
             })
 
 
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def get_customers_with_video_rented(video_id):
+    if video_id.isdigit() == False:
+        return jsonify(None), 400
+    
+    rentals = Rental.query.get(video_id)
+
+    # rentals = Rental.query.get(video_id)
+    
+    current_checked_out = []
+    response_body = []
+
+    for rental in rentals:
+        if rental.checked_in == False:
+            current_checked_out.append(rental)
+
+    for rental in current_checked_out:
+        response_body.append({
+        "due_date": rental.due_date,
+        "name": rental.customer_id.name,
+        "phone": rental.customer_id.phone,
+        "postal_code": rental.customer_id.postal_code
+    })
+
+    return jsonify(response_body), 200
+
+    

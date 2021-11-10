@@ -3,7 +3,7 @@ from app import db
 from app.models.rental import Rental
 
 class Customer(db.Model):
-    customer_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    customer_id = db.Column(db.Integer, primary_key=True, autoincrement=True, unique=True)
     name = db.Column(db.String)
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)

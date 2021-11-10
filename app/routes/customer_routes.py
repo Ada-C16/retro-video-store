@@ -36,6 +36,36 @@ def get_single_customer(customer_id):
 
     return jsonify(response_body), 200
 
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"])
+def get_customer_rentals(customer_id):
+    if customer_id.isdigit() == False:
+        return jsonify(None), 400
+    
+    customer = Customer.query.get(customer_id)
+
+    if customer is None:
+        return jsonify({'message': f'Customer {customer_id} was not found'}), 404
+
+    rentals = Rental.query.get(customer_id)
+    
+    current_checked_out = []
+    response_body = []
+
+    for rental in rentals:
+        if rental.checked_in == False:
+            current_checked_out.append(rental)
+
+    for rental in current_checked_out:
+        response_body.append(
+        {
+        "release_date": rental.release_date,
+        "title": rental.video_id.title, #maybe??? (trying to get title from video), if doesn't work, consider adding a title attribute to Rental
+        "due_date": rental.due_date,
+    })
+
+    return jsonify(response_body), 200
+
+
 @customers_bp.route("", methods=["POST"])
 def post_new_customer():
     request_body = request.get_json()
