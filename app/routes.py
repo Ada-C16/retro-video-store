@@ -40,16 +40,17 @@ def handle_customers():
 
 @customer_bp.route("/<customer_id>", methods= ["GET", "PUT", "DELETE"])
 def handle_customer(customer_id):
-    customer = Customer.query.get(customer_id)
-
+    
+    try:
+        customer_id = int(customer_id)
+    except ValueError:
+            return jsonify({"Error": "Customer ID must be an integer."}), 400
+    customer = Customer.query.get(customer_id)        
     if customer is None:
         return make_response({"message": f"Customer {customer_id} was not found"}), 404
     
     elif request.method == "GET":
-        try:
-            customer_id = int(customer_id)
-        except ValueError:
-            return jsonify({"Error": "Customer ID must be an integer."}), 400
+        
         customer= Customer.query.get(customer_id)
         if customer is None:
             return jsonify({"message": f"Customer {customer_id} was not found"}), 404
