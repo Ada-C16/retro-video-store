@@ -1,4 +1,5 @@
 from app import db
+from sqlalchemy.orm import relationship
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -9,6 +10,8 @@ class Customer(db.Model):
     # phone = db.Column(db.String(15))
     phone = db.Column(db.String(60))
     register_at = db.Column(db.DateTime)
+    # videos = relationship('Video', secondary='rental', backref='customers')
+
 
     def to_dict(self):
         return {

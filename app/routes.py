@@ -6,7 +6,9 @@ from app.models.rental import Rental
 from dotenv import load_dotenv
 import os
 from sqlalchemy import desc
-import datetime
+from datetime import date
+from datetime import timedelta
+# import datetime
 
 
 
@@ -225,22 +227,20 @@ def handle_video(video_id):
 # -------- RENTALS ----------
 # ---------------------------
 
-def create_due_date(rental_date):
-    date_1 = datetime.datetime.strptime(rental_date, "%y-%m-%d")
-    due_date = date_1 + datetime.timedelta(days=7)
-    return due_date
+# def create_due_date():
+#     # date_1 = datetime.datetime.strptime(rental_date, "%y-%m-%d")
+#     due_date = datetime.today() + datetime.timedelta(days=7)
+#     return due_date
 
 def validate_rental_request_body(request_body):
-    if "name" not in request_body:
-        return jsonify({"details": "Request body must include name."}), 400
-    if "postal_code" not in request_body:
-        return jsonify({"details": "Request body must include postal_code."}), 400
-    if "phone" not in request_body:
-        return jsonify({"details": "Request body must include phone."}), 400
+    if "customer_id" not in request_body:
+        return jsonify({"details": "Request body must include customer_id."}), 400
+    if "video_id" not in request_body:
+        return jsonify({"details": "Request body must include video_id."}), 400
     return False
 
-# Posts a rental
-@rentals_bp.route("", methods = ["POST"])
+# Posts a rental, aka check-out
+@rentals_bp.route("/check-out", methods = ["POST"])
 def create_rental():
     request_body = request.get_json()
     # Check if request_body is invalid/missing data
@@ -249,9 +249,12 @@ def create_rental():
         # Returns the invalid error message and status code
         return invalid
 
+    due = date.today() + timedelta(days=7)
+
     new_rental = Rental(customer_id=request_body["customer_id"],
                     video_id=request_body["video_id"],
-                    due_date=create_due_date(request_body["phone"]),
+                    due_date=due
+
     )
 
     db.session.add(new_rental)
@@ -260,11 +263,21 @@ def create_rental():
     new_rental_response = new_rental.to_dict()
 
     # Calculate, then add to new_rental_response
-    videos_checked_out_count = 
+    # for customer_id in Rental
+    #     Video.query.get["customers"]:
+    #     request_body["customer_id"]
+    #     videos_count += 1
+    #     #videos = Customer.query.get['videos']
+    # videos_checked_out_count = Customer.query.get['videos']
     # Number of videos checked out by this customer_id
     # Count all rentals where customer_id is current rental's customer_id
 
-    available_inventory = 
+    rentals = Rental.query.filter_by(customer_id=request_body["customer_id"])
+    videos_checked_out_count = rentals.count()
+    new_rental_response["videos_checked_out_count"] = videos_checked_out_count
+
+    # available_inventory = 
+
     # Count all rentals where video_id is current video_id
     # Then subract from total_inventory for video with this video_id
 
