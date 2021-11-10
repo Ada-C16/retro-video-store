@@ -194,6 +194,9 @@ def handle_customer_rentals(cust_id):
 
     rentals = Rental.query.filter_by(customer_id = cust_id)
 
+    return jsonify([rental.to_dict_customer_rentals() for rental in rentals]), 200
+
+
 @rentals_bp.route("/check-in", methods=["POST"])
 def rental_checkin_update():
     request_body = request.get_json()
