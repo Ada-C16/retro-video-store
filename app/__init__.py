@@ -27,10 +27,15 @@ def create_app(test_config=None):
     from app.models.video import Video
     from app.models.rental import Rental
 
-    # Setup DB
+    # Setup DB tables to allow SQLAlchemy to talk to tables via Flask
     db.init_app(app)
     migrate.init_app(app, db)
 
-    #Register Blueprints Here
-
+    # Register blueprints
+    from .routes.customers import customers_bp
+    app.register_blueprint(customers_bp)
+    
+    from .routes.videos import videos_bp
+    app.register_blueprint(videos_bp)
+    
     return app
