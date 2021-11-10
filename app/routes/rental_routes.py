@@ -11,7 +11,7 @@ customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
-@rentals_bp.route("/check_in", methods=["POST"])
+@rentals_bp.route("/check_out", methods=["POST"])
 def handle_rentals():
     
     request_body = request.get_json()
@@ -31,11 +31,19 @@ def handle_rentals():
     db.session.add(new_rental)
     db.session.commit()
 
+    video = Video.query.get(new_rental.video_id)
+
+    available_inventory=video.available_inventory()
+
+    customer = Customer.query.get(new_rental.customer_id)
+
+    videos_checked_out_count = customer.videos_checked_out()
+    
     response_body = {
             "customer_id": new_rental.customer_id,
             "video_id": new_rental.video_id,
             "due_date": new_rental.due_date,
-            "videos_checked_out_count": None,
-            "available_inventory": None
+            "videos_checked_out_count": videos_checked_out_count,
+            "available_inventory": available_inventory
         }
     return response_body, 201

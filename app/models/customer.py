@@ -1,16 +1,13 @@
 from flask import current_app
 from app import db
+from app.models.rental import Rental
 
 class Customer(db.Model):
-    customer_id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String)
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime, nullable=True)
-
-    #we do not want an attirbute because it wouldn't allow us to track changes happening\
-    #simultaneously and would be harder to update
-    # videos_checked_out = db.relationship("Rental", backref="customer_id")
 
     def to_dict(self):
         customer_dict = {
@@ -23,8 +20,15 @@ class Customer(db.Model):
         
         return customer_dict
 
-    #instance method for videos_checked_out here
-    #query rentals db for all instances connected to customer_id
-    #sort by those currently checked_out
-    #get length of list
-    #return length of list
+    def videos_checked_out(self):
+        checked_out_list = []
+        videos_checked_out_by_customers=Rental.query.get(self.customer_id)
+
+        for video in videos_checked_out_by_customers:
+            if video.checked_in == False:
+                checked_out_list.append(video)
+        
+        num_videos_checked_out=len(checked_out_list)
+
+        return num_videos_checked_out
+
