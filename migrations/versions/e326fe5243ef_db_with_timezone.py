@@ -1,8 +1,8 @@
-"""empty message
+"""db with timezone
 
-Revision ID: 25c3b62ada40
+Revision ID: e326fe5243ef
 Revises: 
-Create Date: 2021-11-09 23:07:48.231698
+Create Date: 2021-11-10 14:48:01.486692
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '25c3b62ada40'
+revision = 'e326fe5243ef'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(length=200), nullable=True),
     sa.Column('postal_code', sa.String(length=50), nullable=True),
-    sa.Column('registered_at', sa.DateTime(), nullable=True),
+    sa.Column('registered_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('phone', sa.String(length=50), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )

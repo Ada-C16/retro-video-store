@@ -155,21 +155,21 @@ def handle_rental_checkout():
 
     request_body = request.get_json()
 
-    # check request body fields
-    if "customer_id" not in request_body or "video_id" not in request_body:
-        return { "message" : "missing information "}, 400
-
     # validate customer id
-    customer_id = request_body["customer_id"]
-    customer_id_error = Customer.validate_id(customer_id)
-    if customer_id_error:
-        return customer_id_error
+    try: 
+        customer_id = request_body["customer_id"]
+        customer_id_error = Customer.validate_id(customer_id)
+        if customer_id_error:
+            return customer_id_error
 
-    # validate video id
-    video_id = request_body["video_id"]
-    video_id_error = Video.validate_id(video_id)
-    if video_id_error:
-        return video_id_error
+        # validate video id
+        video_id = request_body["video_id"]
+        video_id_error = Video.validate_id(video_id)
+        if video_id_error:
+            return video_id_error
+
+    except KeyError:
+        return { "message" : "missing information "}, 400
 
     available_inventory = Rental.get_available_video_inventory(video_id)
 
@@ -253,7 +253,7 @@ def gets_customers_by_rental(id):
             "phone": customer.phone,
             "postal_code": customer.postal_code
         })
-   
+
     return jsonify(rental_list), 200
 
 
