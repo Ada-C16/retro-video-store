@@ -1,14 +1,16 @@
 from flask import Blueprint, jsonify, request, make_response, abort
 from app.models.customer import Customer
 from app.models.video import Video
+from app.models.rental import Rental
 from app import db
-from datetime import date
+from datetime import date, timedelta
 import requests
 from dotenv import load_dotenv
 
 # Blueprints
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 #Videos routes
 
@@ -156,3 +158,30 @@ def validate_customer_data(request_body):
             abort(make_response({"details": f"Request body must include {attribute}."}, 400))
 
     return request_body
+
+#Rental Endpoints
+@rentals_bp.route("/<rental_status>", methods=["POST"])
+def rental_status(rental_status):
+    request_body = request.get_json()
+    customer = Customer.query.get(request_body["customer_id"])
+    video = Video.query.get(request_body["video_id"])
+
+    if not customer or not video:
+        return make_response("", 404)
+
+    if rental_status == "check-out":
+        video.total_inventory -= 1
+        if customer.number_of_rentals == None:
+            customer.number_of_rentals = 0
+            customer.number_of_rentals += 1
+        else:
+            customer.number_of_rentals += 1
+            
+        rental = Rental(customer_id = request_body["customer_id"],
+                        video_id = request_body["video_id"],
+                        due_date = date.today() + timedelta(days=7))
+        dict_rent = rental.to_dict()
+        dict_rent["videos_checked_out_count"] = customer.number_of_rentals
+        dict_rent["available_inventory"] = video.total_inventory
+    
+    return make_response(jsonify(dict_rent), 200)
