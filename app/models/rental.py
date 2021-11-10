@@ -27,6 +27,13 @@ class Rental(db.Model):
             "videos_checked_out_count": Rental.get_customer_number_videos_checked_out(self.customer_id),
             "available_inventory": Rental.get_available_video_inventory(self.video_id)
         }
+    def to_dict_check_in(self):
+        return {
+            "customer_id": self.customer_id,
+            "video_id": self.video_id,
+            "videos_checked_out_count": Rental.get_customer_number_videos(self.customer_id),
+            "available_inventory": Rental.get_available_video_inventory(self.video_id)
+        }
 
     def to_dict_customer_rentals(self):
 
@@ -51,7 +58,7 @@ class Rental(db.Model):
         )
 
         return new_rental
-    
+
     @staticmethod
     def get_available_video_inventory(video_id):
 
@@ -71,3 +78,9 @@ class Rental(db.Model):
 
         return videos
 
+    @staticmethod
+    def get_customer_number_videos(customer_id):
+        
+        videos = Rental.query.filter_by(checked_out = True).count()
+
+        return videos
