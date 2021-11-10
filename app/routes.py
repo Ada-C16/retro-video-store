@@ -184,19 +184,14 @@ def handle_rental_checkout():
 
     return new_rental.to_dict_check_out(), 200
 
-@customer_bp.route("<customer_id>/rentals", methods=["GET"])
+@customer_bp.route("/<cust_id>/rentals", methods=["GET"])
 def handle_customer_rentals(cust_id):
     
-    #id_error = Customer.validate_id(cust_id)
+    id_error = Customer.validate_id(cust_id)
 
-    #if id_error:
-    #    return id_error
+    if id_error:
+        return id_error
 
-    # rentals = Rental.query.filter_by(customer_id = cust_id)
+    rentals = Rental.query.filter_by(customer_id = cust_id)
 
-    # rentals = Rental.query.all()
-
-    # return [rental.to_dict_customer_rentals() for rental in rentals], 200
-
-    return "all good", 200
-
+    return jsonify([rental.to_dict_customer_rentals() for rental in rentals]), 200
