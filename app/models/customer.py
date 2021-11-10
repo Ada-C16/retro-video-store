@@ -6,7 +6,7 @@ class Customer(db.Model):
     postal_code = db.Column(db.String, nullable=False)
     phone = db.Column(db.String, nullable=False)
     register_at = db.Column(db.DateTime) 
-    # videos = db.relationship("Video", backref="customer", lazy=True)
+    rentals = db.relationship("Rental", backref="customer", lazy=True) 
 
     def to_json(self):
         return {
