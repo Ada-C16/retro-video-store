@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, make_response, request, abort
+from werkzeug.exceptions import NotFound
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
@@ -34,8 +35,7 @@ def create_video():
         title=request_body["title"],
         release_date = request_body["release_date"],
         total_inventory = request_body["total_inventory"],
-    )
-
+        )
     db.session.add(new_video)
     db.session.commit()
 
@@ -52,6 +52,47 @@ def get_all_videos():
 
 @video_bp.route("/<id>", methods=["GET"])
 def get_one_video(id):
-    video = validate_video_id(id)
-    request_body = request.get_json
+    try:
+        video = validate_video_id(id)
+    except NotFound:
+        return make_response(jsonify({"message": f"Video {id} was not found"}), 404)
     return jsonify(video.to_dict())
+
+#---------- UPDATE -----------------
+
+@video_bp.route("/<id>", methods=["PUT"])
+def update_video(id):
+    try:
+        video = validate_video_id(id)
+    except NotFound:
+        return make_response(jsonify({"message": f"Video {id} was not found"}), 404)
+    request_body = request.get_json()
+
+    if request_body.get("title") and request_body.get("release_date") and request_body.get("total_inventory"):
+        video.title = request_body["title"]
+        video.release_date = request_body["release_date"]
+        video.total_inventory = request_body["total_inventory"]
+    else:
+        return make_response((jsonify({"message": f"Attribute missing from video"}), 400))
+    # if request_body.get("title"):
+    #     video.title = request_body["title"]
+    # if request_body.get("release_date"):
+    #     video.release_date = request_body["release_date"]
+    # if request_body.get("total_inventory"):
+    #     video.total_inventory = request_body["total_inventory"]
+    db.session.commit()
+    return video.to_dict()
+
+#--------- DELETE ------------------
+@video_bp.route("/<id>",methods=["DELETE"])
+def delete_video(id):
+    try:
+        video = validate_video_id(id)
+    except NotFound:
+        return make_response(jsonify({"message": f"Video {id} was not found"}), 404)
+    video = video.query.get(id)
+    db.session.delete(video)
+    db.session.commit()
+
+    response_body = ({'id':video.id, 'details' : f'Video {video.id} successfully deleted'})
+    return make_response(response_body, 200)
