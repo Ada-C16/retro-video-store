@@ -6,6 +6,8 @@ class Video(db.Model):
     title = db.Column(db.String)
     release_date = db.Column(db.Date)
     total_inventory = db.Column(db.Integer)
+    author = db.relationship("Author", backref="books")
+    genres = db.relationship("Genre", secondary="books_genres", backref="books")
 
     def to_dict(self):
         return {
