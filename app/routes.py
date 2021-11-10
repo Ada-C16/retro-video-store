@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, make_response, abort
 from app.models.customer import Customer
 from app.models.video import Video
+from app.models.rental import Rental
 from app import db
 from datetime import date
 import requests
@@ -132,6 +133,20 @@ def handle_one_customer(customer_id):
         db.session.commit()
 
         return make_response(jsonify(customer.to_dict()), 200)
+
+
+@customers_bp.route('/<customer_id>/rentals', methods=["GET"])
+def get_rentals_for_customer(customer_id):
+    customer_id = is_id_valid(customer_id)
+    customer = Customer.query.get(customer_id)
+
+    if not customer:
+        return make_response(jsonify({"message": f"Customer {customer_id} was not found"}), 404)
+
+    rentals = customer.customer_rentals() 
+    return make_response(jsonify(rentals), 200)
+
+
 
 #Helper Functions
 
