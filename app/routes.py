@@ -6,26 +6,22 @@ from app.models.rental import Rental
 from flask import Blueprint, jsonify, request, make_response
 from datetime import datetime
 
-
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
-
 
 # --------------------------------
 # ----------- CUSTOMERS ----------
 # --------------------------------
 
 # GET CUSTOMERS ALL
-
 @customers_bp.route("", methods=["GET"])
 def get_all_customers():
     customers = Customer.query.all()
     customers_response = []
     
     for customer in customers:
-        customers_response.append(customer.to_json())
-    
+        customers_response.append(customer.to_json())  
     return jsonify(customers_response), 200
 
 
@@ -64,28 +60,31 @@ def create_customer():
     return jsonify({"id": new_customer.id}), 201
 
 
-
 # PUT CUSTOMER
 @customers_bp.route("/<id>", methods=["PUT"])
 def update_customer(id):
     customer = Customer.query.get(id)
+    
     if customer is None:
         return jsonify({"message": (f"Customer {id} was not found")}), 404
-        
+    
     request_body = request.get_json()
+    
+    if "name" not in request_body or "postal_code" not in request_body or "phone" not in request_body:
+        return jsonify({"details": "Invalid data"}), 400
+    
     customer.name=request_body["name"] 
     customer.postal_code=request_body["postal_code"] 
     customer.phone=request_body["phone"] 
-    
-    # if not customer.name.isalpha() or not customer.phone.name.isalpha() or not customer.postal_code.isalpha() or "name" not in request_body or "postal_code" not in request_body or "phone" not in request_body:
-    #     return 400
-    
-    # elif "name" not in request_body or "postal_code" not in request_body or "phone" not in request_body:
-    #     return 400
+    customer.registered_at=datetime.now()
     
     db.session.commit()
     return jsonify(customer.to_json()), 200
-    
+    # return jsonify({
+    #     "name": f"Updated {customer.name}",
+    #     "phone": f"Updated {customer.phone}", 
+    #     "postal_code": f"Updated {customer.postal_code}"}), 200
+
 
 
 # DELETE CUSTOMER
