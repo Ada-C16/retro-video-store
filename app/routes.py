@@ -25,34 +25,22 @@ def get_all_customers():
     
     for customer in customers:
         customers_response.append(customer.to_json())
-    #     customers_response.append({
-    #     "id": customer.id,
-    #     "name": customer.name,
-    #     "registered_at": customer.registered_at, 
-    #     "postal_code": customer.postal_code, 
-    #     "phone": customer.phone})
+    
     return jsonify(customers_response), 200
 
 
 # GET CUSTOMER BY ID
 @customers_bp.route("/<id>", methods=["GET"])
 def get_customer(id):
+    if not id.isdigit():
+        return jsonify({"message": "Invalid ID"}), 400    
+    
     customer = Customer.query.get(id)
     if customer is None:
         return jsonify({"message": (f"Customer {id} was not found")}), 404
-    
-    # elif customer.id.isalpha() == True:
-    #     return 400
-    
     else:
         jsonify(customer.to_json()), 200
         
-        # jsonify(
-        #     {"id": customer.id,
-        #      "name": customer.name,
-        #      "registered_at": customer.registered_at,"postal_code": customer.postal_code,
-        #      "phone": customer.phone}), 200
-
 
 # POST CUSTOMER
 @customers_bp.route("", methods=["POST"])
@@ -89,12 +77,15 @@ def update_customer(id):
     customer.postal_code=request_body["postal_code"] 
     customer.phone=request_body["phone"] 
     
+    # if not customer.name.isalpha() or not customer.phone.name.isalpha() or not customer.postal_code.isalpha() or "name" not in request_body or "postal_code" not in request_body or "phone" not in request_body:
+    #     return 400
+    
+    # elif "name" not in request_body or "postal_code" not in request_body or "phone" not in request_body:
+    #     return 400
+    
     db.session.commit()
     return jsonify(customer.to_json()), 200
-    # return jsonify({
-    # "name": customer.name,
-    # "postal_code": customer.postal_code,
-    # "phone": customer.phone}), 200
+    
 
 
 # DELETE CUSTOMER
@@ -117,15 +108,17 @@ def delete_customer(id):
 
 # POST /rentals/check-out
 
-# @rentals_bp.route("/check_out", methods=["POST"])
-# def checkout_video():
+@rentals_bp.route("/check_out", methods=["POST"])
+def checkout_video():
+    pass
 
 
 
 # POST /rentals/check-in
 
-# @rentals_bp.route("/check_in", methods=["POST"])
-# def checkin_video():
+@rentals_bp.route("/check_in", methods=["POST"])
+def checkin_video():
+    pass
     
     
 # GET /customers/<id>/rentals  
@@ -150,7 +143,7 @@ def rentals_by_specific_customer():
 
 # GET /videos/<id>/rentals  
 # FOR A SPECIFIC VIDEO, GET ALL CUSTOMERS CURRENTLY RENTING
-# @videos_bp.route("/<id>/rentals", methods=["GET"])
+@videos_bp.route("/<id>/rentals", methods=["GET"])
 def rentals_of_specific_video():
    
     #get the specific video
