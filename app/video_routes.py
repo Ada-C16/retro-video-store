@@ -1,6 +1,9 @@
 from app import db
 from app.models.video import Video
-from flask import Blueprint, jsonify, request, make_response
+from app.rental_routes import validates_request_body
+from app.models.rental import Rental
+from app.models.customer import Customer
+from flask import Blueprint, jsonify, request, make_response, abort
 
 videos_bp = Blueprint('videos', __name__, url_prefix='/videos')
 
@@ -16,9 +19,7 @@ def handle_videos():
 
 @videos_bp.route('/<id_num>', methods=['GET', 'PUT', 'DELETE'])
 def handle_video(id_num):
-    
-    if validate_video_id(id_num) != True:
-        return validate_video_id(id_num)
+    validate_video_id(id_num)
     
     video = Video.query.get(id_num)
     
@@ -27,8 +28,7 @@ def handle_video(id_num):
 
     elif request.method == 'PUT':
         request_body = request.get_json()
-        if validate_video(request_body) != True:
-            return validate_video(request_body)
+        validate_video(request_body)
         
         for key, value in request_body.items():
             if key in Video.__table__.columns.keys():
@@ -42,18 +42,28 @@ def handle_video(id_num):
         db.session.commit()
         return jsonify({"id": video.video_id}), 200
 
+@videos_bp.route('/<id_num>/rentals', methods=['GET'])
+def handle_video_rentals(id_num):
+    validate_video_id(id_num)
+
+    all_rentals = []
+    rentals = db.session.query(Rental).filter(Rental.video_id == id_num).all()
+    for rental in rentals:
+        customer = Customer.query.get(rental.customer_id)
+        all_rentals.append({"name": customer.name})
+
+    return make_response(jsonify(all_rentals), 200)
+
 # HELPER FUNCTIONS
-def validate_video(response_body):
-    if not response_body:
-        return make_response(jsonify({"error": "No data was sent"}), 400)
-    elif 'title' not in response_body:
-        return make_response(jsonify({"details": "Request body must include title."}), 400)
-    elif 'release_date' not in response_body:
-        return make_response(jsonify({"details": "Request body must include release_date."}), 400)
-    elif 'total_inventory' not in response_body:
-        return make_response(jsonify({"details": "Request body must include total_inventory."}), 400)
-    else:
-        return True
+def validate_video(request_body):
+    if not request_body:
+        abort(make_response(jsonify({"error": "No data was sent"}), 400))
+    elif 'title' not in request_body:
+        abort(make_response(jsonify({"details": "Request body must include title."}), 400))
+    elif 'release_date' not in request_body:
+        abort(make_response(jsonify({"details": "Request body must include release_date."}), 400))
+    elif 'total_inventory' not in request_body:
+        abort(make_response(jsonify({"details": "Request body must include total_inventory."}), 400))
 
 def create_video(data):
     new_video = Video(
@@ -67,16 +77,14 @@ def post_single_or_multiple_video(request_body):
     #checks for list if we want to post multiple videos
     if isinstance(request_body, list):
         for video in request_body:
-            if validate_video(video) != True:
-                return validate_video(video)
+            validate_video(video)
                 
             new_video = create_video(video)
             db.session.add(new_video)
             return jsonify({"video": video.to_dict()} for video in request_body), 201
         
     else:
-        if validate_video(request_body) != True:
-            return validate_video(request_body)
+        validate_video(request_body)
             
         new_video = create_video(request_body)
         db.session.add(new_video)
@@ -87,10 +95,8 @@ def validate_video_id(id_num):
     try:
         id_num = int(id_num)
     except ValueError:
-        return make_response(jsonify({"error": "Invalid ID"}), 400)
+        abort(make_response(jsonify({"error": "Invalid ID"}), 400))
 
     video = Video.query.get(id_num)
     if not video:
-        return make_response(jsonify({"message": f"Video {id_num} was not found"}), 404)
-    else:
-        return True
+        abort(make_response(jsonify({"message": f"Video {id_num} was not found"}), 404))
