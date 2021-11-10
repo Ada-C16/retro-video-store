@@ -24,15 +24,12 @@ def customer_create():
         name=request_body["name"],
         phone=request_body["phone"],
         postal_code=request_body["postal_code"],
-        registered_at=["registered_at"]
+
     )
     db.session.add(new_customer)
     db.session.commit()
 
-    # response_body = {new_customer.customer_dict()}
-    # return jsonify(response_body), 201
-    # return jsonify({"id": new_customer.customer_id}), 201
-    return jsonify({"parameters": new_customer.customer_id}), 201
+    return jsonify({"id": new_customer.customer_id}), 201
 
 
 @customers_bp.route("", methods=["GET"])
@@ -41,21 +38,17 @@ def handle_customers():
     response_body = []
     for customer in customers:
         response_body.append(customer.customer_dict())
-#     for customer in customers:
-#         response_body.append({
-#             "id": customers.customer_id,
-#             "name": customers.name,
-#             # "registered_at": customers.registered_at,
-#             "postal_code": customers.postal_code,
-#             "phone": customers.phone
-# })
 
     return jsonify(response_body), 200
 
 
 @customers_bp.route("/<customer_id>", methods=["GET"])
 def customer_get(customer_id):
-    customer = Customer.query.get(customer_id)
+    try:
+        customer = Customer.query.get(customer_id)
+    except:
+        return jsonify({"message": f"Customer {customer_id} was not found"}), 400
+            
     if customer is None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
 
@@ -66,34 +59,43 @@ def customer_get(customer_id):
 # WORK IN PROGRESS
 @customers_bp.route("/<customer_id>", methods=["PUT"])
 def customer_put(customer_id):
-    customer = Customer.query.get(customer_id)
+    # customer = Customer.query.get(customer_id)
+    try:
+        customer = Customer.query.get(customer_id)
+    except:
+        return jsonify({"message": f"Customer {customer_id} was not found"}), 400
 
     if customer == None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
 
     request_body = request.get_json()
 
-    customer.name = request_body["name"]
-    customer.phone = request_body["phone"]
-    customer.postal_code = request_body["postal_code"]
-    # is registered not required?
-    response_body = {customer.customer_dict()}
+    # merge conflict 
+    # customer.name = request_body["name"]
+    # customer.phone = request_body["phone"]
+    # customer.postal_code = request_body["postal_code"]
+    # # is registered not required?
+    # response_body = {customer.customer_dict()}
+    # if "name" in request_body:
+    #     customer.name = request_body["name"]
+    # if "phone" in request_body:
+    #     customer.phone = request_body["phone"]
+    # if "postal_code" in request_body:
+    #     customer.postal_code = request_body["postal_code"]
 
-    
     if "name" in request_body or "phone" in request_body or "postal_code" in request_body:
         response_body ={}
-        if "name" in request_body:
-            response_body = f"Updated ${customer.name}"
-        elif "phone" in request_body:
-            response_body = f"Updated ${customer.phone}"
-        elif "postal_code" in request_body:
-            response_body = f"Updated ${customer.postal_code}"
-        return response_body
-    
-    
-    # response_body = customer.customer_dict()
+        response_body["name"] = customer.name
+        response_body["phone"] = customer.phone 
+        response_body["postal_code"] = customer.postal_code 
 
-    # return jsonify(response_body), 200
+    # db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        return jsonify("Invalid"), 400
+
+    return jsonify(response_body), 200
 
 
 @customers_bp.route("/<customer_id>", methods=["DELETE"])

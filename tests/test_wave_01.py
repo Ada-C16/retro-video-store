@@ -10,6 +10,7 @@ VIDEO_RELEASE_DATE = "01-01-2001"
 CUSTOMER_NAME = "A Brand New Customer"
 CUSTOMER_ID = 1
 CUSTOMER_POSTAL_CODE = "12345"
+# CUSTOMER_POSTAL_CODE = 12345 
 CUSTOMER_PHONE = "123-123-1234"
 
 # --------------------------------
@@ -236,7 +237,7 @@ def test_get_customers_one_saved_customer(client, one_customer):
     assert response_body[0]["name"] == CUSTOMER_NAME
     assert response_body[0]["id"] == CUSTOMER_ID
     assert response_body[0]["phone"] == CUSTOMER_PHONE
-    assert response_body[0]["postal_code"] == CUSTOMER_POSTAL_CODE
+    assert response_body[0]["postal_code"] == CUSTOMER_POSTAL_CODE #another string
 
 
 def test_get_customer(client, one_customer):
@@ -249,7 +250,7 @@ def test_get_customer(client, one_customer):
     assert response_body["name"] == CUSTOMER_NAME
     assert response_body["id"] == CUSTOMER_ID
     assert response_body["phone"] == CUSTOMER_PHONE
-    assert response_body["postal_code"] == CUSTOMER_POSTAL_CODE
+    assert response_body["postal_code"] == CUSTOMER_POSTAL_CODE #another string
 
 
 def test_get_customer_not_found(client):
@@ -367,7 +368,9 @@ def test_update_customer(client, one_customer):
     response = client.put("/customers/1", json={
         "name": f"Updated ${CUSTOMER_NAME}",
         "phone": f"Updated ${CUSTOMER_PHONE}",
+        # postal_code data type is an integer but the test case is passing in a string.
         "postal_code": f"Updated ${CUSTOMER_POSTAL_CODE}"
+        # "postal_code": CUSTOMER_POSTAL_CODE+5
     })
     response_body = response.get_json()
 
@@ -376,11 +379,13 @@ def test_update_customer(client, one_customer):
     assert response_body["name"] == f"Updated ${CUSTOMER_NAME}"
     assert response_body["phone"] == f"Updated ${CUSTOMER_PHONE}"
     assert response_body["postal_code"] == f"Updated ${CUSTOMER_POSTAL_CODE}"
+    # assert response_body["postal_code"] == CUSTOMER_POSTAL_CODE+5
 
     customer = Customer.query.get(1)
     assert customer.name == f"Updated ${CUSTOMER_NAME}"
     assert customer.phone == f"Updated ${CUSTOMER_PHONE}"
     assert customer.postal_code == f"Updated ${CUSTOMER_POSTAL_CODE}"
+    # assert customer.postal_code == CUSTOMER_POSTAL_CODE+5
 
 
 def test_update_customer_not_found(client):
