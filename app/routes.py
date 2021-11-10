@@ -4,6 +4,7 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from app.models.video import Video
 from .models.customer import Customer
+from .models.rental import Rental
 from app import db
 from sqlalchemy import exc
 from sqlalchemy.exc import DataError
@@ -12,6 +13,8 @@ from sqlalchemy.exc import DataError
 # from flask.blueprints import Blueprint
 
 videos_bp = Blueprint("videos", __name__, url_prefix ="/videos")
+customer_bp = Blueprint("customers", __name__, url_prefix="/customers")
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 @videos_bp.route("", methods=["GET"])
 def get_all_videos():
@@ -80,8 +83,6 @@ def delete_video(video_id):
         return make_response({"message": "Video 1 was not found"}), 404
 
 
-customer_bp = Blueprint("customers", __name__, url_prefix="/customers")
-
 @customer_bp.route("", methods=["GET", "POST"])
 def handle_customers():
     pass
@@ -148,4 +149,39 @@ def handle_customer(cust_id):
             "id": customer.id,
             "status": "deleted"
         }
+
+@rentals_bp.route("/check-out", methods=["POST"])
+def handle_rental_checkout():
+
+    request_body = request.get_json()
+
+    # check request body fields
+    if "customer_id" not in request_body or "video_id" not in request_body:
+        return { "message" : "missing information "}, 400
+
+    # validate customer id
+    customer_id = request_body["customer_id"]
+    customer_id_error = Customer.validate_id(customer_id)
+    if customer_id_error:
+        return customer_id_error
+
+    # validate video id
+    video_id = request_body["video_id"]
+    video_id_error = Video.validate_id(video_id)
+    if video_id_error:
+        return video_id_error
+
+    available_inventory = Rental.get_available_video_inventory(video_id)
+
+    if available_inventory == 0:
+        return { "message" : "Could not perform checkout"}, 400
+
+    # create new rental
+    new_rental = Rental.from_json(customer_id, video_id)
+
+    db.session.add(new_rental)
+    db.session.commit()
+
+    return new_rental.to_dict_check_out(), 200
+
 

@@ -16,3 +16,17 @@ class Video(db.Model):
             "total_inventory": self.total_inventory
         }
         return dictionary 
+
+    @classmethod
+    def validate_id(cls, id):
+        try:
+            int(id)
+        except ValueError:
+            return "", 400
+
+        obj = cls.query.get(id)
+
+        if not obj:
+            return {
+                "message": f"Video {id} was not found"
+            }, 404
