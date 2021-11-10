@@ -2,10 +2,12 @@ from app import db
 
 class Video(db.Model):
     __tablename__ = 'videos'
-    id = db.Column(db.Integer, primary_key=True)
+    video_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     release_date = db.Column(db.DateTime, nullable = False)
     total_inventory = db.Column(db.Integer, nullable = False)
+    available_inventory = db.Column(db.Integer, default = 5, nullable = False)
+    rentals = db.relationship('Rental', backref='videos', lazy=True)
 
     # additional attributes
     # genres = db.Column(db.String(100), nullable=False)
@@ -17,10 +19,11 @@ class Video(db.Model):
 
     def to_dict(self):
         return {
-            'id': self.id,
+            'id': self.video_id,
             'title': self.title,
             'release_date': self.release_date,
-            'total_inventory': self.total_inventory
+            'total_inventory': self.total_inventory,
+            'available_inventory': self.available_inventory
         }
     
     # def new_to_dict(self):
