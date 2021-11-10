@@ -184,6 +184,13 @@ def rental_status(rental_status):
         return make_response("", 404)
 
     if rental_status == "check-out":
+        rental = Rental(customer_id = request_body["customer_id"],
+                        video_id = request_body["video_id"],
+                        due_date = date.today() + timedelta(days=7))
+        dict_rent = rental.to_dict()
+        db.session.add(rental)
+        db.session.commit()
+
         video.total_inventory -= 1
         if customer.number_of_rentals == None:
             customer.number_of_rentals = 0
@@ -191,10 +198,6 @@ def rental_status(rental_status):
         else:
             customer.number_of_rentals += 1
 
-        rental = Rental(customer_id = request_body["customer_id"],
-                        video_id = request_body["video_id"],
-                        due_date = date.today() + timedelta(days=7))
-        dict_rent = rental.to_dict()
         dict_rent["videos_checked_out_count"] = customer.number_of_rentals
         dict_rent["available_inventory"] = video.total_inventory
     
