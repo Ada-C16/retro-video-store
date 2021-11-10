@@ -1,5 +1,5 @@
 
-from flask import Blueprint, jsonify, request, make_response, Flask
+from flask import Blueprint, json, jsonify, request, make_response, Flask
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from app.models.video import Video
@@ -185,3 +185,67 @@ def handle_rental_checkout():
     return new_rental.to_dict_check_out(), 200
 
 
+@rentals_bp.route("/check-in", methods=["POST"])
+def rental_checkin_update():
+    request_body = request.get_json()
+    #checks responsebody
+    if "customer_id" not in request_body or "video_id" not in request_body:
+        return { "message" : "missing information "}, 400
+
+    #validate customer id
+    customer_id = request_body["customer_id"]
+    customer_id_error = Customer.validate_id(customer_id)
+    if customer_id_error:
+        return customer_id_error
+
+    # validate video id
+    video_id = request_body["video_id"]
+    video_id_error = Video.validate_id(video_id)
+    if video_id_error:
+        return video_id_error
+
+    #gets matching rentals
+    video = Video.query.get(request_body["video_id"])
+    customer = Customer.query.get(request_body["customer_id"])
+    rental = Rental.query.filter(Customer.id == customer.id)\
+        .filter(Video.video_id == video.video_id).first()
+
+    #checks if rental is not checked out by customer
+    if rental is None:
+        return jsonify({"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}), 400
+
+    #changes rental to false
+    rental.checked_out = False
+    db.session.commit()
+    # db.session.delete(rental)
+
+    return rental.to_dict_check_in(), 200
+
+
+@videos_bp.route("/<id>/rentals", methods=["GET"])
+def gets_customers_by_rental(id):
+    #Validates id
+    video_id_error = Video.validate_id(id)
+    if video_id_error:
+        return video_id_error
+
+    #gets/filters to get all videos 
+    rentals = Rental.query.filter_by(video_id = id).all()
+    rental_list = []
+    for rental in rentals:
+        rent = rental.to_dict()
+        customer = Customer.query.get(rental.customer_id)
+        rental_list.append({
+            "due_date": rent["due_date"],
+            "name": customer.name,
+            "phone": customer.phone,
+            "postal_code": customer.postal_code
+        })
+   
+    return jsonify(rental_list), 200
+
+
+@rentals_bp.route("", methods=["GET"])
+def get_all_rentals():
+    rentals = Rental.query.all()
+    return jsonify([rental.to_dict() for rental in rentals])
