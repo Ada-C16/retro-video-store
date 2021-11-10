@@ -160,12 +160,17 @@ def delete_one_video(video_id):
 @rentals_bp.route("/check-out", methods=["POST"])
 def check_out_video():
     request_body = request.get_json()
+
+    if not Rental.is_data_valid(request_body):
+        return {}, 400
     # might need to validate data
     customer_id = request_body["customer_id"]
     video_id = request_body["video_id"]
     due_date = datetime.date.today() + datetime.timedelta(days=7)
     new_rental = Rental(video_id=video_id, customer_id=customer_id, due_date=due_date)
-    video = Video.query.get(video_id)
+    video = Video.query.get_or_404(video_id)
+    customer = Customer.query.get_or_404(customer_id)
+    
     db.session.add(new_rental)
     db.session.commit()
     total_inventory = video.total_inventory
