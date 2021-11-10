@@ -18,8 +18,22 @@ def handle_videos():
                         "total_inventory": video.total_inventory
                         } for video in videos]
         return jsonify(videos_list)
+
     elif request.method == 'POST':
-        pass
+        request_body = request.get_json()
+
+        new_video = Video(title=request_body["title"], 
+                            release_date=request_body["release_date"],
+                            total_inventory=request_body["total_inventory"])
+
+        db.session.add(new_video)
+        db.session.commit()
+
+        return make_response({"task": { "id": new_video.id,
+                                                "title": new_video.title,
+                                                "release_date": new_video.release_date,
+                                                "total_inventory": new_video.total_inventory
+                                              }}, 201)
 
 @video_bp.route('/<video_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_one_video(video_id):
