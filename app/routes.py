@@ -68,12 +68,13 @@ def update_video(video_id):
         return jsonify({"message": f"Video {video_id} was not found"}), 404
 
     request_body = request.get_json()
-    validate_video(request_body)
-
-    video.title = request_body["title"]
-    video.release_date = request_body["release_date"]
-    video.total_inventory = request_body["total_inventory"]
-
+    validated_video = validate_video(request_body)
+    if validated_video is None:
+        video.title = request_body["title"]
+        video.release_date = request_body["release_date"]
+        video.total_inventory = request_body["total_inventory"]
+    else: 
+        return validated_video #Rename
     db.session.commit()
     return jsonify(video.to_dict()), 200
 
@@ -88,3 +89,6 @@ def delete_video(video_id):
     db.session.delete(video)
     db.session.commit()
     return jsonify({"id": video.id}), 200
+
+    # Abort 404
+    
