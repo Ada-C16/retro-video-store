@@ -7,6 +7,7 @@ from datetime import datetime
 # setup blueprints here
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos_bp", __name__, url_prefix="/videos")
+rentals_bp = Blueprint("rentals_bp", __name__, url_prefix="/rentals")
 
 # Customers routes
 
@@ -153,3 +154,5 @@ def delete_one_video(video_id):
         db.session.delete(video)
         db.session.commit()
         return {"id": video_id}, 200
+
+# Rentals
