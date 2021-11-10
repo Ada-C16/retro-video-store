@@ -32,5 +32,8 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
 
     #Register Blueprints Here
-
+    from app.models.customer import Customer
+    from .routes import customers_bp
+    app.register_blueprint(customers_bp)
     return app
+   
