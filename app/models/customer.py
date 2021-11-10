@@ -2,12 +2,15 @@ from app import db
 from flask import abort, make_response
 from datetime import datetime, timezone
 
+
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name=db.Column(db.String)
-    postal_code=db.Column(db.String)
-    phone=db.Column(db.String)
-    registered_at=db.Column(db.DateTime)
+    name = db.Column(db.String)
+    postal_code = db.Column(db.String)
+    phone = db.Column(db.String)
+    registered_at = db.Column(db.DateTime)
+    videos = db.relationship("Video", secondary="rental",
+                             backref="customers", lazy=True)
 
     def to_dict(self):
         return {
@@ -26,21 +29,23 @@ class Customer(db.Model):
         return self
 
     @classmethod
-    def validate_input(cls,customer_dict):
+    def validate_input(cls, customer_dict):
         if "name" not in customer_dict:
-            abort(make_response({"details": "Request body must include name."}, 400))
+            abort(make_response(
+                {"details": "Request body must include name."}, 400))
         if "postal_code" not in customer_dict:
-            abort(make_response({"details": "Request body must include postal_code."}, 400))
+            abort(make_response(
+                {"details": "Request body must include postal_code."}, 400))
         if "phone" not in customer_dict:
-            abort(make_response({"details": "Request body must include phone."}, 400))
-
+            abort(make_response(
+                {"details": "Request body must include phone."}, 400))
 
     @classmethod
     def new_from_dict(cls, customer_dict):
         "This method creates a new customer object from a dictionary of attributes"
-        
+
         cls.validate_input(customer_dict)
-        
+
         return cls(
             name=customer_dict["name"],
             postal_code=customer_dict["postal_code"],
@@ -57,9 +62,7 @@ class Customer(db.Model):
 
         customer = cls.query.get(id)
         if not customer:
-            abort(make_response({"message": f"Customer {id} was not found"}, 404))
-            
+            abort(make_response(
+                {"message": f"Customer {id} was not found"}, 404))
+
         return customer
-
-
-
