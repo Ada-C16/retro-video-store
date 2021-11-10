@@ -22,7 +22,11 @@ def handle_videos():
     elif request.method == 'POST':
         request_body = request.get_json()
         if 'title' not in request_body.keys():
-            pass
+            return make_response({"details": "Request body must include title." }, 400)
+        elif 'release_date' not in request_body.keys():
+            return make_response({"details":"Request body must include release_date."}, 400)
+        elif 'total_inventory' not in request_body.keys():
+            return make_response({"details": "Request body must include total_inventory."}, 400)
         else:
             new_video = Video(title=request_body["title"], 
                                 release_date=request_body["release_date"],
