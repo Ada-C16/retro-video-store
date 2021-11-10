@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, make_response,request, abort
 from dotenv import load_dotenv
 import os
 from datetime import date, timedelta 
-from flask import Flask
+from flask import Flask, jsonify
 
 
 load_dotenv()
@@ -29,26 +29,36 @@ def resource_not_found(e):
 #     customer_id = valid_int(customer_id)
 #     return Customer.query.get_or_404(customer_id)
 
-@rental_bp.route("/check_out", methods="POST")
+@rental_bp.route("/check-out", methods=["POST"])
 def create_customer_video():
     request_body = request.get_json()
     customer_id = request_body["customer_id"]
     video_id = request_body["video_id"]
-    if "videos_checked_out_count" not in request_body:
-        videos_checked_out_count = 1
-    due_date = date.today() + timedelta(days=7)
-    this_video = Video.query.get(video_id)
-    total_inventory = this_video.total_inventory
 
-    new_rental = Rental(video_id=video_id, customer_id=customer_id, videos_checked_out_count=videos_checked_out_count)
-    
-    db.session.add(new_rental)
-    db.session.commit()
+    if Video.query.get(customer_id) and Customer.query.get(video_id):
 
-    return {
-  "customer_id": new_rental.customer_id,
-  "video_id": new_rental.video_id,
-  "due_date": due_date,
-  "videos_checked_out_count": videos_checked_out_count,
-  "available_inventory":total_inventory - videos_checked_out_count
-}
+        if "videos_checked_out_count" not in request_body:
+            videos_checked_out_count = 1
+        due_date = date.today() + timedelta(days=7)
+        this_video = Video.query.get(video_id)
+        total_inventory = this_video.total_inventory
+        available_inventory = total_inventory - videos_checked_out_count
+        if total_inventory > videos_checked_out_count:
+            new_rental = Rental(video_id=video_id, customer_id=customer_id, videos_checked_out_count=videos_checked_out_count)
+            this_video.total_inventory = available_inventory
+            db.session.add(new_rental)
+            db.session.commit()
+
+            return jsonify({
+        "customer_id": new_rental.customer_id,
+        "video_id": new_rental.video_id,
+        "due_date": due_date,
+        "videos_checked_out_count": videos_checked_out_count,
+        "available_inventory":available_inventory
+        }), 200
+
+        else:
+            return jsonify({"message":"Could not perform checkout"}), 400
+
+    make_response(400)
+        
