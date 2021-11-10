@@ -10,7 +10,8 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime, default=datetime.utcnow())
-    # rentals = db.relationship('Rental',backref='customer', lazy=True)
+    videos_checked_out_count = db.Column(db.Integer, default = 0, nullable = False)
+    rentals = db.relationship('Rental',backref='customers', lazy=True)
 
     def to_dict(self):
         result = {
@@ -18,7 +19,8 @@ class Customer(db.Model):
             "name": self.name,
             "postal_code": self.postal_code,
             "phone":self.phone,
-            "registered_at": self.registered_at
+            "registered_at": self.registered_at,
+            "videos_checked_out_count": self.videos_checked_out_count
         }
         # if self.rentals:
         #     result["rentals"]=self.rentals
