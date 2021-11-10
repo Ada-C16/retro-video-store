@@ -5,7 +5,7 @@ from app.models.rental import Rental
 from flask import Blueprint, jsonify, make_response,request, abort
 from dotenv import load_dotenv
 import os
-from datetime import date, datetime
+from datetime import date, timedelta 
 from flask import Flask
 
 
@@ -34,10 +34,13 @@ def create_customer_video():
     request_body = request.get_json()
     customer_id = request_body["customer_id"]
     video_id = request_body["video_id"]
-    due_date = date.today
+    if "videos_checked_out_count" not in request_body:
+        videos_checked_out_count = 1
+    due_date = date.today() + timedelta(days=7)
     this_video = Video.query.get(video_id)
-    available_inventory = this_video.total_inventory
-    new_rental = Rental(video_id=video_id, customer_id=customer_id)
+    total_inventory = this_video.total_inventory
+
+    new_rental = Rental(video_id=video_id, customer_id=customer_id, videos_checked_out_count=videos_checked_out_count)
     
     db.session.add(new_rental)
     db.session.commit()
@@ -46,6 +49,6 @@ def create_customer_video():
   "customer_id": new_rental.customer_id,
   "video_id": new_rental.video_id,
   "due_date": due_date,
-  "videos_checked_out_count": 2,
-  "available_inventory": available_inventory - videos_checked_out_count
+  "videos_checked_out_count": videos_checked_out_count,
+  "available_inventory":total_inventory - videos_checked_out_count
 }
