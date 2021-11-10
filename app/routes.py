@@ -2,7 +2,8 @@ from flask import Blueprint, jsonify, request
 from app import db
 from app.models.video import Video
 from app.models.customer import Customer
-from datetime import datetime
+from app.models.rental import Rental
+import datetime
 
 # setup blueprints here
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
@@ -156,3 +157,23 @@ def delete_one_video(video_id):
         return {"id": video_id}, 200
 
 # Rentals
+@rentals_bp.route("/check-out", methods=["POST"])
+def check_out_video():
+    request_body = request.get_json()
+    # might need to validate data
+    customer_id = request_body["customer_id"]
+    video_id = request_body["video_id"]
+    due_date = datetime.date.today() + datetime.timedelta(days=7)
+    new_rental = Rental(video_id=video_id, customer_id=customer_id, due_date=due_date)
+    video = Video.query.get(video_id)
+    db.session.add(new_rental)
+    db.session.commit()
+    total_inventory = video.total_inventory
+    checked_out = Rental.query.filter(Rental.video_id == video_id).count()
+    return {
+        "customer_id": customer_id,
+        "video_id": video_id,
+        "due_date": due_date,
+        "videos_checked_out_count": checked_out,
+        "available_inventory": total_inventory - checked_out
+    }, 200
