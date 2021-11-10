@@ -15,14 +15,17 @@ rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 @rentals_bp.route("/check-out", methods=["POST"])
 def check_out_video_to_customer():
     request_body = request.get_json()
-    if "video_id" not in request_body:
-        return jsonify()
+    if "video_id" not in request_body or "customer_id" not in request_body:
+        return jsonify(""), 400
     video = get_video_from_id(request_body["video_id"])
     customer = get_customer_from_id(request_body["customer_id"])
 
     available_inventory = video.total_inventory - Rental.query.filter_by(video_id=video.id,return_date=None).count()
     if available_inventory <= 0:
-        return jsonify(""),400
+        response_body = {
+            "message": "Could not perform checkout"
+                    }
+        return jsonify(response_body), 400
     
     new_rental = Rental(customer_id=customer.id, video_id=video.id)
     db.session.add(new_rental)
