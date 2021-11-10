@@ -50,12 +50,31 @@ def get_video(video_id):
     ## try
     # if not isinstance(video_id, int):
     ## or
-    # if not url_path.is_integer():
-        # return jsonify(), 400
+    # if not video_id.is_integer():
+    #     return jsonify(), 400
+    # maybe try-except? for invalid id test 
 
     video = Video.query.get(video_id)
     if video is None:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
+    response_body = video.to_dict()
+    return jsonify(response_body)
+
+@video_bp.route("/<video_id>", methods=["PUT"])
+def update_video(video_id):
+    video = Video.query.get(video_id)
+    if video is None:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
+    
+    request_body = request.get_json()
+    if "title" not in request_body or "release_date" not in request_body or "total_inventory" not in request_body:
+        return jsonify(), 400
+    
+    video.title = request_body["title"]
+    video.release_date = request_body["release_date"]
+    video.total_inventory = request_body["total_inventory"]
+    db.session.commit()
+
     response_body = video.to_dict()
     return jsonify(response_body)
 
@@ -67,5 +86,5 @@ def delete_video(video_id):
     db.session.delete(video)
     db.session.commit()
 
-    response_body = {"id":f"{video.video_id}"}
+    response_body = {"id": video.video_id}
     return jsonify(response_body)
