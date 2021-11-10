@@ -6,7 +6,7 @@ class Video(db.Model):
     title = db.Column(db.String(100), nullable=False)
     release_date = db.Column(db.DateTime, nullable = False)
     total_inventory = db.Column(db.Integer, nullable = False)
-    available_inventory = db.Column(db.Integer, default = 5, nullable = False)
+    available_inventory = db.Column(db.Integer, nullable = False)
     rentals = db.relationship('Rental', backref='videos', lazy=True)
 
     # additional attributes
