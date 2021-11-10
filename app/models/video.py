@@ -6,3 +6,5 @@ class Video(db.Model):
     release_date = db.Column(db.DateTime)
     total_inventory = db.Column(db.Integer)
     
+    customer = db.relationship("Customer", backref="videos")
+    rental = db.relationship("Rental", backref="videos")
