@@ -63,7 +63,23 @@ def handle_one_video(video_id):
     if request.method == 'GET':
         return one_video
     elif request.method == 'PUT':
-        pass
+        updates = request.get_json()
+        if 'title' not in updates.keys() or 'release_date' not in updates.keys() \
+                                         or 'total_inventory' not in updates.keys():
+            return make_response({"details": "Invalid data"}, 400)
+        else:
+            video.title = updates['title']
+            video.release_date = updates['release_date']
+            video.total_inventory = updates['total_inventory']
+
+            db.session.commit()
+            return make_response({"id": video.id,
+                                    "title": video.title,
+                                    "release_date": video.release_date,
+                                    "total_inventory":video.total_inventory}) 
     elif request.method == 'DELETE':
-        pass
+        db.session.delete(video)
+        db.session.commit()
+
+        return make_response({"id": video.id})
     
