@@ -6,4 +6,4 @@ from flask_sqlalchemy import model
 from sqlalchemy import func
 import requests
 
-rentals_bp = Blueprint("videos", __name__, url_prefix="/rentals")
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
