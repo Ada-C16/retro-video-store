@@ -12,6 +12,8 @@ from sqlalchemy.exc import DataError
 # from flask.blueprints import Blueprint
 
 videos_bp = Blueprint("videos", __name__, url_prefix ="/videos")
+customer_bp = Blueprint("customers", __name__, url_prefix="/customers")
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 @videos_bp.route("", methods=["GET"])
 def get_all_videos():
@@ -79,8 +81,6 @@ def delete_video(video_id):
     else:
         return make_response({"message": "Video 1 was not found"}), 404
 
-
-customer_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
 @customer_bp.route("", methods=["GET", "POST"])
 def handle_customers():

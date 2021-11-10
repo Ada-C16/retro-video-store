@@ -1,3 +1,6 @@
+# Investigate later
+https://docs.sqlalchemy.org/en/14/core/type_basics.html#sqlalchemy.types.TIMESTAMP
+
 # Wave 02
  
 ## Models
@@ -8,7 +11,7 @@
 `status` checked in / checked out
 
 ## Routes
-1. `POST /rentals/check-out`
+1. `POST /rentals/check-out` - Sarah
    - Sets the due date of the rental to 7 days from the current date
    - Required body parameters:
      - `customer_id` | integer | ID of the customer attempting to check out this video
@@ -25,9 +28,10 @@
 
    If customer not found: 404
    If video not found: 404
-   If video does not have any inventory: 400
+   If missing parameters: 400
+   If video does not have any inventory: 400, { "message" : "Could not perform checkout"}
 
-2. `POST /rentals/check-in`
+2. `POST /rentals/check-in` - Lilly
    - either delete the rental or change it's status to `"checked_in"`.
    - required body parameters 
     `customer_id` | integer | ID of the customer attempting to check out this video
@@ -41,7 +45,7 @@
     "available_inventory": 6
     }
 
-3. `GET /customers/<customer_id>/rentals`
+3. `GET /customers/<customer_id>/rentals` - Sarah
    List the videos a customer currently has checked out.
 
    Typical success response is a list of videos with the due date:
@@ -61,7 +65,7 @@
       }
   ]
 
-4. `GET /videos/<id>/rentals`
+4. `GET /videos/<id>/rentals` - Lilly
 
   List the customers who _currently_ have the video checked out
 
