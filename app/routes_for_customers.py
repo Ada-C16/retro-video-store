@@ -76,3 +76,25 @@ def handle_customer_by_id(customer_id):
         db.session.commit()
         
         return make_response({"id":customer.id}, 200)
+
+    elif request.method == "PUT":
+        form_data = request.get_json()
+        try:
+            form_data["name"]
+            form_data["postal_code"]
+            form_data["phone"]
+        except:
+            return make_response("OOPs try again.", 400)
+        customer.name = form_data["name"]
+        customer.postal_code = form_data["postal_code"]
+        customer.phone = form_data["phone"]
+
+        db.session.commit()
+
+        response_value = {
+            "id": customer_id,
+            "name": customer.name,
+            "postal_code": customer.postal_code,
+            "phone": customer.phone
+        }
+        return make_response(response_value, 200)
