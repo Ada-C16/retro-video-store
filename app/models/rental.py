@@ -35,6 +35,16 @@ class Rental(db.Model):
             "available_inventory": Rental.get_available_video_inventory(self.video_id)
         }
 
+    def to_dict_customer_rentals(self):
+
+        video = Video.query.get(self.video_id)
+
+        return {
+            "release_date": video.release_date,
+            "title": video.title,
+            "due_date": self.due_date.strftime("%Y-%m-%d") if self.due_date else None,
+        }
+
     @classmethod
     def from_json(cls, customer_id, video_id):
 
