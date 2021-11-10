@@ -1,4 +1,18 @@
 from app import db
 
 class Customer(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    postal_code = db.Column(db.String)
+    phone_number = db.Column(db.String)
+    register_at = db.Column(db.DateTime)
+
+    def to_dict(self):
+        {
+        "id": self.customer_id,
+        "name": self.name,
+        "postal_code": self.postal_code,
+        "phone": self.phone_number,
+        "register_at": self.register_at,
+        }
+
