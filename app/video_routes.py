@@ -40,7 +40,7 @@ def handle_video(id_num):
     elif request.method == 'DELETE':
         db.session.delete(video)
         db.session.commit()
-        return jsonify({"id": video.id}), 200
+        return jsonify({"id": video.video_id}), 200
 
 # HELPER FUNCTIONS
 def validate_video(response_body):
