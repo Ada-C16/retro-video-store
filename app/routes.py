@@ -5,7 +5,9 @@ from app.models.customer import Customer
 from app.models.rental import Rental
 from dotenv import load_dotenv
 import os
-from sqlalchemy import desc 
+from sqlalchemy import desc
+import datetime
+
 
 
 
@@ -21,7 +23,7 @@ def validate_id_int(id):
     except:
         abort(400, "Error: ID needs to be a number.")
 
-def validate_request_body(request_body):
+def validate_customer_request_body(request_body):
     if "name" not in request_body:
         return jsonify({"details": "Request body must include name."}), 400
     if "postal_code" not in request_body:
@@ -39,7 +41,7 @@ def validate_request_body(request_body):
 def create_customer():
     request_body = request.get_json()
     # Check if request_body is invalid/missing data
-    invalid = validate_request_body(request_body)
+    invalid = validate_customer_request_body(request_body)
     if invalid:
         # Returns the invalid error message and status code
         return invalid
@@ -66,6 +68,7 @@ def create_customer():
 def handle_customers():
     customers_response = []
     sort_by = request.args.get('sort')
+    # Poss. Refactor: Could make 70 - 75 into a helper function, passing in sort_by as parameter
     if sort_by == "asc":
         customers = Customer.query.order_by(Customer.name).all()
     elif sort_by == "desc":
@@ -88,7 +91,7 @@ def handle_customer(id):
     elif request.method == "PUT":
         request_body = request.get_json()
         # Check if request_body is invalid/missing data
-        invalid = validate_request_body(request_body)
+        invalid = validate_customer_request_body(request_body)
         if invalid:
             # Returns the invalid error message and status code
             return invalid
@@ -216,4 +219,56 @@ def handle_video(video_id):
         db.session.delete(video)
         db.session.commit()
         return make_response(video.to_dict(), 200)
+
+
+# ---------------------------
+# -------- RENTALS ----------
+# ---------------------------
+
+def create_due_date(rental_date):
+    date_1 = datetime.datetime.strptime(rental_date, "%y-%m-%d")
+    due_date = date_1 + datetime.timedelta(days=7)
+    return due_date
+
+def validate_rental_request_body(request_body):
+    if "name" not in request_body:
+        return jsonify({"details": "Request body must include name."}), 400
+    if "postal_code" not in request_body:
+        return jsonify({"details": "Request body must include postal_code."}), 400
+    if "phone" not in request_body:
+        return jsonify({"details": "Request body must include phone."}), 400
+    return False
+
+# Posts a rental
+@rentals_bp.route("", methods = ["POST"])
+def create_rental():
+    request_body = request.get_json()
+    # Check if request_body is invalid/missing data
+    invalid = validate_rental_request_body(request_body)
+    if invalid:
+        # Returns the invalid error message and status code
+        return invalid
+
+    new_rental = Rental(customer_id=request_body["customer_id"],
+                    video_id=request_body["video_id"],
+                    due_date=create_due_date(request_body["phone"]),
+    )
+
+    db.session.add(new_rental)
+    db.session.commit()
+
+    new_rental_response = new_rental.to_dict()
+
+    # Calculate, then add to new_rental_response
+    videos_checked_out_count = 
+    # Number of videos checked out by this customer_id
+    # Count all rentals where customer_id is current rental's customer_id
+
+    available_inventory = 
+    # Count all rentals where video_id is current video_id
+    # Then subract from total_inventory for video with this video_id
+
+    return jsonify(new_rental_response), 201
+
+
 
