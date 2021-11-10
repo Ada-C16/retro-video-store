@@ -5,10 +5,11 @@ import os
 from dotenv import load_dotenv
 
 db = SQLAlchemy()
-# the passed in parameter allows 
+# the passed in parameter allows
 # type changes for model/class type changes
 migrate = Migrate(compare_type=True)
 load_dotenv()
+
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -23,7 +24,6 @@ def create_app(test_config=None):
         app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
             "SQLALCHEMY_TEST_DATABASE_URI")
 
-    
     # import models for Alembic Setup
     from app.models.customer import Customer
     from app.models.video import Video
@@ -33,11 +33,14 @@ def create_app(test_config=None):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    #Register Blueprints Here
+    # Register Blueprints Here
     from app.routes import video_bp
     app.register_blueprint(video_bp)
 
     from app.routes import customer_bp
     app.register_blueprint(customer_bp)
+
+    from app.routes import rental_bp
+    app.register_blueprint(rental_bp)
 
     return app

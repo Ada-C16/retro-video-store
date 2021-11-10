@@ -8,3 +8,5 @@ class Rental(db.Model):
     video_id = db.Column(db.Integer, db.ForeignKey(
         'video.id'), primary_key=True, nullable=False)
     due_date = db.Column(db.DateTime)
+    customer = db.relationship("Customer", back_populates="videos")
+    video = db.relationship("Video", back_populates="customers")
