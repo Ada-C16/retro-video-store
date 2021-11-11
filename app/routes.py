@@ -180,7 +180,6 @@ def check_out_video():
     db.session.add(new_rental)
     db.session.commit()
 
-    
     return {
         "customer_id": customer_id,
         "video_id": video_id,
@@ -189,30 +188,35 @@ def check_out_video():
         "available_inventory": total_inventory - checked_out - 1
     }, 200
 
-# @rentals_bp.route("/check-in", methods=["POST"])
-# def check_in_video():
-#     request_body = request.get_json()
+@rentals_bp.route("/check-in", methods=["POST"])
+def check_in_video():
+    request_body = request.get_json()
 
-#     if not Rental.is_data_valid(request_body):
-#         return {}, 400
-#     # might need to validate data
+    if not Rental.is_data_valid(request_body):
+        return {}, 400
+    # might need to validate data
     
-#     customer_id = request_body["customer_id"]
-#     video_id = request_body["video_id"]
-#     video = Video.query.get_or_404(video_id)
-#     customer = Customer.query.get_or_404(customer_id)
-#     rental = Rental.query.filter(Rental.video_id == video_id, Rental.customer_id == customer_id)
-#     print(rental)
-#     # db.session.delete(rental)
-#     # db.session.commit()
+    customer_id = request_body["customer_id"]
+    video_id = request_body["video_id"]
+    video = Video.query.get_or_404(video_id)
+    customer = Customer.query.get_or_404(customer_id)
 
-#     total_inventory = video.total_inventory
-#     checked_out = Rental.query.filter(Rental.video_id == video_id).count()
+    rental = Rental.query.filter(Rental.video_id == video_id, Rental.customer_id == customer_id)
+    print(rental)
+    if rental is None:
+        return {"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}, 400
+    rental_id = rental[0].rental_id
+    rental = Rental.query.get(rental_id)
+    # Rental.query.get({"video_id": video_id, "customer_id": customer_id,})
+    db.session.delete(rental)
+    db.session.commit()
 
-#     return {
-#         "customer_id": customer_id,
-#         "video_id": video_id,
-#         "due_date": due_date,
-#         "videos_checked_out_count": checked_out,
-#         "available_inventory": total_inventory - checked_out
-#     }, 200
+    total_inventory = video.total_inventory
+    checked_out = Rental.query.filter(Rental.video_id == video_id).count()
+
+    return {
+        "customer_id": customer_id,
+        "video_id": video_id,
+        "videos_checked_out_count": checked_out,
+        "available_inventory": total_inventory - checked_out
+    }, 200
