@@ -4,7 +4,7 @@ from flask import Blueprint, json, jsonify, request, make_response
 import datetime
 from app.models.rental import Rental
 from app.models.video import Video
-from app.rental_routes import validates_request_body
+from app.rental_routes import deletes_rentals, validates_request_body
 
 customers_bp = Blueprint("customers",__name__, url_prefix="/customers")
 
@@ -76,7 +76,7 @@ def delete_customer(customer_id):
         return 400
     if not customer:
         return make_response(jsonify({'message': f'Customer {customer_id} was not found'}),404)
-
+    deletes_rentals(customer.customer_id)
     db.session.delete(customer)
     db.session.commit()
 
