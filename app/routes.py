@@ -116,7 +116,6 @@ def active_customers():
 
         customers_response = []
         for customer in customers:
-            # customers_response.append(
                 customer_dict = customer.customer_dict()
                 customers_response.append(customer_dict)
 
@@ -124,21 +123,24 @@ def active_customers():
 
     elif request.method == 'POST':
         cst_request_body = request.get_json()
-        if "name" not in cst_request_body or "postal_code" not in cst_request_body or "phone" not in cst_request_body:
-            return jsonify({
-                "details": "Invalid data"
-            }), 400
-
+        if "name" not in cst_request_body:
+            return jsonify({"details": "Request body must include name."}), 400
+        elif "postal_code" not in cst_request_body:
+            return jsonify({"details": "Request body must include postal_code."}), 400
+        elif "phone" not in cst_request_body:
+            return jsonify({"details": "Request body must include phone."}), 400
+        
         new_customer = Customer(
+            # id = cst_request_body["id"],
             name = cst_request_body["name"],
-            postal_code = cst_request_body["postal_code"],
-            phone = cst_request_body["phone"]
+            phone = cst_request_body["phone"],
+            postal_code = cst_request_body["postal_code"]
         )
 
         db.session.add(new_customer)
         db.session.commit()
 
-        new_cst_response = {"The phone number you provide must be 10 digits.":new_customer.customer_dict()}
+        new_cst_response = new_customer.customer_dict()
 
         return jsonify(new_cst_response),201
 
@@ -155,15 +157,19 @@ def retrieve_customer(customer_id):
 
     elif request.method == 'PUT':
         request_body = request.get_json()
+        if "name" not in request_body or "postal_code" not in request_body or "phone" not in request_body:
+            return jsonify(None), 400
+
+        
         customer.name = request_body["name"]
         customer.postal_code = request_body["postal_code"]
-        customer.phone_ = request_body["phone"]
+        customer.phone = request_body["phone"]
         db.session.commit()
 
-        response_body={"customer":(customer.customer_dict())}
+        response_body= customer.customer_dict()
         return jsonify(response_body),200
 
     elif request.method == "DELETE":
         db.session.delete(customer)
         db.session.commit()
-        return jsonify({f"message": "Customer {customer.id} was not found"}),200
+        return jsonify({"id": customer.id}), 200
