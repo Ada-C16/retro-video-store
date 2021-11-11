@@ -44,7 +44,26 @@ def check_out_movie():
         customer_id = request_body['customer_id'],
         video_id = request_body['video_id'],
         )
-    video.total_inventory -= 1
     db.session.add(new_rental)
     db.session.commit()
     return make_response(new_rental.to_dict(), 200)
+
+# WHAT IF CUSTOMER HAS MULTIPLE OF THE SAME VIDEO CHECKED OUT
+@rentals_bp.route('/check-in', methods=['POST'], strict_slashes=False)
+def check_in_movie():
+    request_body = request.get_json()
+    if 'customer_id' not in request_body or 'video_id' not in request_body:
+        abort(make_response({'error': 'customer_id and video_id are required'}, 400))
+    get_video_from_id(request_body['video_id'])
+    get_customer_data_with_id(request_body['customer_id'])
+    video = Rental.query.filter_by(
+            customer_id=request_body['customer_id'], 
+            video_id=request_body['video_id'], 
+            checked_in=False
+            ).first()
+    if not video:
+        return make_response(
+            {"message": 
+            f"No outstanding rentals for customer {request_body['customer_id']} and video {request_body['video_id']}"}, 400)
+    video.checked_in = True
+    return make_response(video.to_dict(), 200)
