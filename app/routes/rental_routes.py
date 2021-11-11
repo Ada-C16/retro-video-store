@@ -37,7 +37,10 @@ def check_out_movie():
         abort(make_response({'error': 'customer_id and video_id are required'}, 400))
     video = get_video_from_id(request_body['video_id'])
     # check if inventory is non-zero
-    if video.total_inventory < 1:
+    total_inventory = int(video.total_inventory)
+    total_checked_out = len(Rental.query.filter_by(video_id=video.id, checked_in=False).all())
+    available_inv = total_inventory - total_checked_out
+    if available_inv < 1:
         abort(make_response({'message': 'Could not perform checkout'}, 400))
     get_customer_data_with_id(request_body['customer_id'])
     new_rental = Rental(
@@ -46,6 +49,8 @@ def check_out_movie():
         )
     db.session.add(new_rental)
     db.session.commit()
+    # maybe I can send args to 'to_dict' to customize what I need?
+    # so we don't have code performing things in the model?
     return make_response(new_rental.to_dict(), 200)
 
 # WHAT IF CUSTOMER HAS MULTIPLE OF THE SAME VIDEO CHECKED OUT
@@ -54,16 +59,16 @@ def check_in_movie():
     request_body = request.get_json()
     if 'customer_id' not in request_body or 'video_id' not in request_body:
         abort(make_response({'error': 'customer_id and video_id are required'}, 400))
-    get_video_from_id(request_body['video_id'])
+    video = get_video_from_id(request_body['video_id'])
     get_customer_data_with_id(request_body['customer_id'])
-    video = Rental.query.filter_by(
+    rental_record = Rental.query.filter_by(
             customer_id=request_body['customer_id'], 
             video_id=request_body['video_id'], 
             checked_in=False
             ).first()
-    if not video:
+    if not rental_record:
         return make_response(
             {"message": 
             f"No outstanding rentals for customer {request_body['customer_id']} and video {request_body['video_id']}"}, 400)
-    video.checked_in = True
-    return make_response(video.to_dict(), 200)
+    rental_record.checked_in = True
+    return make_response(rental_record.to_dict(), 200)
