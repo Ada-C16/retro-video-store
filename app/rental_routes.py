@@ -3,6 +3,7 @@ from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import *
 from flask import Blueprint, request, make_response
+import datetime as dt
 import os 
 
 rental_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
@@ -20,12 +21,26 @@ def check_out_rental():
         customer = Customer.query.get(request_body["customer_id"])
         video = Video.query.get(request_body["video_id"])
     except:
-        return make_response("invalid input", 404)
-    if customer or video is None:
+        return make_response("invalid input", 400)
+    if customer is None or video is None:
         return make_response("", 404)
-    if Rental.count_a_videos_inventory(video.id) == 0:
-        return make_response("", 400)
-    return make_response(Rental.check_out_json(customer.id, video.id), 200)
+    if count_a_videos_inventory(video.id, video.total_inventory) == 0:
+        return make_response({"message":"Could not perform checkout"}, 400)
+
+    new_rental = Rental(
+        customer = customer.id,
+        video = video.id,
+        due_date = dt.datetime.now() + dt.timedelta(days = 7),
+        videos_checked_out_count = len(query_customers_videos(customer.id)) + 1,
+        available_inventory = count_a_videos_inventory(video.id, video.total_inventory) - 1,
+        checked_in = False
+    )
+
+    db.session.add(new_rental)
+    db.session.commit()    
+    
+    return make_response(new_rental.to_json(), 200)
+
 
 @rental_bp.route("/check-in", methods = ["POST"])
 def check_in_rental():
