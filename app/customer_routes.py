@@ -1,6 +1,7 @@
 import re
 from app import db
 from app.models.customer import Customer
+from app.models.rental import Rental
 from flask import Blueprint, jsonify, make_response, request, abort
 
 customer_bp = Blueprint("customers",__name__, url_prefix="/customers")
@@ -94,4 +95,22 @@ def delete_customer(id):
     response_body= {"id": customer.id}
     return make_response(jsonify(response_body), 200)
 
+# Custom endpoint for Wave 02
 
+@customer_bp.route("/<id>/rentals", methods=["GET"])
+def videos_customer_has_checked_out(id):
+    customer = get_customer_from_id(id)
+
+    videos_checked_out = []
+
+    for video in customer.videos:
+        rental_record = Rental.query.filter_by(customer_id=id, video_id=video.id, return_date=None)
+        video_info = {
+            "release_date": video.release_date,
+            "title": video.title,
+            "due_date": rental_record.due_date
+        }
+
+        videos_checked_out.append(video_info)
+
+    return jsonify(videos_checked_out), 200

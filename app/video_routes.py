@@ -1,6 +1,7 @@
 from flask.wrappers import Response
 from app import db
 from app.models.video import Video
+from app.models.rental import Rental
 from datetime import date
 from flask import Blueprint, jsonify, make_response, request, abort
 import requests
@@ -106,3 +107,26 @@ def delete_one_video(video_id):
     }
 
     return jsonify(response_body)
+
+
+# Custom endpoint for Wave 02
+
+@videos_bp.route("/<id>/rentals", methods=["GET"])
+def all_customers_for_checked_out_video(id):
+    video = get_video_from_id(id)
+
+    customer_list = []
+
+    for customer in video.customers:
+        rental_record = Rental.query.filter_by(video_id=id, customer_id=customer.id, return_date=None)
+        customer_info = {
+            "due_date": rental_record.due_date,
+            "name": customer.name,
+            "phone": customer.phone,
+            "postal_code": customer.postal_code
+        }
+
+        customer_list.append(customer_info)
+
+    return jsonify(customer_list), 200
+
