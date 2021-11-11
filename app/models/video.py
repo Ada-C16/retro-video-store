@@ -8,7 +8,8 @@ class Video(db.Model):
     release_date=db.Column(db.DateTime)
     total_inventory=db.Column(db.Integer)
 
-    video_rentals=db.relationship("Customer", secondary="rental", backref="videos")
+    renters=db.relationship("Customer", secondary="rental", backref="videos")
+    rentals=db.relationship("Rental")
 
     def to_dict(self):
         video_dict = {
@@ -17,8 +18,8 @@ class Video(db.Model):
             "release_date": self.release_date,
             "total_inventory": self.total_inventory
         }
-        if self.available_inventory is not None:
-            video_dict["available_inventory"] = self.available_inventory
+        # if self.available_inventory is not None:
+        #     video_dict["available_inventory"] = self.available_inventory
         return video_dict
 
 class PutVideoInputSchema(Schema):

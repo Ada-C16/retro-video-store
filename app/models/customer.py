@@ -8,7 +8,9 @@ class Customer(db.Model):
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime)
 
-    customer_rentals = db.relationship("Video", secondary="rental", backref="customers")
+    videos_rented = db.relationship("Video", secondary="rental", backref="customer")
+    rentals=db.relationship("Rental")
+    
 
 
     def to_dict(self):

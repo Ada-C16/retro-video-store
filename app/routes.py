@@ -284,6 +284,25 @@ def create_check_out():
         "customer_id": new_rental.customer_id,
         "video_id": new_rental.video_id,
         "due_date": new_rental.due_date,
-        "videos_checked_out_count": len(customer.customer_rentals),
-        "available_inventory": video.total_inventory-len(customer.customer_rentals)
+        "videos_checked_out_count": len(customer.videos_rented),
+        "available_inventory": video.total_inventory-len(video.rentals)
         }), 200
+
+
+
+@video_bp.route("<video_id>/rentals", methods=["GET"])
+def get_all_videos_rented(video_id):
+    request_data=request.get_json()
+    check_out_videos=[]
+    rentals_of_video=Rental.query.filter_by(video_id)
+    for video_id in rentals_of_video:
+        check_out_videos.append(rentals_of_video)
+    for one_video in check_out_videos:
+        return jsonify({
+            "due_date": one_video.due_date, 
+            "customers":[one_video.customer_id.put_request_dict() for one_video in one_video.customer_rentals]}), 200
+         
+
+    # return jsonify({"id": goal.goal_id, "title":goal.title, "tasks":[task.to_dict() for task in goal.tasks]}), 200
+
+    
