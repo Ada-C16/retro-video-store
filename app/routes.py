@@ -75,15 +75,19 @@ def create_customer():
     return make_response(jsonify(new_customer.to_dict()),201)
 
 @rental_bp.route("/check-out",methods=["POST"])
-def new_rental(customer_id, video_id):
-    customer = Customer.query.get(customer_id)
-    video = Video.query.get(video_id)
+def new_rental():
+    request_body = request.get_json()
+    customer = Customer.query.get(request_body["customer_id"])
+    video = Video.query.get(request_body["video_id"])
+    due_date = Rental().generate_due_date()
 
     new_rental = Rental({"customer_id": customer.id,
     "video_id": video.id,
-    "due_date": Rental.generate_due_date(),
-    "videos_checked_out_count": Rental.videos_checked_out(customer_id),
-    "available_inventory": Rental.get_available_inventory(video_id)})
+    "due_date": due_date,
+    "videos_checked_out_count": Customer.video_checked_out(customer.id),
+    "available_inventory": Rental().get_available_inventory(video.id)
+    }
+    )
 
     return new_rental
 
