@@ -9,15 +9,10 @@ class Rental(db.Model):
 
     
     def to_dict(self, customer, video):
+        """Defines a method for returning a dictionary of instance attributes"""
         return{
             "video_id": self.video_id,
             "customer_id": self.customer_id,
             "videos_checked_out_count": customer.number_of_rentals,
             "available_inventory": video.total_inventory
         }
-    
-    def check_out(self):
-        self.status = "checked_out"
-        
-
-    

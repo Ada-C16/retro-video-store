@@ -13,6 +13,7 @@ rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 #Helper Functions
 def is_id_valid(id):
+    """Defined helper function to check the validity of the id"""
     try:
         int(id)
     except:
@@ -20,12 +21,14 @@ def is_id_valid(id):
     return id
 
 def validate_data(request_body, required_attributes):
+    """Defined helper function to validate the data passed in a request body"""
     for attribute in required_attributes:
         if attribute not in request_body:
             abort(make_response(jsonify({"details": f"Request body must include {attribute}."}), 400))
     return request_body
 
 def is_class_type_at_id_found(id, class_type, class_string):
+    """Defined helper function to check if model instance exists"""
     id = is_id_valid(id)
     object= class_type.query.get(id)
 
@@ -36,7 +39,8 @@ def is_class_type_at_id_found(id, class_type, class_string):
 
 #Videos Routes
 @videos_bp.route("", methods=["GET", "POST"])
-def get_all_videos():
+def handle_all_videos():
+    """Defined endpoint to handle all HTTPS endpoints for handling video https request methods"""
     if request.method == "GET":
         video_list = []
         videos = Video.query.all()
@@ -59,8 +63,12 @@ def get_all_videos():
 
         return make_response(jsonify(new_video.to_dict()), 201)
 
+    else:
+        return make_response(jsonify({"message": "http request method not permitted"}), 400)
+
 @videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
 def handle_one_video(video_id):
+    """Defined endpoint to handle all specified video http request methods"""
     video = is_class_type_at_id_found(video_id, Video, "Video")
 
     if request.method == "GET":
@@ -91,10 +99,21 @@ def handle_one_video(video_id):
 
         return make_response(jsonify(video.to_dict()), 200)
 
+    else:
+        return make_response(jsonify({"message": "http request method not permitted"}), 400)
+
+@videos_bp.route('/<video_id>/rentals', methods=["GET"])
+def get_rentals_for_video(video_id):
+    """Defined an endpoint for getting all rentals associated with a video"""
+    video = is_class_type_at_id_found(video_id, Video, "Video")
+
+    rentals = video.video_rentals() 
+    return make_response(jsonify(rentals), 200)
 
 # Customer Routes
 @customers_bp.route("", methods=["GET", "POST"])
 def handle_customers():
+    """Defined an endpoint to handle all customer http request methods"""
     if request.method == "GET":
         customers_list = []
         customers = Customer.query.all()
@@ -119,9 +138,13 @@ def handle_customers():
         db.session.commit()
 
         return make_response(new_customer.to_dict(), 201)
+    
+    else:
+        return make_response(jsonify({"message": "http request method not permitted"}), 400)
 
 @customers_bp.route("/<customer_id>", methods=["GET", "DELETE", "PUT"])
 def handle_one_customer(customer_id):
+    """Defined an endpoint to handle all specified customer http request methods"""
     customer = is_class_type_at_id_found(customer_id, Customer, "Customer")
 
     if request.method == "GET":
@@ -151,11 +174,22 @@ def handle_one_customer(customer_id):
         db.session.commit()
 
         return make_response(jsonify(customer.to_dict()), 200)
+    
+    else:
+        return make_response(jsonify({"message": "http request method not permitted"}), 400)
 
+@customers_bp.route('/<customer_id>/rentals', methods=["GET"])
+def get_rentals_for_customer(customer_id):
+    """Defined an endpoint for getting all rentals associated with a customer"""
+    customer = is_class_type_at_id_found(customer_id, Customer, "Customer")
+
+    rentals = customer.customer_rentals() 
+    return make_response(jsonify(rentals), 200)
 
 #Rental Routes
 @rentals_bp.route("/<rental_status>", methods=["POST"])
 def rental_status(rental_status):
+    """Defined an endpoint for checking in and checking out a rental"""
     required_attributes = ["customer_id", "video_id"]
     request_body = validate_data(request.get_json(), required_attributes)
 
@@ -186,18 +220,7 @@ def rental_status(rental_status):
             video.total_inventory += 1
             db.session.commit()
 
+    else:
+        return make_response(jsonify({"message": "http request method not permitted"}), 400)
+
     return make_response(jsonify(rental.to_dict(customer, video)), 200)
-
-@videos_bp.route('/<video_id>/rentals', methods=["GET"])
-def get_rentals_for_customer(video_id):
-    video = is_class_type_at_id_found(video_id, Video, "Video")
-
-    rentals = video.video_rentals() 
-    return make_response(jsonify(rentals), 200)
-
-@customers_bp.route('/<customer_id>/rentals', methods=["GET"])
-def get_rentals_for_customer(customer_id):
-    customer = is_class_type_at_id_found(customer_id, Customer, "Customer")
-
-    rentals = customer.customer_rentals() 
-    return make_response(jsonify(rentals), 200)

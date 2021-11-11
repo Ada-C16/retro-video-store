@@ -9,12 +9,14 @@ class Video(db.Model):
     rentals = db.relationship("Rental", backref="video", lazy=True)
 
     def to_dict(self):
+        """Defines a method for converting instance to dictionary"""
         return {"id": self.id,
             "title": self.title,
             "release_date": self.release_date,
             "total_inventory": self.total_inventory}
 
     def video_rentals(self):
+        """Defines a method for returning customers in dictionary format in list"""
         rentals = []
         for rental in self.rentals:
             rentals.append({
