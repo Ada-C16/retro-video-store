@@ -3,6 +3,9 @@ from datetime import datetime
 
 
 class Customer(db.Model):
+
+    sort_fields = ["name", "registered_at", "postal_code"]
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(200))
     postal_code = db.Column(db.String(50))

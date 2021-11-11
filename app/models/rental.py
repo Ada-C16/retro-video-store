@@ -4,6 +4,8 @@ from .video import Video
 
 class Rental(db.Model):
 
+    sort_fields = ["title", "name", "due_date"]
+
     __tablename__ = "rentals"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), primary_key=True, nullable=False)

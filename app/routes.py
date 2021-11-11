@@ -8,6 +8,7 @@ from .models.rental import Rental
 from app import db
 from sqlalchemy import exc
 from sqlalchemy.exc import DataError
+from .models.query_params import *
 # from sqlalchemy.sql.operators import custom_op
 # import re
 # from flask.blueprints import Blueprint
@@ -18,7 +19,11 @@ rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 @videos_bp.route("", methods=["GET"])
 def get_all_videos():
-    videos = Video.query.all()
+
+    if request.args:
+        videos = handle_query_params(Video, request)
+    else:            
+        videos = Video.query.all()
     return jsonify([video.to_dict() for video in videos])
 
 @videos_bp.route("/<video_id>", methods=["GET"])
@@ -88,7 +93,7 @@ def handle_customers():
     pass
 
     if request.method == "POST":
-        
+
         request_body = request.get_json()
 
         input_error = Customer.check_input_fields(request_body)
@@ -105,7 +110,10 @@ def handle_customers():
         
     elif request.method == "GET":
 
-        customers = Customer.query.all()
+        if request.args:
+            customers = handle_query_params(Customer, request)
+        else:            
+            customers = Customer.query.all()
 
         return jsonify([customer.to_dict() for customer in customers]), 200
 
@@ -259,6 +267,11 @@ def gets_customers_by_rental(id):
 
 @rentals_bp.route("", methods=["GET"])
 def get_all_rentals():
-    rentals = Rental.query.all()
+
+    if request.args:
+        rentals = handle_query_params(Rental, request)
+    else:            
+        rentals = Rental.query.all()
+
     return jsonify([rental.to_dict_customer_rentals() for rental in rentals]), 200
 

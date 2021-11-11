@@ -2,6 +2,9 @@ from app import db
 import datetime 
 
 class Video(db.Model):
+
+    sort_fields = ["title", "release_date", "total_inventory"]
+
     __tablename__ = 'videos'
     video_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String)
