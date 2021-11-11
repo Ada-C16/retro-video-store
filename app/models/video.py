@@ -1,4 +1,4 @@
-from _typeshed import Self
+# from _typeshed import Self
 from app import db
 
 class Video(db.Model):

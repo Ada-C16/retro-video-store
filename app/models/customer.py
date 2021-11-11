@@ -1,10 +1,10 @@
 from app import db
 
 class Customer(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String)
     postal_code = db.Column(db.Integer)
-    register_at = db.Column(db.Datetime)
+    register_at = db.Column(db.DateTime)
     rentals = db.relationship('Rental', backref = 'customer', lazy = True)
 
     def customer_dict(self):
