@@ -30,3 +30,6 @@ def check_out_rental():
 @rental_bp.route("/check-in", methods = ["POST"])
 def check_in_rental():
     pass
+
+
+

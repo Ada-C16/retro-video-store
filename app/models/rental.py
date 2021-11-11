@@ -23,9 +23,11 @@ class Rental(db.Model):
 
     def count_a_videos_inventory(self, video_id):
         # available_inventory = video.total_inventory - # all current checked out videos of that id
-        # search for active rentals with a specific id
+        active_rentals = Video.query.join(Rental).filter_by(id == video_id, Rental.checked_in == False).all() 
+        num_active = len(active_rentals)
+        return num_active 
         # find len
-        pass
+        
     
     def check_in_json(self):
         pass
