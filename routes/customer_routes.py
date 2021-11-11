@@ -1,70 +1,100 @@
-from flask.helpers import make_response
+from app import db
 from app.models.customer import Customer
 from datetime import date 
-from flask import Blueprint, jsonify, json, request, abort,make_response
-from app import db
+from flask import Blueprint, jsonify, request
 
-customer_bp = Blueprint("customer", __name__, url_prefix="/customer")
 
-@customer_bp.route("", methods = ["POST", "GET"])
-def create_customer(): 
-    if request.method is "POST":
-        request_body = request.get_json()
-        if "name" not in request_body or "postal_code" not in request_body or "phone" not in request_body:
-            return make_response("Invalid", 400)
-        new_customer = Customer(
-            name = request_body["name"],
-            postal_code = request_body["postal_code"],
-            phone = request_body["phone"]
-        )
-        db.session.add(new_customer)
-        db.session.commit()
+customer_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
-        return f"Customer{new_customer.id} created", 201
 
-    elif request.method is "GET":
-        customers = Customer.query.all()
-        customer_response = []
-        for each_customer in customers:
-            customer_response.append([{
-                    "id": Customer.id,
-                    "name" : Customer.id,
-                    "registered_at" : Customer.registered_at,
-                    "postal_code" : Customer.postal_code,
-                    "phone" : Customer.phone
-                    }])
-        return jsonify(customer_response)
+@customer_bp.route("", methods = ["GET"])
+def get_customers():
+    """
+    Retrieves all saved customer records
+    """
+    customer = Customer.query.all()
+    customer_response = [customer.to_json() for customer in customer]
+    return jsonify(customer_response), 200
+
+
+@customer_bp.route("", methods = ["POST"])
+def post_customer():
+    """
+    Allows client to create new customer records,
+    which must have name, phone number, and
+    postal_code in request_body
+    """
+    request_body = request.get_json() 
+    if "name" not in request_body:
+        return jsonify(details="Request body must include name."), 400
+    if "postal_code" not in request_body:
+        return jsonify(details="Request body must include postal_code."), 400
+    if "phone" not in request_body:
+        return jsonify(details="Request body must include phone."), 400
+    
+    new_customer = Customer(
+        name=request_body["name"],
+        phone=request_body["phone"],
+        postal_code=request_body["postal_code"],
+    )
+    db.session.add(new_customer)
+    db.session.commit()
+
+    return{
+        "id": new_customer.id,
+        "name": new_customer.name,
+        "phone": new_customer.phone,
+        "postal_code": new_customer.postal_code,
+    }, 201
+
 
 @customer_bp.route("/<customer_id>", methods=["GET", "PUT", "DELETE"]) 
-def handle_customers(customer_id):
-    customer = Customer.query.get_or_404(customer_id)
-    if customer is None:
-        return make_response(f"Customer {customer_id} not found", 404)
+def handle_customer_id(customer_id):
+    """
+    Allows client to retrieve, post, and delete customer records
+    only after ensuring that the customer_id is an integer.
+    """
+    try: 
+        customer_id = int(customer_id)
+    except:
+        return jsonify(None), 400
+    
+    customer = Customer.query.get(customer_id)
+    
+    if customer == None:
+        return jsonify(message=f"Customer {customer_id} was not found"), 404
 
-    if request.method == "GET":
-
+    elif request.method == "GET":
         return {
-            "id": Customer.id,
-            "name" : Customer.id,
-            "registered_at" : Customer.registered_at,
-            "postal_code" : Customer.postal_code,
-            "phone" : Customer.phone
-            }
+            "id": customer.id,
+            "name": customer.name,
+            "phone": customer.phone,
+            "postal_code": customer.postal_code,
+            }, 200
 
     elif request.method == "PUT":
-        request_body = request.get_json()
+        form_data = request.get_json()
 
-        customer.name = request_body["name"]
-        customer.postal_code = request_body["postal_code"]
-        customer.phone = request_body["phone"]
+        if "name" not in form_data or "phone" not in form_data \
+        or "postal_code" not in form_data:
+            return jsonify(None), 400
+
+        customer.name = form_data["name"]
+        customer.phone = form_data["phone"]
+        customer.postal_code = form_data["postal_code"]
 
         db.session.commit()
 
-        return jsonify(f"Customer #{customer.id} sucessfully updated"), 200
+        return {
+            "id": customer.id,
+            "name": customer.name,
+            "phone": customer.phone,
+            "postal_code": customer.postal_code
+        }, 200
 
     elif request.method == "DELETE":
         db.session.delete(customer)
         db.session.commit()
-        return jsonify(f"Customer #{customer.id} sucessfully deleted"), 200
-
-        
+        return {
+            "id": customer.id
+        }, 200

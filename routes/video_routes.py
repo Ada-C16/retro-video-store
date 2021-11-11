@@ -1,5 +1,4 @@
 from app import db
-from app.models.customer import Customer
 from app.models.video import Video
 from datetime import datetime
 from flask import Blueprint, jsonify, request
@@ -9,7 +8,7 @@ video_bp = Blueprint("videos", __name__, url_prefix=("/videos"))
 
 
 @video_bp.route("", methods=["GET"])
-def get_video():
+def get_videos():
     """
     Retrieves all saved video records
     """
@@ -24,7 +23,7 @@ def post_video():
     """
     Allows client to create new video records,
     which must have title, release_date, and
-    total_inventory
+    total_inventory in request_body
     """
     if request.method == "POST":
         request_body = request.get_json()
@@ -68,7 +67,6 @@ def handle_video_id(video_id):
         return jsonify(None), 400
 
     video = Video.query.get(video_id)
-
 
     if video == None:
         return jsonify(message=f"Video {video_id} was not found"), 404
