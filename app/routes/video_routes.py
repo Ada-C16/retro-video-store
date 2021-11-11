@@ -25,12 +25,8 @@ def handle_videos():
 
         videos_response = []
         for video in videos:
-            videos_response.append({
-                "id": video.id,
-                "title": video.title,
-                "release_date": video.release_date,
-                "total_inventory": video.total_inventory
-            })
+            video_dict = video.to_dict()
+            videos_response.append(video_dict)
 
         return jsonify(videos_response), 200
 
@@ -44,6 +40,9 @@ def handle_videos():
         # (type("postal_code") is not str)
         # (type("phone") is not str)
 
+        #refactor to make one return statement
+            # return jsonify({"details": "Request body must include release_date."}), 400
+        # 
         if "title" not in request_body:
             return jsonify({"details": "Request body must include title."}), 400
         elif "release_date" not in request_body:
@@ -57,13 +56,9 @@ def handle_videos():
         db.session.add(new_video)
         db.session.commit()
         
-        new_video_dict = {
-                "id": new_video.id,
-                "title": new_video.title,
-                "release_date": new_video.release_date,
-                "total_inventory": new_video.total_inventory
-            }
-        return new_video_dict, 201
+        new_video_dict = new_video.to_dict()
+
+        return jsonify(new_video_dict), 201
 
 @videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE"])
 def handle_video(video_id):

@@ -8,7 +8,8 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime, nullable=True)
-    rentals = db.relationship('Rental', backref='rental', )
+    videos = db.relationship('Video', secondary='rental',backref='customers')
+    
 
     def to_dict(self):
         customer_dict = {

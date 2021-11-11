@@ -10,7 +10,15 @@ class Video(db.Model):
     #build instance method for creating dict here
 
 
-
+    def to_dict(self):
+        video_dict = {
+            "id": self.id,
+            "title": self.title,
+            "total_inventory": self.total_inventory,
+            "release_date": self.release_date
+            }
+        
+        return video_dict
 
 
     #NOT NEEDED sicne we can query multiple parameters
