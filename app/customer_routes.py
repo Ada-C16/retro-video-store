@@ -1,6 +1,7 @@
 from app import db
 from app.models.customer import Customer, find_customer
-from app.models.rental import Rental
+from app.models.rental import *
+from app.video_routes import build_videos_response
 from flask import Blueprint, request, make_response, jsonify
 import os 
 
@@ -22,6 +23,16 @@ def get_customers():
         customers = Customer.query.all() 
     customers_response = [Customer.return_customer_info(customer) for customer in customers]
     return make_response(jsonify(customers_response), 200)
+
+
+@customer_bp.route("/<id>/rentals", methods = ["GET"])
+def get_customer_rentals(id):
+    customer = find_customer(id)
+    if not customer["found"]:
+        return customer["return"]
+    videos = query_customers_videos(customer["info"].id)
+    video_info = [build_videos_response(video) for video in videos]
+    return make_response(jsonify(video_info), 200)
 
 
 @customer_bp.route("", methods = ["POST"])
