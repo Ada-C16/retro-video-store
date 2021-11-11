@@ -51,12 +51,11 @@ def check_in_video_to_customer():
     video = get_video_from_id(request_body["video_id"])
     customer = get_customer_from_id(request_body["customer_id"])
 
-    rental_record = Rental.query.filter_by(customer_id=customer.id, video_id=video.id, return_date=None)
+    rental_record = Rental.query.filter_by(customer_id=customer.id, video_id=video.id, return_date=None).first()
 
-    if rental_record == None:
-
+    if not rental_record:
         response_body = {
-            "message": f"No outstanding rentals for customer {customer.id} and {video.id}"
+            "message": f"No outstanding rentals for customer {customer.id} and video {video.id}"
             }
         return jsonify(response_body), 400
 

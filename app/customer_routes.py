@@ -104,7 +104,7 @@ def videos_customer_has_checked_out(id):
     videos_checked_out = []
 
     for video in customer.videos:
-        rental_record = Rental.query.filter_by(customer_id=id, video_id=video.id, return_date=None)
+        rental_record = Rental.query.filter_by(customer_id=id, video_id=video.id, return_date=None).first()
         video_info = {
             "release_date": video.release_date,
             "title": video.title,
