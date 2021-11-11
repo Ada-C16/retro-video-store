@@ -31,7 +31,7 @@ def get_customer_rentals(id):
     if not customer["found"]:
         return customer["return"]
     videos = query_customers_videos(customer["info"].id)
-    video_info = [build_videos_response(video) for video in videos]
+    video_info = build_videos_response(videos)
     return make_response(jsonify(video_info), 200)
 
 

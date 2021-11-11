@@ -3,9 +3,9 @@ from app.models.customer import Customer
 from app.models.video import Video
 
 class Rental(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    customer = db.Column('customer_id', db.Integer, db.ForeignKey('customer.id'))
-    video = db.Column('video_id', db.Integer, db.ForeignKey('video.id'))
+    id = db.Column(db.Integer, primary_key = True)
+    customer = db.Column('customer_id', db.Integer, db.ForeignKey('customer.id', ondelete = 'cascade'))
+    video = db.Column('video_id', db.Integer, db.ForeignKey('video.id', ondelete = 'cascade'))
     due_date = db.Column(db.DateTime) # 
     videos_checked_out_count = db.Column(db.Integer)
     available_inventory = db.Column(db.Integer)
@@ -21,10 +21,10 @@ class Rental(db.Model):
 
     
 def query_customers_videos(customer_id):
-    rentals = Customer.query.join(Rental).filter(id == customer_id, Rental.checked_in == True).all()
-    return rentals
+    videos = Video.query.join(Rental).join(Customer).filter(Customer.id == customer_id, Rental.checked_in == False).all()
+    return videos
     
 
 def count_a_videos_inventory(video_id, video_inventory):
-    checked_out = Video.query.join(Rental).filter(id == video_id, Rental.checked_in == False).all()
+    checked_out = Video.query.join(Rental).filter(Video.id == video_id, Rental.checked_in == False).all()
     return video_inventory - len(checked_out)
