@@ -58,18 +58,24 @@ def delete_customer(customer_id):
 
     return customer.to_dict()
 
-# @customers_bp.route("/<customer_id>", methods=["PUT"])
-# def update_customer(customer_id):
-#     customer = Customer.query.get(customer_id)
-#     request_body = request.get_json()
+@customers_bp.route("/<customer_id>", methods=["PUT"])
+def update_customer(customer_id):
+    customer = Customer.query.get(customer_id)
+    request_body = request.get_json()
 
-#     customer.name = request_body["name"]
-#     customer.phone = request_body["phone"]
-#     customer.postal_code = request_body["postal_code"]
+    if customer is None:
+        return {"message": f"Customer {customer_id} was not found"}, 404
 
-#     db.session.commit()
+    if "name" not in request_body:
+        return jsonify(None), 400
 
-#     return customer.to_dict()
+    customer.name = request_body["name"]
+    customer.phone = request_body["phone"]
+    customer.postal_code = request_body["postal_code"]
+
+    db.session.commit()
+
+    return customer.to_dict()
 
 
 
