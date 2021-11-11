@@ -2,11 +2,13 @@ from app import db
 from flask import Blueprint, jsonify, request
 from app.models.customer import Customer
 from app.models.video import Video
+from app.models.rental import Rental
 from datetime import datetime
 import os
 
 videos_bp = Blueprint("videos_bp", __name__, url_prefix="/videos")
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
+rentals_bp = Blueprint("rentals_bp", __name__, url_prefix="/rentals")
 
 # VIDEO ROUTES
 @videos_bp.route("", methods=["POST", "GET"])
@@ -50,7 +52,6 @@ def handle_videos():
             return jsonify(video_response), 200
 
         return jsonify(video_response), 200
-
 
 # GET, PUT, DELETE ONE VIDEO AT A TIME
 @videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE"])
@@ -117,7 +118,6 @@ def handle_customers():
 
         new_cust_response = new_customer.get_cust_dict()
         
-
         return jsonify(new_cust_response), 201
     # GET REQUEST
     elif request.method == "GET":
@@ -138,8 +138,6 @@ def handle_customers():
         if customers_response == []:
             return jsonify(customers_response), 200
 
-        print("**************")
-        print(customers_response)
         return jsonify(customers_response), 200
     
 # GET, PUT, DELETE ONE CUSTOMER AT A TIME
@@ -189,4 +187,33 @@ def handle_one_customer_at_a_time(customer_id):
 
             return jsonify(cust_delete_response), 200
 
+@rentals_bp.route("/check-out", methods=["GET", "POST"])
+def handle_rentals():
+    rentals_request_body = request.get_json()
+    if "customer_id" not in rentals_request_body or "video_id" not in rentals_request_body:
+        return jsonify(None), 400
 
+    if request.method == "POST":
+        rentals = Rental(
+            customer_id = rentals_request_body["customer_id"],
+            video_id = rentals_request_body["video_id"]
+        )
+
+        db.session.add(rentals)
+        db.session.commit()
+
+        rental_receipt = {
+        "customer_id": rentals.customer_id,
+        "video_id": rentals.video_id,
+        "due_date": rentals.due_date,
+        "videos_checked_out_count": rentals.video_rental_count(),
+        "available_inventory": rentals.video_inventory()
+        }
+        
+        print("************")
+        print(rental_receipt)
+
+        return jsonify(rental_receipt), 200
+
+    elif request.method == "GET":
+        pass
