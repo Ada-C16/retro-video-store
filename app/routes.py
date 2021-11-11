@@ -49,11 +49,14 @@ def handle_customer(customer_id):
         
         return make_response({"id": int(CUSTOMER_ID)}, 200)
 ##CONTINUE HERE 11/10
-    elif request.method == "PUT":
-        if not goal:
-            return make_response("", 404)
 
+    if request.method == "PUT":
         request_body = request.get_json()
-        goal.title = request_body["title"] if "title" in request_body else goal.title
+        if not customer:
+            return make_response("", 404)
+        elif  "name" not in request_body or "postal_code" not in request_body or "phone" not in request_body:
+            return make_response({"details": "Invalid data"}, 400)
+        # request_body = request.get_json()
+        # goal.title = request_body["title"] if "title" in request_body else goal.title
 
-        return make_response({"goal": goal.to_dict()}, 200)
+        return make_response({"customer": customer.to_dict()}, 200)
