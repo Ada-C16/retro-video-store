@@ -34,7 +34,7 @@ def handle_rentals():
 
     response_value = {"customer_id":new_rental.customer_id,
         "video_id":new_rental.video_id,
-        "due_date": datetime.now + timedelta(days=7),
+        "due_date": datetime.now() + timedelta(days=7),
         "videos_checked_out_count": rentals_per_customer,
         "available_inventory": available_rentals_per_video}
 
