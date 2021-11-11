@@ -54,16 +54,13 @@ def handle_all_videos():
     if request.method == "GET":
         video_list = []
         videos = Video.query.all()
-
         for video in videos:
             video_list.append(video.to_dict())
-        
         return make_response(jsonify(video_list), 200)
 
     elif request.method == "POST":
         required_attributes = ["title", "release_date", "total_inventory"]
         request_body = validate_data(request.get_json(), required_attributes)
-
         new_video = Video(title = request_body["title"],
                         release_date = request_body["release_date"],
                         total_inventory = request_body["total_inventory"]
@@ -96,11 +93,9 @@ def handle_one_video(video_id):
     elif request.method == "PUT":
         required_attributes = ["title", "release_date", "total_inventory"]
         request_body = validate_data(request.get_json(), required_attributes)
-
         video.title = request_body["title"]
         video.total_inventory = request_body["total_inventory"]
         video.release_date = request_body["release_date"]
-
         db.session.commit()
         return make_response(jsonify(video.to_dict()), 200)
 
@@ -111,7 +106,6 @@ def handle_one_video(video_id):
 def get_rentals_for_video(video_id):
     """Defined an endpoint for getting all rentals associated with a video"""
     video = is_class_type_at_id_found(video_id, Video, "Video")
-
     rentals = video.video_rentals() 
     return make_response(jsonify(rentals), 200)
 
@@ -122,23 +116,19 @@ def handle_customers():
     if request.method == "GET":
         customers_list = []
         customers = Customer.query.all()
-
         for customer in customers:
             customers_list.append(customer.to_dict())
-
         return make_response(jsonify(customers_list), 200)
 
     elif request.method == "POST":
         required_attributes = ["postal_code", "name", "phone"]
         request_body = validate_data(request.get_json(), required_attributes)
-
         new_customer = Customer(
             name = request_body["name"],
             postal_code = request_body["postal_code"],
             phone = request_body["phone"],
             register_at = date.today()
             )
-
         db_add(new_customer)
         return make_response(new_customer.to_dict(), 201)
     
@@ -167,13 +157,10 @@ def handle_one_customer(customer_id):
     elif request.method == "PUT":
         required_attributes = ["postal_code", "name", "phone"]
         request_body = validate_data(request.get_json(), required_attributes)
-
         customer.name = request_body["name"]
         customer.postal_code = request_body["postal_code"]
         customer.phone = request_body["phone"]
-
         db.session.commit()
-
         return make_response(jsonify(customer.to_dict()), 200)
     
     else:
@@ -183,7 +170,6 @@ def handle_one_customer(customer_id):
 def get_rentals_for_customer(customer_id):
     """Defined an endpoint for getting all rentals associated with a customer"""
     customer = is_class_type_at_id_found(customer_id, Customer, "Customer")
-
     rentals = customer.customer_rentals() 
     return make_response(jsonify(rentals), 200)
 
@@ -214,8 +200,8 @@ def rental_status(rental_status):
         else:
             rental.rental_status(rental_status, video, customer)
             db.session.commit()
-            
+
     else:
         return make_response(jsonify({"message": "http request method not permitted"}), 400)
-
+        
     return make_response(jsonify(rental.to_dict(customer, video)), 200)
