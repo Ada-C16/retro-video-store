@@ -108,7 +108,7 @@ def handle_customer_by_id(customer_id):
 # def customers_current_rentals(customer_id):
 
 
-
+#keep getting 404 error and not sure why!!! AHHH
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 @customers_bp.route("/check-out", methods=["POST"])
@@ -139,10 +139,3 @@ def checkout_video():
         "available_inventory": available_rentals_per_video}
 
     return make_response(response_value, 201)
-
-    
-
-        # all_ids = []
-        # for task_id in request_body['task_ids']: 
-        #     all_ids.append(Task.query.get(task_id))
-        # goal.tasks = all_ids
