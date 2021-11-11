@@ -1,10 +1,14 @@
 from flask import Blueprint, json, jsonify, request, make_response
 from app.models.customer import Customer
 from app.models.video import Video
+from app.models.rental import Rental
 from app import db
 from flask_sqlalchemy import model
 from sqlalchemy import func
 import requests
+from datetime import timedelta, datetime
+
+from tests.test_wave_02 import CUSTOMER_ID
 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
@@ -98,3 +102,47 @@ def handle_customer_by_id(customer_id):
             "phone": customer.phone
         }
         return make_response(response_value, 200)
+
+
+# @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
+# def customers_current_rentals(customer_id):
+
+
+
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
+
+@customers_bp.route("/check-out", methods=["POST"])
+def checkout_video():
+    request_body = request.get_json()
+    # if not request_body.get("customer_id"):
+    #         return make_response({"details":"Request body must include customer id."}, 404) 
+    # elif not request_body.get("video_id"):
+    #         return make_response({"details":"Request body must include video id."}, 404) 
+
+    new_rental = Rental(
+            customer_id=request_body["customer_id"],
+            video_id=request_body["video_id"]
+            )
+    db.session.add(new_rental)
+    db.session.commit()
+
+    customer_checking_out = Customer.query.get(request_body["customer_id"])
+    rentals_per_customer = len(customer_checking_out.rentals)
+    
+    video_checking_out = Video.query.get(request_body["video_id"])
+    available_rentals_per_video= video_checking_out.total_inventory - rentals_per_customer
+
+    response_value = {"customer_id":new_rental.customer_id,
+        "video_id":new_rental.video_id,
+        "due_date": datetime.now + timedelta(days=7),
+        "videos_checked_out_count": rentals_per_customer,
+        "available_inventory": available_rentals_per_video}
+
+    return make_response(response_value, 201)
+
+    
+
+        # all_ids = []
+        # for task_id in request_body['task_ids']: 
+        #     all_ids.append(Task.query.get(task_id))
+        # goal.tasks = all_ids
