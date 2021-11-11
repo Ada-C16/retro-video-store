@@ -1,8 +1,8 @@
-"""please work
+"""do you think this will work
 
-Revision ID: eaad97a0fdb4
+Revision ID: 062d39d9aca3
 Revises: 
-Create Date: 2021-11-10 09:21:36.252408
+Create Date: 2021-11-11 09:53:54.937183
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'eaad97a0fdb4'
+revision = '062d39d9aca3'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -34,13 +34,12 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('rental',
-    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('customer_id', sa.Integer(), nullable=False),
     sa.Column('video_id', sa.Integer(), nullable=False),
     sa.Column('due_date', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['customer_id'], ['customer.id'], ),
     sa.ForeignKeyConstraint(['video_id'], ['video.id'], ),
-    sa.PrimaryKeyConstraint('id', 'customer_id', 'video_id')
+    sa.PrimaryKeyConstraint('customer_id', 'video_id')
     )
     # ### end Alembic commands ###
 

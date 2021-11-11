@@ -4,7 +4,8 @@ from flask_migrate import Migrate
 import os
 from dotenv import load_dotenv
 
-db = SQLAlchemy()
+# this line from stack overflow fixed a weird autoflush issue
+db = SQLAlchemy(session_options={"autoflush": False})
 # the passed in parameter allows
 # type changes for model/class type changes
 migrate = Migrate(compare_type=True)
