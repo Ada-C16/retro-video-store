@@ -109,6 +109,9 @@ def delete_customer(customer_id):
 # CUSTOMER RENTAL ROUTE
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def get_videos_checked_out(customer_id):
+    #check if customer exists
+    get_customer_data_with_id(customer_id)
+
     video_id_list = []
 
     rental_query = Rental.query.filter_by(customer_id=customer_id)
