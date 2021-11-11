@@ -1,8 +1,9 @@
-from flask import Blueprint, request, make_response, abort
+from flask import Blueprint, request, make_response, abort, jsonify
 from app.models.rental import Rental
 from app.models.video import Video
 from app.models.customer import Customer
 from app import db
+from datetime import datetime, timedelta
 
 #helper functions
 def validate_id(id, id_type):
@@ -73,3 +74,26 @@ def check_in_movie():
     rental_record.checked_in = True
     db.session.commit()
     return make_response(rental_record.to_dict(), 200)
+
+
+# OPTIONAL ROUTES
+# GET /rentals/overdue
+@rentals_bp.route('/overdue', methods=['GET'], strict_slashes=True)
+def get_overdue_videos():
+    present = datetime.now()
+    overdue_movie_records = Rental.query.filter(Rental.checked_in==False, Rental.due_date<present).all()
+    response = []
+    for record in overdue_movie_records:
+        video = get_video_from_id(record.video_id)
+        customer = get_customer_data_with_id(record.customer_id)
+        list.append({
+            "video_id": record.video_id,
+            "title": video.title,
+            "customer_id": record.customer_id,
+            "name": customer.name,
+            "postal_code": customer.postal_code,
+            "checkout_date": record.due_date - timedelta(days=7),
+            "due_date": record.due_date,
+            
+        })
+    return make_response(jsonify(response), 200)
