@@ -204,22 +204,17 @@ def rental_status(rental_status):
         if video.total_inventory == 0:
             return make_response(jsonify({"message": "Could not perform checkout"}), 400)
         else:
-            video.total_inventory -= 1
-            customer.number_of_rentals += 1
-            rental.status = "checked-out"
-
-        db.session.add(rental)
-        db.session.commit()
+            rental.rental_status(rental_status, video, customer)
+            db.session.add(rental)
+            db.session.commit()
     
     elif rental_status == "check-in":
         if video.title not in customer.customer_rentals_titles():
             return make_response(jsonify({"message": "No outstanding rentals for customer 1 and video 1"}), 400)
         else:
-            rental.status = "checked-in"
-            customer.number_of_rentals -= 1 
-            video.total_inventory += 1
+            rental.rental_status(rental_status, video, customer)
             db.session.commit()
-
+            
     else:
         return make_response(jsonify({"message": "http request method not permitted"}), 400)
 

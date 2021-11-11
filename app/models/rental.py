@@ -1,4 +1,5 @@
 from app import db
+from flask import jsonify, make_response
 
 class Rental(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -16,3 +17,16 @@ class Rental(db.Model):
             "videos_checked_out_count": customer.number_of_rentals,
             "available_inventory": video.total_inventory
         }
+    
+    def rental_status(self, rental_status, video, customer):
+        """Depending on whether rental is checked in or out, changes appropriate numbers 
+        for video.total_inventory and customer.number_of_rentals"""
+        if rental_status == "check-out":
+            video.total_inventory -= 1
+            customer.number_of_rentals += 1
+            self.status = "checked-out"
+        
+        elif rental_status == "check-in":
+            self.status = "checked-in"
+            customer.number_of_rentals -= 1 
+            video.total_inventory += 1
