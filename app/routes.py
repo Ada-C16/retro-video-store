@@ -2,11 +2,15 @@ from flask import Blueprint, jsonify, make_response, request
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
+from app.models.rental import Rental
 from datetime import datetime
 import requests
 
 customer_bp = Blueprint('customers', __name__, url_prefix='/customers')
 video_bp = Blueprint('videos', __name__, url_prefix='/videos')
+rental_bp = Blueprint('rentals', __name__, url_prefix='/rentals')
+
+# VIDEO ENDPOINTS
 
 @video_bp.route('', methods=['GET', 'POST'])
 def handle_videos():
@@ -83,3 +87,26 @@ def handle_one_video(video_id):
 
         return make_response({"id": video.id})
     
+# RENTAL ENDPOINTS
+@rental_bp.route('/check-out', methods=['POST'])
+def handle_checkout():
+    response_body = request.get_json()
+    new_checkout = Rental(customer_id=response_body['customer_id'],
+                            video_id=response_body['video_id'],
+                            due_date=response_body['due_date'],
+                            videos_checked_out_count=response_body['videos_checked_out_count'],
+                            # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
+                            available_inventory=response_body['available_inventory'])
+    db.session.add(new_checkout)
+    db.session.commit()
+
+    return make_response({"customer_id": new_checkout.customer_id,
+                            "video_id": new_checkout.video_id,
+                            "due_date": new_checkout.due_date,
+                            "videos_checked_out_count": new_checkout.videos_checked_out_count,
+                            "available_inventory": new_checkout.available_inventory})
+    
+
+@rental_bp.route('/check-in', methods=['POST'])
+def handle_checkin():
+    pass
