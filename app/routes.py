@@ -202,8 +202,7 @@ def check_in_video():
     customer = Customer.query.get_or_404(customer_id)
 
     rental = Rental.query.filter(Rental.video_id == video_id, Rental.customer_id == customer_id)
-    print(rental)
-    if rental is None:
+    if rental.count() == 0:
         return {"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}, 400
     rental_id = rental[0].rental_id
     rental = Rental.query.get(rental_id)
