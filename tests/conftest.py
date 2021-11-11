@@ -10,9 +10,17 @@ VIDEO_TITLE = "A Brand New Video"
 VIDEO_INVENTORY = 1
 VIDEO_RELEASE_DATE = "01-01-2001"
 
+VIDEO_TITLE_2 = "Z Brand New Video"
+VIDEO_INVENTORY_2 = 2
+VIDEO_RELEASE_DATE_2 = "02-02-2002"
+
 CUSTOMER_NAME = "A Brand New Customer"
 CUSTOMER_POSTAL_CODE = "12345"
 CUSTOMER_PHONE = "123-123-1234"
+
+CUSTOMER_NAME_2 = "Z Brand New Customer"
+CUSTOMER_POSTAL_CODE_2 = "92345"
+CUSTOMER_PHONE_2 = "923-123-1234"
 
 @pytest.fixture
 def app():
@@ -45,11 +53,31 @@ def one_video(app):
     db.session.commit()
 
 @pytest.fixture
+def second_video(app):
+    new_video = Video(
+        title=VIDEO_TITLE_2, 
+        release_date=VIDEO_RELEASE_DATE_2,
+        total_inventory=VIDEO_INVENTORY_2,
+        )
+    db.session.add(new_video)
+    db.session.commit()
+
+@pytest.fixture
 def one_customer(app):
     new_customer = Customer(
         name=CUSTOMER_NAME,
         postal_code=CUSTOMER_POSTAL_CODE,
         phone=CUSTOMER_PHONE
+    )
+    db.session.add(new_customer)
+    db.session.commit()
+
+@pytest.fixture
+def second_customer(app):
+    new_customer = Customer(
+        name=CUSTOMER_NAME_2,
+        postal_code=CUSTOMER_POSTAL_CODE_2,
+        phone=CUSTOMER_PHONE_2
     )
     db.session.add(new_customer)
     db.session.commit()
