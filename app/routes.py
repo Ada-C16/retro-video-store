@@ -53,9 +53,18 @@ def delete_one_video(video_id):
     if not video:
         return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404) 
     else:
-        db.session.delete(video)
-        db.session.commit()
-        return make_response(jsonify({"id": int(video_id)}), 200)
+        if not video.rentals:
+            db.session.delete(video)
+            db.session.commit()
+            return make_response(jsonify({"id": int(video_id)}), 200)
+        else:
+            active_rentals = Rental.query.filter_by(video_id=f"{video.id}")
+            for rental in active_rentals:
+                db.session.delete(rental)
+            db.session.delete(video)
+            db.session.commit()
+            return make_response("", 200)
+
 
 @videos_bp.route("", methods=["POST"])
 def create_new_video():
@@ -131,9 +140,17 @@ def handle_one_customer(customer_id):
         return make_response(jsonify(customer.to_dict()), 200)
 
     elif request.method == "DELETE":
-        db.session.delete(customer)
-        db.session.commit()
-        return make_response(jsonify({"id": customer_id}), 200)
+        if not customer.rentals:
+            db.session.delete(customer)
+            db.session.commit()
+            return make_response(jsonify({"id": int(customer_id)}), 200)
+        else:
+            active_rentals = Rental.query.filter_by(customer_id=f"{customer.id}")
+            for rental in active_rentals:
+                db.session.delete(rental)
+            db.session.delete(customer)
+            db.session.commit()
+            return make_response("", 200)
 
     elif request.method == "PUT":
         request_body = validate_data(request.get_json(), required_attributes)
@@ -178,11 +195,7 @@ def rental_status(rental_status):
     
     elif rental_status == "check-in":
 
-        customer_rental_ls = []
-        for each_rental in customer.rentals:
-            customer_rental_ls.append(each_rental.video.title)
-
-        if video.title not in customer_rental_ls:
+        if video.title not in customer.customer_rentals_titles():
             return make_response(jsonify({"message": "No outstanding rentals for customer 1 and video 1"}), 400)
 
         else:

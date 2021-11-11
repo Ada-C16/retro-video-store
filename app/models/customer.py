@@ -24,11 +24,18 @@ class Customer(db.Model):
         rentals = []
         for rental in self.rentals:
             rentals.append({
+                "id": rental.video.id,
                 "title": rental.video.title,
                 "release_date": rental.video.release_date,
                 "due_date": rental.due_date
             })
         return rentals
+    
+    def customer_rentals_titles(self):
+        rental_titles = []
+        for rental in self.rentals:
+            rental_titles.append(rental.video.title)
+        return rental_titles
 
 
 
