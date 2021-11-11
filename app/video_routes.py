@@ -37,7 +37,6 @@ def missing_fields(request_body):
 @videos_bp.route("", methods=["POST"])
 def create_video():
     request_body = request.get_json()
-
     try:
         new_video = Video(
             title=request_body["title"],

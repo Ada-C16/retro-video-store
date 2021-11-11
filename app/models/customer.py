@@ -1,5 +1,6 @@
 from app import db
 from flask import current_app
+from datetime import datetime
 
 
 class Customer(db.Model):
@@ -8,7 +9,7 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     register_at = db.Column(db.DateTime)
-    
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -22,4 +23,3 @@ class Customer(db.Model):
         for key, value in request_body.items():
             if key in Customer.__table__.columns.keys():
                 setattr(self, key, value)
-                                
