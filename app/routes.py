@@ -25,7 +25,7 @@ def validate_data(request_body, required_attributes):
             abort(make_response(jsonify({"details": f"Request body must include {attribute}."}), 400))
     return request_body
 
-#Videos routes
+#Videos Routes
 @videos_bp.route("", methods=["GET"])
 def get_all_videos():
     video_list = []
@@ -89,7 +89,7 @@ def update_video(video_id):
     return make_response(jsonify(video.to_dict()), 200)
 
 
-# Customer routes
+# Customer Routes
 @customers_bp.route("", methods=["POST"])
 def create_customer():
     required_attributes = ["postal_code", "name", "phone"]
@@ -147,7 +147,7 @@ def handle_one_customer(customer_id):
         return make_response(jsonify(customer.to_dict()), 200)
 
 
-#Rental Endpoints
+#Rental Routes
 @rentals_bp.route("/<rental_status>", methods=["POST"])
 def rental_status(rental_status):
     required_attributes = ["customer_id", "video_id"]
