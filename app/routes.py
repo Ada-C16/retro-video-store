@@ -22,7 +22,6 @@ def handle_videos():
                         "total_inventory": video.total_inventory
                         } for video in videos]
         return jsonify(videos_list)
-
     elif request.method == 'POST':
         request_body = request.get_json()
         if 'title' not in request_body.keys():
@@ -86,27 +85,62 @@ def handle_one_video(video_id):
         db.session.commit()
 
         return make_response({"id": video.id})
-    
-# RENTAL ENDPOINTS
-@rental_bp.route('/check-out', methods=['POST'])
-def handle_checkout():
-    response_body = request.get_json()
-    new_checkout = Rental(customer_id=response_body['customer_id'],
-                            video_id=response_body['video_id'],
-                            due_date=response_body['due_date'],
-                            videos_checked_out_count=response_body['videos_checked_out_count'],
-                            # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
-                            available_inventory=response_body['available_inventory'])
-    db.session.add(new_checkout)
-    db.session.commit()
 
-    return make_response({"customer_id": new_checkout.customer_id,
-                            "video_id": new_checkout.video_id,
-                            "due_date": new_checkout.due_date,
-                            "videos_checked_out_count": new_checkout.videos_checked_out_count,
-                            "available_inventory": new_checkout.available_inventory})
+# CUSTOMER ENDPOINTS
+
+# Get all customers (no customer ids)
+@customer_bp.route('', methods=['GET','POST'])
+def handle_customers():
+    if request.method == 'GET':
+        customers = Customer.query.all()
+        customers_list = [{"id": customer.id,
+                            "name": customer.name,
+                            "postal_code": customer.postal_code,
+                            "phone": customer.phone,
+                            "registered_at": customer.registered_at} for customer in customers]
+        return jsonify(customers_list)
+    elif request.method == 'POST':
+        pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+# # RENTAL ENDPOINTS
+# @rental_bp.route('/check-out', methods=['POST'])
+# def handle_checkout():
+#     response_body = request.get_json()
+#     new_checkout = Rental(customer_id=response_body['customer_id'],
+#                             video_id=response_body['video_id'],
+#                             due_date=response_body['due_date'],
+#                             videos_checked_out_count=response_body['videos_checked_out_count'],
+#                             # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
+#                             available_inventory=response_body['available_inventory'])
+#     db.session.add(new_checkout)
+#     db.session.commit()
+
+#     return make_response({"customer_id": new_checkout.customer_id,
+#                             "video_id": new_checkout.video_id,
+#                             "due_date": new_checkout.due_date,
+#                             "videos_checked_out_count": new_checkout.videos_checked_out_count,
+#                             "available_inventory": new_checkout.available_inventory})
     
 
-@rental_bp.route('/check-in', methods=['POST'])
-def handle_checkin():
-    pass
+# @rental_bp.route('/check-in', methods=['POST'])
+# def handle_checkin():
+#     pass
