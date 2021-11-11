@@ -1,13 +1,14 @@
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
+from app.models.rental import Rental
 from flask import Blueprint, jsonify, request, make_response
 import requests
 from datetime import datetime
 import os
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
-
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 # create
 @customers_bp.route("", methods=["POST"])
@@ -277,3 +278,6 @@ def delete_one_video(video_id):
     db.session.commit()
     
     return {"id": video.video_id}
+
+
+
