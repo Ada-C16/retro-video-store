@@ -232,7 +232,6 @@ def get_rentals_by_customer(customer_id):
     customer = Customer.query.get(customer_id)
     if not customer:
         return {'message': f'Customer {customer_id} was not found'}, 404
-    videos = Rental.query.filter(Rental.customer_id == int(customer_id))
-    video_ids = [video.video_id for video in videos]
+    video_ids = Rental.query.with_entities(Rental.video_id).filter(Rental.customer_id == int(customer_id))
     result = [Video.query.get(id).to_dict() for id in video_ids]
     return jsonify(result), 200
