@@ -10,6 +10,7 @@ video_bp = Blueprint('video', __name__, url_prefix="/videos")
 customer_bp = Blueprint('customer', __name__, url_prefix="/customers")
 load_dotenv()
 
+# Get and Post Customers
 @customer_bp.route("", methods=["POST", "GET"])
 def handle_customers():
     if request.method == "POST":
@@ -36,6 +37,7 @@ def handle_customers():
             customers_response.append(customer.to_dict())
         return jsonify(customers_response), 200
         
+# Get, Put, and Delete Customer by ID
 @customer_bp.route("/<customer_id>", methods= ["GET", "PUT", "DELETE"])
 def handle_customer(customer_id):
     try:
@@ -71,6 +73,7 @@ def handle_customer(customer_id):
 
         return({"id":customer_id}), 200
 
+# Helper Function to validate videos
 def validate_video(request_body):
     '''Helper Function to validate video request_body'''
     if "title" not in request_body or "release_date" not in request_body or "total_inventory" not in request_body:
@@ -107,7 +110,7 @@ def create_video():
     db.session.commit()
     return jsonify(new_video.to_dict()), 201
 
-# Get one Video
+# Get Video by ID
 @video_bp.route("/<video_id>", methods=["GET"])
 def get_video(video_id):
     try:
@@ -120,7 +123,7 @@ def get_video(video_id):
         return jsonify({"message": f"Video {video_id} was not found"}), 404
     return jsonify(video.to_dict()), 200
 
-# Update a Video
+# Update Video by ID
 @video_bp.route("/<video_id>", methods=["PUT"])
 def update_video(video_id):
     video_id = int(video_id)
@@ -139,7 +142,7 @@ def update_video(video_id):
     db.session.commit()
     return jsonify(video.to_dict()), 200
 
-# Delete a Video
+# Delete Video by ID
 @video_bp.route("/<video_id>", methods=["DELETE"])
 def delete_video(video_id):
     video_id = int(video_id)
