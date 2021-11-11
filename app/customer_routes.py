@@ -2,6 +2,9 @@ from app import db
 from app.models.customer import Customer
 from flask import Blueprint, json, jsonify, request, make_response
 import datetime
+from app.models.rental import Rental
+from app.models.video import Video
+from app.rental_routes import validates_request_body
 
 customers_bp = Blueprint("customers",__name__, url_prefix="/customers")
 
@@ -26,6 +29,20 @@ def get_customer_by_id(customer_id):
     if not customer:
         return make_response(jsonify({'message': f'Customer {customer_id} was not found'}),404)
     return customer.to_dict(),200
+
+@customers_bp.route("/<cust_id>/rentals",methods=["GET"])
+def get_customer_rentals(cust_id):
+
+    customer = Customer.query.get(cust_id)
+    if not customer:
+        return make_response(jsonify({'message': f'Customer {cust_id} was not found'}),404)
+
+    all_rentals = []
+    rentals = db.session.query(Rental).filter(Rental.customer_id==cust_id).all()
+    for rental in rentals:
+        video = Video.query.get(rental.video_id)
+        all_rentals.append({"title":video.title})
+    return make_response(jsonify(all_rentals),200)
 
 @customers_bp.route("",methods=["POST"])
 def new_customer():
