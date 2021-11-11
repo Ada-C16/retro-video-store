@@ -1,6 +1,4 @@
-from sqlalchemy.orm import backref
 from app import db
-from os import register_at_fork
 from datetime import datetime
 
 class Customer(db.Model):

@@ -1,6 +1,6 @@
 from app import db
 from app.models.video import Video
-from app.rental_routes import deletes_rentals, validates_request_body
+from app.rental_routes import deletes_rentals
 from app.models.rental import Rental
 from app.models.customer import Customer
 from flask import Blueprint, jsonify, request, make_response, abort
