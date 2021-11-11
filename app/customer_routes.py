@@ -77,3 +77,17 @@ def delete_customer(id):
     db.session.delete(customer)
     db.session.commit()
     return {"id": customer.id}
+
+
+@customer_bp.route("/<id>/rentals", methods=["GET"])
+def get_customer_rentals(id):
+    customer = valid_customer(id)
+    rentals = []
+    for rental in customer.rentals:
+        rental_dict = {
+            "release_date": rental.video.release_date,
+            "title": rental.video.title,
+            "due_date": rental.due_date,
+        }
+        rentals.append(rental_dict)
+    return jsonify(rentals), 200

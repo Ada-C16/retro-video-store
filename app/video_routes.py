@@ -91,3 +91,19 @@ def delete_video(id):
     db.session.delete(video)
     db.session.commit()
     return {"id": video.id}
+
+
+@videos_bp.route("/<id>/rentals", methods=["GET"])
+def read_rentals_by_video(id):
+    video = valid_video(id)
+    rentals = []
+    for rental in video.rentals:
+        rental_dict = {
+            "due_date": rental.due_date,
+            "name": rental.customer.name,
+            "phone": rental.customer.phone,
+            "postal_code": rental.customer.postal_code,
+        }
+        rentals.append(rental_dict)
+
+    return jsonify(rentals), 200
