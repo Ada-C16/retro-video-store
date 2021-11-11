@@ -1,10 +1,9 @@
 from app import db
 from app.models.customer import Customer
-from flask import Blueprint, json, jsonify, request, make_response
-import datetime
+from flask import Blueprint, jsonify, request, make_response
 from app.models.rental import Rental
 from app.models.video import Video
-from app.rental_routes import deletes_rentals, validates_request_body
+from app.rental_routes import deletes_rentals
 
 customers_bp = Blueprint("customers",__name__, url_prefix="/customers")
 
