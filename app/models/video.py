@@ -1,3 +1,4 @@
+from sqlalchemy.orm import backref
 from app import db
 
 class Video(db.Model):
@@ -5,6 +6,7 @@ class Video(db.Model):
     title = db.Column(db.String(100))
     release_date = db.Column(db.Date)
     total_inventory = db.Column(db.Integer, nullable=True)
+    customers = db.relationship("Customer", secondary="rental", back_populates="videos")
     # customer_id = db.Column(db.Integer, db.ForeignKey(
     #     "customer.customer_id"), nullable=True)
 
@@ -19,3 +21,7 @@ class Video(db.Model):
         # if self.customer_id:
         #     result["customer_id"] = self.customer_id
         return result
+
+  
+    def __str__(self) -> str:
+        return "Video"

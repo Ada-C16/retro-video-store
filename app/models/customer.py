@@ -6,7 +6,7 @@ class Customer(db.Model):
     phone = db.Column(db.String)
     postal_code = db.Column(db.String)
     register_at = db.Column(db.DateTime)
-    # videos = db.relationship("video", secondary="rental", backref="customers")
+    videos = db.relationship("Video", secondary="rental", back_populates="customers")
 
     def to_dict(self):
         return {
@@ -16,3 +16,7 @@ class Customer(db.Model):
             "postal_code" : self.postal_code,
             "register_at" : self.register_at
         }
+    
+
+    def __str__(self) -> str:
+        return "Customer"
