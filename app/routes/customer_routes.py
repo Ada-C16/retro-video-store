@@ -6,8 +6,6 @@ from flask import Blueprint, jsonify, request
 
 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
-# videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
-# rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 @customers_bp.route("", methods=["GET"])
 def get_customers():
@@ -46,20 +44,19 @@ def get_customer_rentals(customer_id):
     if customer is None:
         return jsonify({'message': f'Customer {customer_id} was not found'}), 404
 
-    rentals = Rental.query.get(customer_id)
+    #query with multiple parameters so no for loop is needed
+    #this line gets all rentals that have the customer_id and are currently checked out
+    rentals = Rental.query.filter_by(customer_id=customer_id, checked_in=False)
     
-    current_checked_out = []
     response_body = []
 
     for rental in rentals:
-        if rental.checked_in == False:
-            current_checked_out.append(rental)
-
-    for rental in current_checked_out:
+        #accessing video instance so the attributes can be added to the resposne body
+        video = Video.query.get(rental.video_id)
         response_body.append(
         {
-        "release_date": rental.release_date,
-        "title": rental.video_id.title, #maybe??? (trying to get title from video), if doesn't work, consider adding a title attribute to Rental
+        "release_date": video.release_date,
+        "title": video.title,
         "due_date": rental.due_date,
     })
 
@@ -69,6 +66,12 @@ def get_customer_rentals(customer_id):
 @customers_bp.route("", methods=["POST"])
 def post_new_customer():
     request_body = request.get_json()
+
+    #NEED TO ADD
+    # check for correct type of input
+    # (type("name") is not str)
+    # (type("postal_code") is not str)
+    # (type("phone") is not str)
 
     if "name" not in request_body:
         return jsonify({"details": "Request body must include name."}), 400
@@ -85,7 +88,7 @@ def post_new_customer():
     db.session.commit()
 
     response_body = {
-        "id": new_customer.customer_id
+        "id": new_customer.id
     }
     return jsonify(response_body), 201
 
@@ -98,13 +101,18 @@ def update_customer(customer_id):
 
     request_body = request.get_json()
     
+    #NEED TO ADD
+    # check for correct type of input
+    # (type("name") is not str)
+    # (type("postal_code") is not str)
+    # (type("phone") is not str)
+
     if "name" not in request_body:
         return jsonify({"details": "Request body must include name."}), 400
     elif "postal_code" not in request_body:
         return jsonify({"details": "Request body must include postal_code."}), 400
     elif "phone" not in request_body:
         return jsonify({"details": "Request body must include phone."}), 400
-
     
     customer.name = request_body["name"]
     customer.postal_code = request_body["postal_code"]
@@ -118,14 +126,18 @@ def update_customer(customer_id):
 
 @customers_bp.route("/<customer_id>", methods=["DELETE"])
 def delete_customer(customer_id):
+
     customer = Customer.query.get(customer_id)
+
     if customer is None:
         return jsonify({'message': f'Customer {customer_id} was not found'}), 404
     
+    #needs to delete rental instances connected to customer with this endpoint too
+
     db.session.delete(customer)
     db.session.commit()
     
     return jsonify({
-        'id': customer.customer_id
+        'id': customer.id
         }), 200
 

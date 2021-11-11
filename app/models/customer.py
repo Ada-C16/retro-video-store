@@ -3,15 +3,16 @@ from app import db
 from app.models.rental import Rental
 
 class Customer(db.Model):
-    customer_id = db.Column(db.Integer, primary_key=True, autoincrement=True, unique=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String)
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime, nullable=True)
+    rentals = db.relationship('Rental', backref='rental', )
 
     def to_dict(self):
         customer_dict = {
-            "id": self.customer_id,
+            "id": self.id,
             "name": self.name,
             "postal_code": self.postal_code,
             "phone": self.phone,
@@ -20,15 +21,17 @@ class Customer(db.Model):
         
         return customer_dict
 
-    def videos_checked_out(self):
-        checked_out_list = []
-        videos_checked_out_by_customers=Rental.query.get(self.customer_id)
+    #NOT NEEDED sicne we can query multiple parameters
 
-        for video in videos_checked_out_by_customers:
-            if video.checked_in == False:
-                checked_out_list.append(video)
+    # def videos_checked_out(self):
+    #     checked_out_list = []
+    #     videos_checked_out_by_customers=Rental.filter_by()
+
+    #     for video in videos_checked_out_by_customers:
+    #         if video.checked_in == False:
+    #             checked_out_list.append(video)
         
-        num_videos_checked_out=len(checked_out_list)
+    #     num_videos_checked_out=len(checked_out_list)
 
-        return num_videos_checked_out
+    #     return num_videos_checked_out
 
