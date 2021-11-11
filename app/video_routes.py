@@ -1,6 +1,6 @@
 from app import db
 from app.models.video import Video
-from app.rental_routes import validates_request_body
+from app.rental_routes import deletes_rentals, validates_request_body
 from app.models.rental import Rental
 from app.models.customer import Customer
 from flask import Blueprint, jsonify, request, make_response, abort
@@ -38,6 +38,7 @@ def handle_video(id_num):
         return jsonify(video.to_dict()), 200
     
     elif request.method == 'DELETE':
+        deletes_rentals(video.video_id)
         db.session.delete(video)
         db.session.commit()
         return jsonify({"id": video.video_id}), 200
