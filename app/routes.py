@@ -25,6 +25,16 @@ def validate_data(request_body, required_attributes):
             abort(make_response(jsonify({"details": f"Request body must include {attribute}."}), 400))
     return request_body
 
+def is_class_type_at_id_found(id, class_type, class_string):
+    id = is_id_valid(id)
+    object= class_type.query.get(id)
+
+    if not object:
+        abort(make_response(jsonify({"message": f"{class_string} {id} was not found"}), 404))
+    else:
+        return object
+
+
 #Videos Routes
 @videos_bp.route("", methods=["GET", "POST"])
 def get_all_videos():
@@ -52,11 +62,7 @@ def get_all_videos():
 
 @videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
 def handle_one_video(video_id):
-    video_id = is_id_valid(video_id)
-    video = Video.query.get(video_id)
-
-    if not video:
-        return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404) 
+    video = is_class_type_at_id_found(video_id, Video, "Video")
 
     if request.method == "GET":
         return make_response(jsonify(video.to_dict()), 200)
@@ -117,15 +123,9 @@ def handle_customers():
 
 @customers_bp.route("/<customer_id>", methods=["GET", "DELETE", "PUT"])
 def handle_one_customer(customer_id):
-    required_attributes = ["postal_code", "name", "phone"]
-    customer_id = is_id_valid(customer_id)
-    customer = Customer.query.get(customer_id)
-    customer_id = int(customer_id)
+    customer = is_class_type_at_id_found(customer_id, Customer, "Customer")
 
-    if not customer:
-        return make_response({"message": f"Customer {customer_id} was not found"}, 404)
-
-    elif request.method == "GET":
+    if request.method == "GET":
         return make_response(jsonify(customer.to_dict()), 200)
 
     elif request.method == "DELETE":
@@ -142,6 +142,7 @@ def handle_one_customer(customer_id):
             return make_response("", 200)
 
     elif request.method == "PUT":
+        required_attributes = ["postal_code", "name", "phone"]
         request_body = validate_data(request.get_json(), required_attributes)
 
         customer.name = request_body["name"]
@@ -159,11 +160,8 @@ def rental_status(rental_status):
     required_attributes = ["customer_id", "video_id"]
     request_body = validate_data(request.get_json(), required_attributes)
 
-    customer = Customer.query.get(request_body["customer_id"])
-    video = Video.query.get(request_body["video_id"])
-
-    if not customer or not video:
-        return make_response("", 404)
+    customer = is_class_type_at_id_found(request_body["customer_id"], Customer, "Customer")
+    video = is_class_type_at_id_found(request_body["video_id"], Video, "Video")
 
     rental = Rental(customer_id = int(customer.id),
                 video_id = int(video.id),
@@ -200,22 +198,14 @@ def rental_status(rental_status):
 
 @videos_bp.route('/<video_id>/rentals', methods=["GET"])
 def get_rentals_for_customer(video_id):
-    video_id = is_id_valid(video_id)
-    video = Video.query.get(video_id)
-
-    if not video:
-        return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404)
+    video = is_class_type_at_id_found(video_id, Video, "Video")
 
     rentals = video.video_rentals() 
     return make_response(jsonify(rentals), 200)
 
 @customers_bp.route('/<customer_id>/rentals', methods=["GET"])
 def get_rentals_for_customer(customer_id):
-    customer_id = is_id_valid(customer_id)
-    customer = Customer.query.get(customer_id)
-
-    if not customer:
-        return make_response(jsonify({"message": f"Customer {customer_id} was not found"}), 404)
+    customer = is_class_type_at_id_found(customer_id, Customer, "Customer")
 
     rentals = customer.customer_rentals() 
     return make_response(jsonify(rentals), 200)
