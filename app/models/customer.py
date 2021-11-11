@@ -8,9 +8,8 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime, nullable=True)
-    videos = db.relationship('Video', secondary='rental',backref='customers')
+    videos = db.relationship('Video', secondary='rentals', backref='customers')
     
-
     def to_dict(self):
         customer_dict = {
             "id": self.id,
@@ -22,17 +21,4 @@ class Customer(db.Model):
         
         return customer_dict
 
-    #NOT NEEDED sicne we can query multiple parameters
-
-    # def videos_checked_out(self):
-    #     checked_out_list = []
-    #     videos_checked_out_by_customers=Rental.filter_by()
-
-    #     for video in videos_checked_out_by_customers:
-    #         if video.checked_in == False:
-    #             checked_out_list.append(video)
-        
-    #     num_videos_checked_out=len(checked_out_list)
-
-    #     return num_videos_checked_out
 

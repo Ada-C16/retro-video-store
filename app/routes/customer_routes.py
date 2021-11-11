@@ -4,7 +4,6 @@ from app.models.video import Video
 from app.models.rental import Rental
 from flask import Blueprint, jsonify, request
 
-
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
 @customers_bp.route("", methods=["GET"])
@@ -44,14 +43,12 @@ def get_customer_rentals(customer_id):
     if customer is None:
         return jsonify({'message': f'Customer {customer_id} was not found'}), 404
 
-    #query with multiple parameters so no for loop is needed
-    #this line gets all rentals that have the customer_id and are currently checked out
+
     rentals = Rental.query.filter_by(customer_id=customer_id, checked_in=False)
     
     response_body = []
 
     for rental in rentals:
-        #accessing video instance so the attributes can be added to the resposne body
         video = Video.query.get(rental.video_id)
         response_body.append(
         {
@@ -131,13 +128,6 @@ def delete_customer(customer_id):
 
     if customer is None:
         return jsonify({'message': f'Customer {customer_id} was not found'}), 404
-
-    Rental.query.filter_by(customer_id=customer.id).delete()
-    
-    # Rental.query.get(customer.id).all()
-    # for rental in rentals:
-
-    #     db.session.delete(rental)
     
     db.session.delete(customer)
     db.session.commit()

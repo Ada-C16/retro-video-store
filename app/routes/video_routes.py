@@ -116,9 +116,6 @@ def handle_video(video_id):
         db.session.delete(video)
         db.session.commit()
 
-        #needs to delete rental instances connected to video with this endpoint too
-
-        #changed format of this based on test, it was asking for a key "id" and not an error message
         return jsonify({
             "id": video.id
             })
@@ -133,14 +130,11 @@ def get_customers_with_video_rented(video_id):
     if video is None:
         return make_response({"message": f"Video {video_id} was not found"}, 404)
     
-    #query with multiple parameters so no for loop is needed
-    #this line gets all rentals that have the video_id and are currently checked out
     rentals = Rental.query.filter_by(video_id=video_id, checked_in=False)
 
     response_body = []
 
     for rental in rentals:
-        #accessing customer instance so the attributes can be added to the resposne body
         customer = Customer.query.get(rental.customer_id)
         response_body.append({
         "due_date": rental.due_date,
