@@ -34,9 +34,37 @@ videos_bp = Blueprint('videos', __name__, url_prefix='/videos')
 
 @videos_bp.route('', methods=['GET'], strict_slashes=False)
 def get_all_videos():
-    videos = Video.query.all()
-    video_list =  [video.to_dict() for video in videos]
-    return make_response(jsonify(video_list), 200)
+    sort_query = request.args.get("sort")
+    responses_per_page = request.args.get("n", type=int)
+    page = request.args.get("p", type=int)
+
+    if sort_query:
+        if sort_query == "title":
+            videos = Video.query.order_by(Video.title.asc())
+        elif sort_query == "release_date":
+            videos = Video.query.order_by(Video.release_date.asc())
+        elif sort_query == "total_inventory":
+            videos = Video.query.order_by(Video.total_inventory.asc())
+        if page and responses_per_page:
+            videos = videos.paginate(page=page, per_page=responses_per_page)
+            video_list = [video.to_dict() for video in videos.items]
+            return make_response(jsonify(video_list), 200)
+        video_list = [video.to_dict() for video in videos]
+        return make_response(jsonify(video_list), 200)
+
+    if page and responses_per_page:
+        videos = Video.query.paginate(page=page, per_page=responses_per_page)
+        video_list = [video.to_dict() for video in videos.items]
+        return make_response(jsonify(video_list), 200)
+
+    else:
+        videos = Video.query.all()
+        video_list =  [video.to_dict() for video in videos]
+        return make_response(jsonify(video_list), 200)
+
+    # videos = Video.query.all()
+    # video_list =  [video.to_dict() for video in videos]
+    # return make_response(jsonify(video_list), 200)
 
 @videos_bp.route('', methods=['POST'], strict_slashes=False)
 def create_video():

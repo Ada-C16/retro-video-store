@@ -77,6 +77,8 @@ def check_in_movie():
 
 
 # OPTIONAL ROUTES
+
+# THIS ROUTE NEEDS TESTS
 # GET /rentals/overdue
 @rentals_bp.route('/overdue', methods=['GET'], strict_slashes=True)
 def get_overdue_videos():
