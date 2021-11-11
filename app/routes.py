@@ -147,7 +147,7 @@ def get_videos():
 @videos_bp.route("/<video_id>", methods = ["GET"])
 def get_video(video_id):
 
-    # invalid input like "hello" response....
+    # check that </video_id> is valid input (ie an id number)
     if not video_id.isnumeric():
         return jsonify(None), 400
     
