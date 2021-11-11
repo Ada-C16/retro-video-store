@@ -13,3 +13,14 @@ class Video(db.Model):
             "title": self.title,
             "release_date": self.release_date,
             "total_inventory": self.total_inventory}
+
+    def video_rentals(self):
+        rentals = []
+        for rental in self.rentals:
+            rentals.append({
+                "name": rental.customer.name,
+                "phone": rental.customer.phone,
+                "postal_code": rental.customer.postal_code,
+                "due_date": rental.due_date
+            })
+        return rentals

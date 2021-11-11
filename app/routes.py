@@ -4,7 +4,6 @@ from app.models.video import Video
 from app.models.rental import Rental
 from app import db
 from datetime import date, datetime, timedelta
-import requests
 from dotenv import load_dotenv
 
 # Blueprints
@@ -12,8 +11,21 @@ videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
-#Videos routes
+#Helper Functions
+def is_id_valid(id):
+    try:
+        int(id)
+    except:
+        abort(make_response(jsonify({"message": "Please input valid id number"}), 400))
+    return id
 
+def validate_data(request_body, required_attributes):
+    for attribute in required_attributes:
+        if attribute not in request_body:
+            abort(make_response(jsonify({"details": f"Request body must include {attribute}."}), 400))
+    return request_body
+
+#Videos routes
 @videos_bp.route("", methods=["GET"])
 def get_all_videos():
     video_list = []
@@ -23,7 +35,6 @@ def get_all_videos():
         video_list.append(video.to_dict())
     
     return make_response(jsonify(video_list), 200)
-
 
 @videos_bp.route("/<video_id>", methods=["GET"])
 def get_one_video(video_id):
@@ -48,7 +59,8 @@ def delete_one_video(video_id):
 
 @videos_bp.route("", methods=["POST"])
 def create_new_video():
-    request_body = video_has_required_attributes(request.get_json())
+    required_attributes = ["title", "release_date", "total_inventory"]
+    request_body = validate_data(request.get_json(), required_attributes)
 
     new_video = Video(title = request_body["title"],
                     release_date = request_body["release_date"],
@@ -62,7 +74,8 @@ def create_new_video():
 @videos_bp.route("/<video_id>", methods=["PUT"])
 def update_video(video_id):
     video = Video.query.get(video_id)
-    request_body = video_has_required_attributes(request.get_json())
+    required_attributes = ["title", "release_date", "total_inventory"]
+    request_body = validate_data(request.get_json(), required_attributes)
 
     if not video:
         return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404) 
@@ -76,11 +89,11 @@ def update_video(video_id):
     return make_response(jsonify(video.to_dict()), 200)
 
 
-# customer routes
-# create new customer
+# Customer routes
 @customers_bp.route("", methods=["POST"])
 def create_customer():
-    request_body = validate_customer_data(request.get_json())
+    required_attributes = ["postal_code", "name", "phone"]
+    request_body = validate_data(request.get_json(), required_attributes)
 
     new_customer = Customer(
         name = request_body["name"],
@@ -94,7 +107,6 @@ def create_customer():
 
     return make_response(new_customer.to_dict(), 201)
 
-# get all customers
 @customers_bp.route("", methods=["GET"])
 def get_all_customers():
     customers_list = []
@@ -105,10 +117,9 @@ def get_all_customers():
 
     return make_response(jsonify(customers_list), 200)
 
-# get, delete and update one customer
 @customers_bp.route("/<customer_id>", methods=["GET", "DELETE", "PUT"])
 def handle_one_customer(customer_id):
-    
+    required_attributes = ["postal_code", "name", "phone"]
     customer_id = is_id_valid(customer_id)
     customer = Customer.query.get(customer_id)
     customer_id = int(customer_id)
@@ -125,7 +136,7 @@ def handle_one_customer(customer_id):
         return make_response(jsonify({"id": customer_id}), 200)
 
     elif request.method == "PUT":
-        request_body = validate_customer_data(request.get_json())
+        request_body = validate_data(request.get_json(), required_attributes)
 
         customer.name = request_body["name"]
         customer.postal_code = request_body["postal_code"]
@@ -136,54 +147,11 @@ def handle_one_customer(customer_id):
         return make_response(jsonify(customer.to_dict()), 200)
 
 
-@customers_bp.route('/<customer_id>/rentals', methods=["GET"])
-def get_rentals_for_customer(customer_id):
-    customer_id = is_id_valid(customer_id)
-    customer = Customer.query.get(customer_id)
-
-    if not customer:
-        return make_response(jsonify({"message": f"Customer {customer_id} was not found"}), 404)
-
-    rentals = customer.customer_rentals() 
-    return make_response(jsonify(rentals), 200)
-
-
-
-#Helper Functions
-
-def is_id_valid(video_id):
-    try:
-        int(video_id)
-    except:
-        abort(make_response(jsonify({"message": "Please input valid id number"}), 400))
-    return video_id
-
-def video_has_required_attributes(request_body):
-    required_attributes = ["title", "release_date", "total_inventory"]
-    for attribute in required_attributes:
-        if attribute not in request_body:
-            abort(make_response(jsonify({"details": f"Request body must include {attribute}."}), 400))
-    return request_body
-
-def validate_customer_data(request_body):
-    required_attributes = ["postal_code", "name", "phone"]
-    for attribute in required_attributes:
-        if attribute not in request_body:
-            abort(make_response({"details": f"Request body must include {attribute}."}, 400))
-
-    return request_body
-
-def validate_rental_data(request_body):
-    required_attributes = ["customer_id", "video_id"]
-    for attribute in required_attributes:
-        if attribute not in request_body:
-            abort(make_response("", 400))
-    return request_body
-
 #Rental Endpoints
 @rentals_bp.route("/<rental_status>", methods=["POST"])
 def rental_status(rental_status):
-    request_body = validate_rental_data(request.get_json())
+    required_attributes = ["customer_id", "video_id"]
+    request_body = validate_data(request.get_json(), required_attributes)
 
     customer = Customer.query.get(request_body["customer_id"])
     video = Video.query.get(request_body["video_id"])
@@ -227,3 +195,25 @@ def rental_status(rental_status):
     dict_rent["available_inventory"] = video.total_inventory
         
     return make_response(jsonify(dict_rent), 200)
+
+@videos_bp.route('/<video_id>/rentals', methods=["GET"])
+def get_rentals_for_customer(video_id):
+    video_id = is_id_valid(video_id)
+    video = Video.query.get(video_id)
+
+    if not video:
+        return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404)
+
+    rentals = video.video_rentals() 
+    return make_response(jsonify(rentals), 200)
+
+@customers_bp.route('/<customer_id>/rentals', methods=["GET"])
+def get_rentals_for_customer(customer_id):
+    customer_id = is_id_valid(customer_id)
+    customer = Customer.query.get(customer_id)
+
+    if not customer:
+        return make_response(jsonify({"message": f"Customer {customer_id} was not found"}), 404)
+
+    rentals = customer.customer_rentals() 
+    return make_response(jsonify(rentals), 200)
