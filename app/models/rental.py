@@ -7,3 +7,6 @@ class Rental(db.Model):
     due_date = db.Column(db.DateTime, default=date.today() + timedelta(days=7))
     return_date = db.Column(db.DateTime, default=None)
 
+
+    
+

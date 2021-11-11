@@ -43,5 +43,38 @@ def check_out_video_to_customer():
     
 @rentals_bp.route("/check-in", methods=["POST"])
 def check_in_video_to_customer():
-    pass
+    request_body = request.get_json()
+
+    if "video_id" not in request_body or "customer_id" not in request_body:
+        return jsonify(""), 400
+    
+    video = get_video_from_id(request_body["video_id"])
+    customer = get_customer_from_id(request_body["customer_id"])
+
+    rental_record = Rental.query.filter_by(customer_id=customer.id, video_id=video.id, return_date=None)
+
+    if rental_record == None:
+
+        response_body = {
+            "message": f"No outstanding rentals for customer {customer.id} and {video.id}"
+            }
+        return jsonify(response_body), 400
+
+    rental_record.return_date = date.today()
+
+    db.session.commit()
+
+    videos_checked_out = Rental.query.filter_by(video_id=video.id,return_date=None).count()
+
+    response_body= {"video_id":video.id,
+                "customer_id": customer.id,
+                "videos_checked_out_count": videos_checked_out,
+                "available_inventory": video.total_inventory-videos_checked_out }
+                
+    return jsonify(response_body), 200
+
+
+    
+
+
 #GET AT THE CUSTOMERS_ID_RENTALS, GET VIDEOS_ID_RENTALS
