@@ -42,33 +42,31 @@ def create_customer_video():
     else:
         customer_id = request_body["customer_id"]
         video_id = request_body["video_id"]
-        
-        if not Video.query.get(video_id) or not Customer.query.get(customer_id):
+        customer_checking_out = get_object_from_id(Customer, customer_id)
+        video_to_be_checked_out = get_object_from_id(Video, video_id)
+    
+        if "videos_checked_out_count" not in request_body:
+            videos_checked_out_count = 1
+        due_date = datetime.today() + timedelta(days=7)
 
-             return make_response({"message": "video or customer is not found"}, 404)
+        total_inventory = video_to_be_checked_out.total_inventory
+        available_inventory = total_inventory - videos_checked_out_count
+        if total_inventory >= videos_checked_out_count:
+            new_rental = Rental(video_id=video_id, customer_id=customer_id, videos_checked_out_count=videos_checked_out_count, due_date=due_date)
+            video_to_be_checked_out.total_inventory = available_inventory
         else:
-            if "videos_checked_out_count" not in request_body:
-                videos_checked_out_count = 1
-            due_date = datetime.today() + timedelta(days=7)
-            this_video = Video.query.get(video_id)
-            total_inventory = this_video.total_inventory
-            available_inventory = total_inventory - videos_checked_out_count
-            if total_inventory >= videos_checked_out_count:
-                new_rental = Rental(video_id=video_id, customer_id=customer_id, videos_checked_out_count=videos_checked_out_count, due_date=due_date)
-                this_video.total_inventory = available_inventory
-            else:
-                return jsonify({"message":"Could not perform checkout"}), 400
-            
-            db.session.add(new_rental)
-            db.session.commit()
+            return jsonify({"message":"Could not perform checkout"}), 400
+        
+        db.session.add(new_rental)
+        db.session.commit()
 
-            return make_response({
-            "customer_id": new_rental.customer_id,
-            "video_id": new_rental.video_id,
-            "due_date": due_date,
-            "videos_checked_out_count": videos_checked_out_count,
-            "available_inventory":available_inventory
-            })
+        return make_response({
+        "customer_id": new_rental.customer_id,
+        "video_id": new_rental.video_id,
+        "due_date": due_date,
+        "videos_checked_out_count": videos_checked_out_count,
+        "available_inventory":available_inventory
+        })
 
 @rental_bp.route("/check-in", methods=["POST"])
 def checkin_video():
@@ -78,39 +76,40 @@ def checkin_video():
     if "customer_id" not in request_body or "video_id" not in request_body:
         return make_response({"message" : "bad request"}, 400)
     
-    else:
-        customer_id = request_body["customer_id"]
-        video_id = request_body["video_id"]
-        if Customer.query.get(customer_id) is None or Video.query.get(video_id) is None:
-            return make_response("not found", 404)
-        rental_record = db.session.query(Rental).filter(Rental.customer_id==customer_id,Rental.video_id== Rental.video_id).first()
   
-        if not rental_record:
-             return make_response({"message": "No outstanding rentals for customer 1 and video 1"}, 400)
-        else:
-            if "videos_checked_out_count" not in request_body:
-                videos_checked_out_count = 1  #this is incoming count from customer
-            checked_out_now = rental_record.videos_checked_out_count - videos_checked_out_count  # previously\
-            # recorded count minus the count customer returned
-            
-            this_video = Video.query.get(video_id)
-            total_inventory = this_video.total_inventory
-            available_inventory = total_inventory + videos_checked_out_count
-            
-            this_video.total_inventory = available_inventory
-            
-            
-            response_dict = {
-            "customer_id": rental_record.customer_id,
-            "video_id": rental_record.video_id,
-            "videos_checked_out_count": checked_out_now,
-            "available_inventory":available_inventory
-            }
+    customer_id = request_body["customer_id"]
+    video_id = request_body["video_id"]
+    checking_customer = get_object_from_id(Customer, customer_id)
+    incoming_video = get_object_from_id(Video, video_id)
+    
+    rental_record = db.session.query(Rental).filter(Rental.customer_id==customer_id,Rental.video_id== Rental.video_id).first()
 
-            db.session.delete(rental_record)
-            db.session.commit()
+    if not rental_record:
+            return make_response({"message": "No outstanding rentals for customer 1 and video 1"}, 400)
+    else:
+        if "videos_checked_out_count" not in request_body:
+            videos_checked_out_count = 1  #this is incoming count from customer
+        checked_out_now = rental_record.videos_checked_out_count - videos_checked_out_count  # previously\
+        # recorded count minus the count customer returned
+        
+        this_video = Video.query.get(video_id)
+        total_inventory = this_video.total_inventory
+        available_inventory = total_inventory + videos_checked_out_count
+        
+        this_video.total_inventory = available_inventory
+        
+        
+        response_dict = {
+        "customer_id": rental_record.customer_id,
+        "video_id": rental_record.video_id,
+        "videos_checked_out_count": checked_out_now,
+        "available_inventory":available_inventory
+        }
 
-            return make_response(response_dict)
+        db.session.delete(rental_record)
+        db.session.commit()
+
+        return make_response(response_dict)
 
 
 @customer_bp.route("/<customer_id>/rentals", methods=["GET"])
