@@ -273,5 +273,5 @@ def get_all_rentals():
     else:            
         rentals = Rental.query.all()
 
-    return jsonify([rental.to_dict_customer_rentals() for rental in rentals]), 200
+    return jsonify([rental.to_dict() for rental in rentals]), 200
 

@@ -86,8 +86,18 @@ def second_customer(app):
 def one_checked_out_video(app, client, one_customer, one_video):
     response = client.post("/rentals/check-out", json={
         "customer_id": 1,
-        "video_id": 1
+        "video_id": 1,
+        "due_date": "11-11-2021"
     })
+
+@pytest.fixture
+def second_checked_out_video(app, client, second_customer, second_video):
+    response = client.post("/rentals/check-out", json={
+        "customer_id": 2,
+        "video_id": 2,
+        "due date": "12-12-2021"
+    })
+
 
 
 
