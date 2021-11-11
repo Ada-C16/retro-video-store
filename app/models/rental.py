@@ -8,12 +8,12 @@ class Rental(db.Model):
     status = db.Column(db.String)
 
     
-    def to_dict(self):
+    def to_dict(self, customer, video):
         return{
             "video_id": self.video_id,
             "customer_id": self.customer_id,
-            "videos_checked_out_count": None,
-            "available_inventory": None
+            "videos_checked_out_count": customer.number_of_rentals,
+            "available_inventory": video.total_inventory
         }
     
     def check_out(self):
