@@ -34,7 +34,6 @@ def is_class_type_at_id_found(id, class_type, class_string):
     else:
         return object
 
-
 #Videos Routes
 @videos_bp.route("", methods=["GET", "POST"])
 def get_all_videos():
@@ -181,10 +180,8 @@ def rental_status(rental_status):
         db.session.commit()
     
     elif rental_status == "check-in":
-
         if video.title not in customer.customer_rentals_titles():
             return make_response(jsonify({"message": "No outstanding rentals for customer 1 and video 1"}), 400)
-
         else:
             rental.status = "checked-in"
             customer.number_of_rentals -= 1 
