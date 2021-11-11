@@ -128,9 +128,10 @@ def delete_existing_customer(customer_id):
 
 # *****************************
 # *** videos endpoint  CRUD ***
+# *****************************
 
 # READ
-# get all existing video instances
+# get all existing video records
 @videos_bp.route("", methods = ["GET"])
 def get_videos():
     videos = Video.query.all()
@@ -142,12 +143,12 @@ def get_videos():
 
     return jsonify(response_body), 200
 
-# get one video via id number
+# get one video record via id number
 @videos_bp.route("/<video_id>", methods = ["GET"])
 def get_video(video_id):
 
     # invalid input like "hello" response....
-    if video_id == str:
+    if not video_id.isnumeric():
         return jsonify(None), 400
     
     video = Video.query.get(video_id)
@@ -161,8 +162,7 @@ def get_video(video_id):
     return jsonify(response_body), 200
 
 # CREATE
-
-# post a video
+# post a video record
 @videos_bp.route("", methods = ["POST"])
 def post_video():
     request_body = request.get_json()
@@ -187,6 +187,7 @@ def post_video():
     return jsonify(response_body), 201
 
 # UPDATE
+# update a video record
 @videos_bp.route("<video_id>", methods = ["PUT"])
 def update_video(video_id):
     video = Video.query.get(video_id)
@@ -212,8 +213,7 @@ def update_video(video_id):
 
 
 # DELETE
-
-# delete a video instance
+# delete a video record
 @videos_bp.route("/<video_id>", methods = ["DELETE"])
 def delete_video(video_id):
     video = Video.query.get(video_id)
