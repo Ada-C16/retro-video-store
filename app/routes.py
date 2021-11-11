@@ -1,4 +1,5 @@
 
+import re
 from marshmallow import schema
 from app import db
 from app.models.video import Video
@@ -231,30 +232,6 @@ def delete_customer(customer_id):
 
     # return {"id": customer.id}, 200
 
-# lists the videos a customer currently has checked out
-@customers_bp.route("/<customer_id>/rentals", methods=["GET"], strict_slashes=False)
-def videos_checked_out_by_customer(customer_id):
-    customer = Customer.query.get(customer_id)
-
-    if customer is None:
-        return make_response(
-            {"message": f"Customer {customer_id} was not found"}, 404)
-    
-    videos_checked_out = []
-
-    rentals = db.session.query(Rental).filter(Rental.customer_id==customer_id).all()
-    for rental in rentals:
-        video = Video.query.get(rental.video_id)
-        videos_checked_out.append(
-            {
-                "title": video.title,
-                "release_date": video.release_date,
-                "due_date": rental.due_date
-            }
-        )
-
-    return jsonify(videos_checked_out), 200
-
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 # checks out a video to a customer, and updates the data in the database
@@ -279,11 +256,8 @@ def create_check_out():
     if customer is None or video is None:
         return jsonify({"details": "invalid data"}), 404
 
-    # queries the Rental table to see how many videos with matching video_id are checked out
-    currently_checked_out=Rental.query.filter_by(video_id=request_body["video_id"]).all()
-
     # if the number of videos checked out == the video's total inventory, there are none left to check out
-    if len(currently_checked_out) == video.total_inventory:
+    if len(video.rentals) == video.total_inventory:
         return jsonify({"message": "Could not perform checkout"}), 400        
 
     new_rental = Rental(
@@ -291,18 +265,9 @@ def create_check_out():
         customer_id = request_body["customer_id"]
     )
     
-    # video.available_inventory=video.total_inventory-customer.videos_checked_out_count
     db.session.add(new_rental)
     db.session.commit()
-
-    # list? of all rentals with matching video ID
-    # queried_video=Rental.query.filter_by(video_id=request_body["video_id"]).all()
    
-    # video_inventory = video.total_inventory - len(queried_video)
-
-    # queried_customer=Rental.query.filter_by(customer_id=request_body["customer_id"]).all()
-   
-
     return jsonify({
         "customer_id": new_rental.customer_id,
         "video_id": new_rental.video_id,
@@ -311,10 +276,94 @@ def create_check_out():
         "available_inventory": video.total_inventory-len(video.rentals)
         }), 200
 
+# checks in a video to a customer, and updates the data in the database as such
+@rentals_bp.route("/check-in", methods=["POST"], strict_slashes=False)
+def check_in():
+    request_body = request.get_json()
+    
+    if "customer_id" not in request_body:
+        return {"details": "Request body must include customer_id."}, 400
+    if "video_id" not in request_body:
+        return {"details": "Request body must include video_id."}, 400
 
+    video=Video.query.get(request_body["video_id"])
+    customer=Customer.query.get(request_body["customer_id"])
+    
+    video_id = request_body["video_id"]
+    customer_id = request_body["customer_id"]
+
+    # returns 404 error if missing customer, video, or no available inventory
+    if customer is None or video is None:
+        return jsonify({"details": "invalid data"}), 404
+
+    for rental in video.rentals: # every rental of the video currently checked out
+        if rental.customer_id == customer_id:
+            db.session.delete(rental)
+            db.session.commit()
+            return jsonify({
+                "customer_id": customer_id,
+                "video_id": video_id,
+                "videos_checked_out_count": len(customer.videos_rented),
+                "available_inventory": video.total_inventory-len(video.rentals)
+                }), 200
+        else:
+            break
+    return jsonify({"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}), 400
+
+# lists the videos a customer currently has checked out
+# @customers_bp.route("/<customer_id>/rentals", methods=["GET"], strict_slashes=False)
+# def videos_checked_out_by_customer(customer_id):
+#     customer = Customer.query.get(customer_id)
+
+#     if customer is None:
+#         return make_response(
+#             {"message": f"Customer {customer_id} was not found"}, 404)
+
+#     videos_checked_out = []
+
+#     rentals = db.session.query(Rental).filter(Rental.customer_id==customer_id).all()   # every rental with the matching customer_id
+#     for rental in rentals:
+#         video = Video.query.get(rental.video_id)
+#         videos_checked_out.append(
+#             {
+#                 "title": video.title,
+#                 "release_date": video.release_date,
+#                 "due_date": rental.due_date
+#             }
+#         )
+
+#     return jsonify(videos_checked_out), 200
+
+# lists the videos a customer currently has checked out
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"], strict_slashes=False)
+def videos_checked_out_by_customer(customer_id):
+    customer = Customer.query.get(customer_id)
+
+    if customer is None:
+        return make_response(
+            {"message": f"Customer {customer_id} was not found"}, 404)
+
+    videos_checked_out = []
+
+    rentals = customer.videos_rented   # every rental with the matching customer_id
+    for rental in rentals:
+        video = Rental.query.get(rental.id)
+        videos_checked_out.append(
+            {
+                "title": video.title,
+                "release_date": video.release_date,
+                "due_date": rental.due_date
+            }
+        )
+
+    return jsonify(videos_checked_out), 200
 
 @video_bp.route("<video_id>/rentals", methods=["GET"])
 def get_all_videos_rented(video_id):
+
+    videos_rented=Video.renters
+    for video in videos_rented:
+        
     request_data=request.get_json()
     check_out_videos=[]
     rentals_of_video=Rental.query.filter_by(video_id)
@@ -324,8 +373,8 @@ def get_all_videos_rented(video_id):
         return jsonify({
             "due_date": one_video.due_date, 
             "customers":[one_video.customer_id.put_request_dict() for one_video in one_video.customer_rentals]}), 200
-         
 
-    # return jsonify({"id": goal.goal_id, "title":goal.title, "tasks":[task.to_dict() for task in goal.tasks]}), 200
+
+    return jsonify({"id": goal.goal_id, "title":goal.title, "tasks":[task.to_dict() for task in goal.tasks]}), 200
 
     
