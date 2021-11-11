@@ -116,6 +116,35 @@ def checkout_rental():
     return jsonify(response_body), 200
 
 
+@rental_bp.route("/check-in", methods=["POST"])
+def checkin_rental():
+    req = request.get_json()
+
+    if "video_id" not in req or "customer_id" not in req:
+        abort(400)
+
+    customer = Customer.get_by_id(req["customer_id"])
+    video = Video.get_by_id(req["video_id"])
+
+    rental = Rental.query.filter(
+        Rental.video_id == video.id and Rental.customer_id == customer.id).first()
+    if not rental:
+        return jsonify({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}), 400
+
+    db.session.delete(rental)
+    db.session.commit()
+
+    checked_out_videos = len(Rental.query.filter(
+        Rental.video_id == video.id).all())
+
+    available_videos = video.total_inventory - checked_out_videos
+    return jsonify({
+        "customer_id": customer.id,
+        "video_id": video.id,
+        "videos_checked_out_count": checked_out_videos,
+        "available_inventory": available_videos
+    }), 200
+
 # @customer_bp.route("/<id>/rentals", methods=["GET"])
 # def read_rentals(id):
 #     customer = Customer.get_by_id(id)
