@@ -75,7 +75,7 @@ def delete_customer(customer_id):
         return 400
     if not customer:
         return make_response(jsonify({'message': f'Customer {customer_id} was not found'}),404)
-    deletes_rentals(customer.customer_id)
+    deletes_rentals(customer.customer_id, True)
     db.session.delete(customer)
     db.session.commit()
 

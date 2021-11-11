@@ -63,12 +63,12 @@ def validates_request_body(request_body):
 
 def deletes_rentals(id, customer_id=False):
     if customer_id == True:
-        customers = db.session.query(Customer).filter(Customer.customer_id == id).all()
-        for customer in customers:
-            db.session.delete(customer)
+        rentals = db.session.query(Rental).filter(Rental.customer_id == id).all()
+        for rental in rentals:
+            db.session.delete(rental)
         db.session.commit()
-    
-    rentals = db.session.query(Rental).filter(Rental.video_id == id).all()
-    for rental in rentals:
-        db.session.delete(rental)
-    db.session.commit()
+    else:
+        rentals = db.session.query(Rental).filter(Rental.video_id == id).all()
+        for rental in rentals:
+            db.session.delete(rental)
+        db.session.commit()
