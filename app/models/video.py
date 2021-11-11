@@ -5,6 +5,8 @@ class Video(db.Model):
     title = db.Column(db.String)
     release_date = db.Column(db.DateTime)
     total_inventory = db.Column(db.Integer)
+    rental = db.relationship('Rental', backref='video', lazy=True)
+
 
     def to_dict(self):
         return {

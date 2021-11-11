@@ -1,6 +1,7 @@
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
+from app.models.rental import Rental
 from flask import Blueprint, jsonify, make_response, request, abort
 
 # BLUEPRINT
@@ -108,10 +109,10 @@ def delete_customer(customer_id):
 # CUSTOMER RENTAL ROUTE
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def get_videos_checked_out(customer_id):
-    customer = get_customer_data_with_id(customer_id)
-    
+    rental = Rental.query.filter_by(customer_id=customer_id)
+
     video_list = []
-    video_query = Video.query.filter_by(id=customer_id)
+    video_query = Video.query.filter_by(id=rental.video_id)
 
     for video in video_query:
         video_list.append(video.to_dict())
