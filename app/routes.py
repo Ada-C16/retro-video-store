@@ -167,8 +167,6 @@ def rental_status(rental_status):
                 video_id = int(video.id),
                 due_date = datetime.utcnow() + timedelta(days=7))
 
-    dict_rent = rental.to_dict()
-
     if rental_status == "check-out":
         if video.total_inventory == 0:
             return make_response(jsonify({"message": "Could not perform checkout"}), 400)
@@ -191,10 +189,7 @@ def rental_status(rental_status):
             video.total_inventory += 1
             db.session.commit()
 
-    dict_rent["videos_checked_out_count"] = customer.number_of_rentals
-    dict_rent["available_inventory"] = video.total_inventory
-        
-    return make_response(jsonify(dict_rent), 200)
+    return make_response(jsonify(rental.to_dict(customer, video)), 200)
 
 @videos_bp.route('/<video_id>/rentals', methods=["GET"])
 def get_rentals_for_customer(video_id):
