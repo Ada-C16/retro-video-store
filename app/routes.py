@@ -32,7 +32,7 @@ def create_video():
         invalid_data={"details": "Request body must include total_inventory."}
         return jsonify(invalid_data),400
     
-    new_video=Video(title=request_data["title"], release_date=request_data["release_date"], total_inventory=request_data["total_inventory"], available_inventory=request_data["available_inventory"])
+    new_video=Video(title=request_data["title"], release_date=request_data["release_date"], total_inventory=request_data["total_inventory"])
     db.session.add(new_video)
     db.session.commit()
 
@@ -130,9 +130,10 @@ def create_customer():
     new_customer = Customer(
         name = request_body["name"],
         postal_code = request_body["postal_code"],
-        phone = request_body["phone"],
-        videos_checked_out_count = request_body["videos_checked_out_count"]
+        phone = request_body["phone"]
     )
+
+    new_customer.registered_at = datetime.datetime.now()
 
     db.session.add(new_customer)
     db.session.commit()
@@ -168,7 +169,6 @@ def get_customer(customer_id):
     )
 
 # updates and return details about a specific customer
-# NOT PASSING
 @customers_bp.route("/<customer_id>", methods=["PUT"], strict_slashes=False)
 def update_customer(customer_id):
     if not customer_id.isnumeric():
@@ -239,34 +239,45 @@ rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
     # create a due date (7 days from current date)
     
 @rentals_bp.route("/check-out", methods=["POST"], strict_slashes=False)
+
 def create_check_out():
     request_body = request.get_json()
+
+    if "customer_id" not in request_body:
+        return {"details": "Request body must include customer_id."}, 400
+    if "video_id" not in request_body:
+        return {"details": "Request body must include video_id."}, 400
 
     video=Video.query.get(request_body["video_id"])
     customer=Customer.query.get(request_body["customer_id"])
 
-    # if video is None or customer is None:
-    #     return{"message": "No video or no customer"}
-    
-    # # check video's available_inventory
-    # if not zero, create Rental
+    # returns 404 error if missing customer, video, or no available inventory
+    # doesnt work lol
+    if customer is None or video is None:
+        return jsonify({"details": "invalid data"}), 404
+
+    # if video.available_inventory == 0:
+    #     return {"details": "inventory out of stock"}, 400        
 
     new_rental = Rental(
         video_id = request_body["video_id"],
         customer_id = request_body["customer_id"]
     )
-
-    customer.videos_checked_out_count += 1
-    video.available_inventory-=1
-    
-
-
     db.session.add(new_rental)
     db.session.commit()
+
+    # list? of all rentals with matching video ID
+    # queried_video=Rental.query.filter_by(video_id=request_body["video_id"]).all()
+   
+    # video_inventory = video.total_inventory - len(queried_video)
+
+    # queried_customer=Rental.query.filter_by(customer_id=request_body["customer_id"]).all()
+   
+
     return jsonify({
         "customer_id": new_rental.customer_id,
         "video_id": new_rental.video_id,
         "due_date": new_rental.due_date,
-        "videos_checked_out_count": customer.videos_checked_out_count,
-        "available_inventory": video.available_inventory
-        }), 201
+        "videos_checked_out_count": len(customer.customer_rentals),
+        "available_inventory": video.total_inventory-len(customer.customer_rentals)
+        }), 200
