@@ -52,8 +52,15 @@ def db_delete(instance):
 def handle_all_videos():
     """Defined endpoint to handle all HTTPS endpoints for handling video https request methods"""
     if request.method == "GET":
+        query_sort = request.args.get("sort")
+        if query_sort == "asc":
+            videos = Video.query.order_by(Video.title)
+        elif query_sort == "desc":
+            videos = Video.query.order_by(Video.title.desc())
+        else:
+            videos = Video.query.all()
+        
         video_list = []
-        videos = Video.query.all()
         for video in videos:
             video_list.append(video.to_dict())
         return make_response(jsonify(video_list), 200)
@@ -114,8 +121,24 @@ def get_rentals_for_video(video_id):
 def handle_customers():
     """Defined an endpoint to handle all customer http request methods"""
     if request.method == "GET":
+        query_sort = request.args.get("sort")
+        query_limit = request.args.get("n")
+        if query_sort == "asc":
+            if query_limit:
+                customers = Customer.query.order_by(Customer.name).limit(query_limit)
+            else:
+                customers = Customer.query.order_by(Customer.name)
+        elif query_sort == "desc":
+            if query_limit:
+                customers = Customer.query.order_by(Customer.name.desc()).limit(query_limit)
+            else:
+                customers = Customer.query.order_by(Customer.name.desc())
+        elif query_limit:
+            customers = Customer.query.limit(query_limit).all()
+        else:
+            customers = Customer.query.all()
+
         customers_list = []
-        customers = Customer.query.all()
         for customer in customers:
             customers_list.append(customer.to_dict())
         return make_response(jsonify(customers_list), 200)
