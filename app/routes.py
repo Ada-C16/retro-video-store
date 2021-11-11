@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify, make_response, request, g, abort
+import re
+from flask import Blueprint, json, jsonify, make_response, request, g, abort
 from app.models.video import Video
 from app.models.customer import Customer
 from app.models.rental import Rental
@@ -87,22 +88,29 @@ def checkout_rental():
     if "video_id" not in req or "customer_id" not in req:
         abort(400)
 
+    video = Video.get_by_id(req["video_id"])
+
+    checked_out_videos = len(Rental.query.filter(
+        Rental.video_id == video.id).all())
+
+    available_videos = video.total_inventory - checked_out_videos
+
+    if not available_videos:
+        return jsonify({"message": "Could not perform checkout"}), 400
+
     customer = Customer.get_by_id(req["customer_id"])
     due_date = datetime.now(timezone.utc) + timedelta(days=7)
     rental = Rental(due_date=due_date)
-    rental.video = Video.get_by_id(req["video_id"])
+    rental.video = video
     customer.videos.append(rental)
     db.session.commit()
-
-    checked_out_videos = len(Rental.query.filter(
-        Rental.video_id == rental.video.id).all())
 
     response_body = {
         "customer_id": customer.id,
         "video_id": rental.video.id,
         "due_date": rental.due_date,
-        "videos_checked_out_count": checked_out_videos,
-        "available_inventory": rental.video.total_inventory - checked_out_videos
+        "videos_checked_out_count": checked_out_videos + 1,
+        "available_inventory": available_videos - 1
     }
 
     return jsonify(response_body), 200
