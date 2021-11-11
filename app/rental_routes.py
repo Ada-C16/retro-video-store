@@ -8,16 +8,15 @@ rentals_bp = Blueprint("rentals",__name__, url_prefix="/rentals")
 
 @rentals_bp.route("/<register>",methods=["GET","POST"])
 def handle_rental(register):
+    request_body = request.get_json()
+    cust_id, vid_id = validates_request_body(request_body)
+    customer = Customer.query.get(cust_id)
+    video = Video.query.get(vid_id)
     if register == "check-in":
-        request_body = request.get_json()
-        cust_id, vid_id = validates_request_body(request_body)
-
-        customer = Customer.query.get(cust_id)
-        video = Video.query.get(vid_id)
-
         rental = db.session.query(Rental).filter(Rental.customer_id == cust_id, Rental.video_id == vid_id).first()
         if not rental:
-            return make_response({"message": "No outstanding rentals for customer 1 and video 1"}, 400)
+            return make_response({"message": f"No outstanding rentals for customer {cust_id} and video {vid_id}"}, 400)
+            
 
         db.session.delete(rental)
         customer.videos_checked_out_count -= 1
@@ -25,11 +24,6 @@ def handle_rental(register):
         return make_response(jsonify(create_checkout_dict(video,customer)),200)
 
     elif register == "check-out":
-        request_body = request.get_json()
-        customer_id, video_id = validates_request_body(request_body)
-        video = Video.query.get(video_id)
-        customer = Customer.query.get(customer_id)
-
         rental = Rental(
             customer_id=customer.customer_id,
             video_id=video.video_id
@@ -67,3 +61,14 @@ def validates_request_body(request_body):
 
     return customer_id, video_id  
 
+def deletes_rentals(id, customer_id=False):
+    if customer_id == True:
+        customers = db.session.query(Customer).filter(Customer.customer_id == id).all()
+        for customer in customers:
+            db.session.delete(customer)
+        db.session.commit()
+    
+    rentals = db.session.query(Rental).filter(Rental.video_id == id).all()
+    for rental in rentals:
+        db.session.delete(rental)
+    db.session.commit()
