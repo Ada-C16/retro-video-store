@@ -71,4 +71,5 @@ def check_in_movie():
             {"message": 
             f"No outstanding rentals for customer {request_body['customer_id']} and video {request_body['video_id']}"}, 400)
     rental_record.checked_in = True
+    db.session.commit()
     return make_response(rental_record.to_dict(), 200)
