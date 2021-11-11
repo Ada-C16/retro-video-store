@@ -33,8 +33,9 @@ def create_app(test_config=None):
 
     #Register Blueprints Here
     from .routes import videos_bp
-    from .routes_for_customers import customers_bp
+    from .routes_for_customers import customers_bp, rentals_bp
     app.register_blueprint(videos_bp)
     app.register_blueprint(customers_bp)
+    app.register_blueprint(rentals_bp)
 
     return app
