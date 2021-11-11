@@ -37,6 +37,16 @@ def is_class_type_at_id_found(id, class_type, class_string):
     else:
         return object
 
+def db_add(instance):
+    """Defined helper function to add instance to database"""
+    db.session.add(instance)
+    db.session.commit()
+
+def db_delete(instance):
+    """Defined helper function to delete instance from database"""
+    db.session.delete(instance)
+    db.session.commit()
+
 #Videos Routes
 @videos_bp.route("", methods=["GET", "POST"])
 def handle_all_videos():
@@ -58,9 +68,7 @@ def handle_all_videos():
                         release_date = request_body["release_date"],
                         total_inventory = request_body["total_inventory"]
                         )
-        db.session.add(new_video)
-        db.session.commit()
-
+        db_add(new_video)
         return make_response(jsonify(new_video.to_dict()), 201)
 
     else:
@@ -76,15 +84,13 @@ def handle_one_video(video_id):
     
     elif request.method == "DELETE":
         if not video.rentals:
-            db.session.delete(video)
-            db.session.commit()
+            db_delete(video)
             return make_response(jsonify({"id": int(video_id)}), 200)
         else:
             active_rentals = Rental.query.filter_by(video_id=f"{video.id}")
             for rental in active_rentals:
-                db.session.delete(rental)
-            db.session.delete(video)
-            db.session.commit()
+                db_delete(rental)
+            db_delete(video)
             return make_response("", 200)
     
     elif request.method == "PUT":
@@ -96,7 +102,6 @@ def handle_one_video(video_id):
         video.release_date = request_body["release_date"]
 
         db.session.commit()
-
         return make_response(jsonify(video.to_dict()), 200)
 
     else:
@@ -134,9 +139,7 @@ def handle_customers():
             register_at = date.today()
             )
 
-        db.session.add(new_customer)
-        db.session.commit()
-
+        db_add(new_customer)
         return make_response(new_customer.to_dict(), 201)
     
     else:
@@ -152,15 +155,13 @@ def handle_one_customer(customer_id):
 
     elif request.method == "DELETE":
         if not customer.rentals:
-            db.session.delete(customer)
-            db.session.commit()
+            db_delete(customer)
             return make_response(jsonify({"id": int(customer_id)}), 200)
         else:
             active_rentals = Rental.query.filter_by(customer_id=f"{customer.id}")
             for rental in active_rentals:
                 db.session.delete(rental)
-            db.session.delete(customer)
-            db.session.commit()
+            db_delete(customer)
             return make_response("", 200)
 
     elif request.method == "PUT":
@@ -205,8 +206,7 @@ def rental_status(rental_status):
             return make_response(jsonify({"message": "Could not perform checkout"}), 400)
         else:
             rental.rental_status(rental_status, video, customer)
-            db.session.add(rental)
-            db.session.commit()
+            db_add(rental)
     
     elif rental_status == "check-in":
         if video.title not in customer.customer_rentals_titles():
