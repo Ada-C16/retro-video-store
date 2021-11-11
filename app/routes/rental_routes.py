@@ -80,13 +80,12 @@ def check_in_movie():
 # GET /rentals/overdue
 @rentals_bp.route('/overdue', methods=['GET'], strict_slashes=True)
 def get_overdue_videos():
-    present = datetime.now()
-    overdue_movie_records = Rental.query.filter(Rental.checked_in==False, Rental.due_date<present).all()
+    overdue_movie_records = Rental.query.filter(Rental.checked_in==False and Rental.due_date<datetime.now()).all()
     response = []
     for record in overdue_movie_records:
         video = get_video_from_id(record.video_id)
         customer = get_customer_data_with_id(record.customer_id)
-        list.append({
+        response.append({
             "video_id": record.video_id,
             "title": video.title,
             "customer_id": record.customer_id,
