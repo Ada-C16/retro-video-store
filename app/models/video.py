@@ -29,6 +29,12 @@ class Video(db.Model):
     #     self.video = [Video.get_by_id(video_id) for video_id in req["video_ids"]]
     #     return self
 
+    def delete(self):
+        if self.customers:
+            for rental in self.customers:
+                db.session.delete(rental)
+        db.session.delete(self)
+
     @classmethod
     def validate_input(cls, video_dict):
         if "title" not in video_dict:

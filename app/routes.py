@@ -19,10 +19,10 @@ def get_model_and_label():
     both of which are accessible globally to use in other functions.
     """
     bps = {
-        "video_bp": (Video, "video"),
-        "customer_bp": (Customer, "customer")
+        "video_bp": Video,
+        "customer_bp": Customer
     }
-    g.model, g.label = bps[request.blueprint]
+    g.model = bps[request.blueprint]
 
 # @video_bp.errorhandler(400)
 # def invalid_data(errorhandler)
@@ -65,7 +65,7 @@ def read_item(id):
 def delete_item(id):
     model = g.model
     item = model.get_by_id(id)
-    db.session.delete(item)
+    item.delete()
     db.session.commit()
     return jsonify(item.to_dict()), 200
 
@@ -145,8 +145,33 @@ def checkin_rental():
         "available_inventory": available_videos
     }), 200
 
-# @customer_bp.route("/<id>/rentals", methods=["GET"])
-# def read_rentals(id):
-#     customer = Customer.get_by_id(id)
-#     rentals = []
-#     for rental in customer.videos:
+
+@customer_bp.route("/<id>/rentals", methods=["GET"])
+def read_rentals_by_customer(id):
+    customer = Customer.get_by_id(id)
+    rentals = []
+    for rental in customer.videos:
+        rental_dict = {
+            "release_date": rental.video.release_date,
+            "title": rental.video.title,
+            "due_date": rental.due_date
+        }
+        rentals.append(rental_dict)
+
+    return jsonify(rentals), 200
+
+
+@video_bp.route("/<id>/rentals", methods=["GET"])
+def read_rentals_by_video(id):
+    video = Video.get_by_id(id)
+    rentals = []
+    for rental in video.customers:
+        rental_dict = {
+            "due_date": rental.due_date,
+            "name": rental.customer.name,
+            "phone": rental.customer.phone,
+            "postal_code": rental.customer.postal_code
+        }
+        rentals.append(rental_dict)
+
+    return jsonify(rentals), 200

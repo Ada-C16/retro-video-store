@@ -27,6 +27,12 @@ class Customer(db.Model):
         self.phone = customer_dict["phone"]
         return self
 
+    def delete(self):
+        if self.videos:
+            for rental in self.videos:
+                db.session.delete(rental)
+        db.session.delete(self)
+
     @classmethod
     def validate_input(cls, customer_dict):
         if "name" not in customer_dict:
