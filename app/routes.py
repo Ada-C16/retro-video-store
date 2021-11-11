@@ -4,9 +4,12 @@ from flask import Blueprint, jsonify, request
 import os
 from datetime import datetime
 
+from app.models.video import Video
+
 
 # Blueprints
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
+videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
 # Customer helper functions
 def display_customer_info(customer):
@@ -127,3 +130,106 @@ def delete_existing_customer(customer_id):
         "id": customer.id
         }, 200
 
+
+# *****************************
+# *** videos endpoint  CRUD ***
+# *****************************
+
+# READ
+# get all existing video records
+@videos_bp.route("", methods = ["GET"])
+def get_videos():
+    videos = Video.query.all()
+    
+    if videos == None:
+        return [], 200
+
+    response_body = [video.to_dict() for video in videos]
+
+    return jsonify(response_body), 200
+
+# get one video record via id number
+@videos_bp.route("/<video_id>", methods = ["GET"])
+def get_video(video_id):
+
+    # check that </video_id> is valid input (ie an id number)
+    if not video_id.isnumeric():
+        return jsonify(None), 400
+    
+    video = Video.query.get(video_id)
+    
+    if video == None:
+        response_body = {"message" : f"Video {video_id} was not found"}
+        return jsonify(response_body), 404
+
+    response_body = video.to_dict()
+
+    return jsonify(response_body), 200
+
+# CREATE
+# post a video record
+@videos_bp.route("", methods = ["POST"])
+def post_video():
+    request_body = request.get_json()
+
+    if "title" not in request_body:
+        response_body = {"details": "Request body must include title."}
+        return jsonify(response_body), 400
+    elif "release_date" not in request_body:
+        response_body = {"details": "Request body must include release_date."}
+        return jsonify(response_body), 400
+    elif "total_inventory" not in request_body:
+        response_body = {"details": "Request body must include total_inventory."}
+        return jsonify(response_body), 400
+
+    new_video = Video.from_dict(request_body)
+
+    db.session.add(new_video)
+    db.session.commit()
+
+    response_body = new_video.to_dict()
+
+    return jsonify(response_body), 201
+
+# UPDATE
+# update a video record
+@videos_bp.route("<video_id>", methods = ["PUT"])
+def update_video(video_id):
+    video = Video.query.get(video_id)
+    
+    if video is None:
+        response_body = {"message" : f"Video {video_id} was not found"}
+        return jsonify(response_body), 404
+
+    form_data = request.get_json()
+    
+    if "title" not in form_data or "total_inventory" not in form_data or "release_date" not in form_data:
+        return jsonify(None), 400
+
+    video.title = form_data["title"]
+    video.total_inventory = form_data["total_inventory"]
+    video.release_date = form_data["release_date"]
+
+    db.session.commit()
+
+    response_body = video.to_dict()
+
+    return jsonify(response_body), 200
+
+
+# DELETE
+# delete a video record
+@videos_bp.route("/<video_id>", methods = ["DELETE"])
+def delete_video(video_id):
+    video = Video.query.get(video_id)
+
+    if video is None:
+        response_body = {"message": f"Video {video_id} was not found"}
+        return jsonify(response_body), 404
+    else:
+        response_body = {"id" : video.id}
+
+        db.session.delete(video)
+        db.session.commit()
+
+        return jsonify(response_body), 200
