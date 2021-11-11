@@ -2,6 +2,7 @@ from app import db
 from flask import Blueprint, jsonify, request, make_response 
 from app.models.customer import Customer
 from app.models.video import Video
+from app.models.rental import Rental
 from datetime import datetime
 import requests
 import os
@@ -9,6 +10,7 @@ from dotenv import load_dotenv
 
 customers_bp = Blueprint("customers",__name__,url_prefix = "/customers") # path that gives you access to resources/endpoint
 videos_bp = Blueprint("videos",__name__,url_prefix = "/videos")
+rentals_bp = Blueprint("rentals",__name__,url_prefix = "/rentals")
 
 @videos_bp.route("", methods=["GET", "POST"])
 def handle_videos():
@@ -167,3 +169,41 @@ def handle_customer(customer_id):
         db.session.commit()
 
         return {"name" : customer.name, "phone" : customer.phone, "postal_code": customer.postal_code}, 200
+
+def due_date():
+    due_date =datetime.now() + datetime.timedelta(days=7)
+    return due_date
+    
+
+@rentals_bp.route("/check-out", methods=["POST"])
+def handle_customer():
+
+        request_body = request.get_json()
+        video_id = request_body["video_id"]
+        video = Video.query.get(video_id)
+        customer_id = request_body["customer_id"]
+        customer = Customer.query.get(customer_id)
+
+        
+
+        rental= Rental(
+        customer_id = request_body["customer_id"],
+        video_id = request_body["video_id"],
+        due_date = due_date())
+        
+            
+
+        db.session.add(rental)
+        db.session.commit()
+        rentals = Rental.query.filter_by(video_id=video_id).all()
+        customers_rentals = customer.videos
+        
+        checked_out = {
+                    "video_id": rental.video_id,
+                    "customer_id" : rental.customer_id,
+                    "due_date": due_date(),
+                    "available_inventory": video.total_inventory - rentals,
+                    "videos_checked_out_count": len(customers_rentals)
+                    
+                    }
+        return jsonify (checked_out), 201
