@@ -11,7 +11,7 @@ videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
 # create
 @customers_bp.route("", methods=["POST"])
-def create_task():
+def create_customer():
     request_body = request.get_json()
 
     if "name" not in request_body:
@@ -46,7 +46,7 @@ def create_task():
 
 
 @customers_bp.route("", methods=["GET"])
-def get_tasks():
+def get_customers():
     customers = Customer.query.all()
     customer_response = []
 
@@ -234,47 +234,46 @@ def get_one_video(video_id):
     return jsonify(response_body), 200
 
 
-@videos_bp.route("/<customer_id>", methods=["PUT"])
-def update_one_customer(customer_id):
-    customer = Customer.query.get(customer_id)
+@videos_bp.route("/<video_id>", methods=["PUT"])
+def update_one_video(video_id):
+    video = Video.query.get(video_id)
     request_body = request.get_json()
 
-    if customer is None:
-        return {"message": f"Customer {customer_id} was not found"}, 404
+    if video is None:
+        return {"message": f"Video {video_id} was not found"}, 404
 
-    if "name" not in request_body or type(customer.name) != str:
+    if "title" not in request_body:
         return make_response("", 400)
-    if "postal_code" not in request_body or type(customer.postal_code) != str:
+    if "release_date" not in request_body :
         return make_response("", 400)
-    if "phone" not in request_body or type(customer.phone) != str:
+    if "total_inventory" not in request_body:
         return make_response("", 400)
 
-    customer.name = request_body["name"]
-    customer.postal_code = request_body["postal_code"]
-    customer.phone = request_body["phone"]
+    video.title = request_body["title"]
+    video.release_date = request_body["release_date"]
+    video.total_inventory = request_body["total_inventory"]
 
-    db.session.add(customer)
+    db.session.add(video)
     db.session.commit()
 
     response_body= {
-                "id": customer.customer_id,
-                "name": customer.name,
-                "registered_at": customer.registered_at,
-                "postal_code": customer.postal_code,
-                "phone": customer.phone,
-            }
+            "id": video.video_id,
+            "title": video.title,
+            "release_date": video.release_date,
+            "total_inventory": video.total_inventory
+        }
 
 
     return jsonify(response_body), 200
 
-@videos_bp.route("/<customer_id>", methods=["DELETE"])
-def delete_one_customer(customer_id):
-    customer = Customer.query.get(customer_id)
+@videos_bp.route("/<video_id>", methods=["DELETE"])
+def delete_one_video(video_id):
+    video = Video.query.get(video_id)
 
-    if customer is None:
-        return {"message": f"Customer {customer_id} was not found"}, 404
+    if video is None:
+        return {"message": f"Video {video_id} was not found"}, 404
 
-    db.session.delete(customer)
+    db.session.delete(video)
     db.session.commit()
     
-    return {"id": customer.customer_id}
+    return {"id": video.video_id}
