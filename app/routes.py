@@ -83,6 +83,8 @@ def delete_customer(customer_id):
         return {"id": customer.customer_id}, 200
 
 
+# Video routes
+
 #WV1: Get No Saved Videos Get Videos One Saved Video
 @videos_bp.route("", methods=["GET"], strict_slashes=False)
 def get_all_videos():
@@ -157,6 +159,7 @@ def delete_one_video(video_id):
         return {"id": video_id}, 200
 
 # Rentals
+
 @rentals_bp.route("/check-out", methods=["POST"])
 def check_out_video():
     request_body = request.get_json()
@@ -219,3 +222,17 @@ def check_in_video():
         "videos_checked_out_count": checked_out,
         "available_inventory": total_inventory - checked_out
     }, 200
+
+# Rentals x Customers
+
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"], strict_slashes=False)
+def get_rentals_by_customer(customer_id):
+    if not Customer.is_int(customer_id):
+        return {'message': f'{customer_id} is not a valid customer id'}, 400
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        return {'message': f'Customer {customer_id} was not found'}, 404
+    videos = Rental.query.filter(Rental.customer_id == int(customer_id))
+    video_ids = [video.video_id for video in videos]
+    result = [Video.query.get(id).to_dict() for id in video_ids]
+    return jsonify(result), 200
