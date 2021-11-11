@@ -11,7 +11,7 @@ class Rental(db.Model):
     due_date = db.Column(db.DateTime, default=(datetime.now() + timedelta(days=7)))
     checked_in = db.Column(db.Boolean, default=False)
 
-    def to_dict(self):
+    def to_dict(self, available_inv=None):
         # calculate num of videos checked out by customer
         # num_checked_out = 0
         # total_rentals = Rental.query.filter_by(customer_id=self.customer_id).all()
@@ -23,10 +23,22 @@ class Rental(db.Model):
         total_inventory = int(video.total_inventory)
         total_checked_out = len(Rental.query.filter_by(video_id=self.video_id, checked_in=False).all())
         available_inv = total_inventory - total_checked_out
-        return {
+        # return {
+        #     'customer_id': self.customer_id,
+        #     'video_id': self.video_id,
+        #     'due_date': self.due_date,
+        #     'videos_checked_out_count': num_checked_out,
+        #     'available_inventory': available_inv
+        # }
+
+        rental_dict = {
             'customer_id': self.customer_id,
             'video_id': self.video_id,
             'due_date': self.due_date,
             'videos_checked_out_count': num_checked_out,
             'available_inventory': available_inv
         }
+
+        # if available_inv:
+        #     rental_dict['available_inventory'] = available_inv
+        return rental_dict
