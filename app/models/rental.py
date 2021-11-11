@@ -1,10 +1,11 @@
 from app import db
 
 class Rental(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), primary_key=True, nullable=False)
     video_id = db.Column(db.Integer, db.ForeignKey('video.id'), primary_key=True, nullable=False)
     due_date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String)
 
     
     def to_dict(self):
@@ -14,5 +15,9 @@ class Rental(db.Model):
             "videos_checked_out_count": None,
             "available_inventory": None
         }
+    
+    def check_out(self):
+        self.status = "checked_out"
+        
 
     

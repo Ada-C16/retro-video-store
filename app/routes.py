@@ -3,7 +3,7 @@ from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
 from app import db
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 import requests
 from dotenv import load_dotenv
 
@@ -173,25 +173,41 @@ def validate_customer_data(request_body):
 
     return request_body
 
+def validate_rental_data(request_body):
+    required_attributes = ["customer_id", "video_id"]
+    for attribute in required_attributes:
+        if attribute not in request_body:
+            abort(make_response("", 400))
+    return request_body
+
 #Rental Endpoints
 @rentals_bp.route("/<rental_status>", methods=["POST"])
 def rental_status(rental_status):
-    request_body = request.get_json()
+    request_body = validate_rental_data(request.get_json())
+
     customer = Customer.query.get(request_body["customer_id"])
     video = Video.query.get(request_body["video_id"])
 
     if not customer or not video:
         return make_response("", 404)
 
+    rental = Rental(customer_id = int(customer.id),
+                video_id = int(video.id),
+                due_date = datetime.utcnow() + timedelta(days=7))
+
+    dict_rent = rental.to_dict()
+
     if rental_status == "check-out":
-        rental = Rental(customer_id = request_body["customer_id"],
-                        video_id = request_body["video_id"],
-                        due_date = date.today() + timedelta(days=7))
-        dict_rent = rental.to_dict()
+
         db.session.add(rental)
         db.session.commit()
 
-        video.total_inventory -= 1
+        if video.total_inventory == 0:
+            return make_response(jsonify({"message": "Could not perform checkout"}), 400)
+        else:
+            video.total_inventory -= 1
+        # customer.number_of_rentals += 1
+
         if customer.number_of_rentals == None:
             customer.number_of_rentals = 0
             customer.number_of_rentals += 1
@@ -201,4 +217,9 @@ def rental_status(rental_status):
         dict_rent["videos_checked_out_count"] = customer.number_of_rentals
         dict_rent["available_inventory"] = video.total_inventory
     
+    elif rental_status == "check-in":
+        rental.status = "checked-in"
+        customer.number_of_rentals -= 1 # Nonetype - 1 ????
+        video.total_inventory += 1
+        
     return make_response(jsonify(dict_rent), 200)
