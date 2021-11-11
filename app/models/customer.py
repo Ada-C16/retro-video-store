@@ -7,6 +7,8 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime())
+    video_id = db.Column(db.Integer, db.ForeignKey("video.id"))
+    videos = db.relationship("Video", secondary="Rentals", backref="customers")
 
 
 
