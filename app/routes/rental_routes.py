@@ -20,18 +20,26 @@ def rental_check_out():
     elif "video_id" not in request_body:
         return jsonify({"details": "Request body must include video_id."}), 400
 
-    #add here: check for inventory, return "message": "Could not perform checkout", 400
-
-    #name variables for clarity later in code
     customer_id = request_body["customer_id"]
     video_id = request_body["video_id"]
 
     customer = Customer.query.get(customer_id)
     video = Video.query.get(video_id)
 
-    #check to make sure customer and video exist
     if video is None or customer is None:
         return jsonify(None), 404
+        
+    num_current_checked_out =  Rental.query.filter_by(video_id=video.id, checked_in=False).count() #.count() returns length
+    current_available_inventory = video.total_inventory - num_current_checked_out
+
+    if current_available_inventory == 0:
+        return jsonify({ 
+                "message": "Could not perform checkout"
+                }), 400
+    #name variables for clarity later in code
+    
+    #check to make sure customer and video exist
+    
 
     new_rental = Rental(customer_id=customer.id,\
     video_id=video.id, due_date=(datetime.now() + timedelta(12)))

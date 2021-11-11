@@ -131,12 +131,18 @@ def delete_customer(customer_id):
 
     if customer is None:
         return jsonify({'message': f'Customer {customer_id} was not found'}), 404
-    
-    #needs to delete rental instances connected to customer with this endpoint too
 
+    Rental.query.filter_by(customer_id=customer.id).delete()
+    
+    # Rental.query.get(customer.id).all()
+    # for rental in rentals:
+
+    #     db.session.delete(rental)
+    
     db.session.delete(customer)
     db.session.commit()
     
+
     return jsonify({
         'id': customer.id
         }), 200
