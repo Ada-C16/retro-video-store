@@ -58,14 +58,13 @@ def handle_video_rentals(id_num):
 
 # HELPER FUNCTIONS
 def validate_video(request_body):
+    valid_keys = ['title', 'release_date', 'total_inventory']
     if not request_body:
         abort(make_response(jsonify({"error": "No data was sent"}), 400))
-    elif 'title' not in request_body:
-        abort(make_response(jsonify({"details": "Request body must include title."}), 400))
-    elif 'release_date' not in request_body:
-        abort(make_response(jsonify({"details": "Request body must include release_date."}), 400))
-    elif 'total_inventory' not in request_body:
-        abort(make_response(jsonify({"details": "Request body must include total_inventory."}), 400))
+
+    for key in valid_keys:
+        if key not in request_body:
+            abort(make_response(jsonify({"details": f"Request body must include {key}."}), 400))
 
 def create_video(data):
     new_video = Video(
