@@ -1,3 +1,4 @@
+from flask import current_app
 from app import db
 
 class Customer(db.Model):
@@ -5,16 +6,16 @@ class Customer(db.Model):
     name = db.Column(db.String)
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
-    register_at = db.Column(db.DateTime)
+    registered_at = db.Column(db.DateTime)
+
     customer_rentals = db.relationship("Video", secondary="rental", backref="customers")
-    videos_checked_out_count = db.Column(db.Integer, default=0, nullable=True)
 
 
     def to_dict(self):
         response_body = {
             "id": self.id,
             "name": self.name,
-            "registered_at": self.register_at,
+            "registered_at": self.registered_at,
             "postal_code": self.postal_code,
             "phone": self.phone
         }
