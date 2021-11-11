@@ -36,11 +36,8 @@ def handle_customers():
             customers_response.append(customer.to_dict())
         return jsonify(customers_response), 200
         
-
-
 @customer_bp.route("/<customer_id>", methods= ["GET", "PUT", "DELETE"])
 def handle_customer(customer_id):
-    
     try:
         customer_id = int(customer_id)
     except ValueError:
@@ -73,9 +70,6 @@ def handle_customer(customer_id):
         db.session.commit()
 
         return({"id":customer_id}), 200
-video_bp = Blueprint("video", __name__, url_prefix="/videos")
-customer_bp = Blueprint("customer", __name__, url_prefix="/customers")
-load_dotenv()
 
 def validate_video(request_body):
     '''Helper Function to validate video request_body'''
