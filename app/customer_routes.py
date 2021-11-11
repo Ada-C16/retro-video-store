@@ -1,6 +1,7 @@
+from flask import Blueprint, jsonify, make_response, request
+
 from app import db
 from app.models.customer import Customer
-from flask import Blueprint, jsonify, request, make_response
 from app.models.rental import Rental
 from app.models.video import Video
 from app.rental_routes import deletes_rentals
