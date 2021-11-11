@@ -19,6 +19,8 @@ class Video(db.Model):
             "release_date": self.release_date,
             "total_inventory": self.total_inventory
         }
+        if self.available_inventory is not None:
+            video_dict["available_inventory"] = self.available_inventory
         return video_dict
     
     def calculate_inventory(self):

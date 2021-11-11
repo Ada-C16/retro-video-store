@@ -32,7 +32,7 @@ def create_video():
         invalid_data={"details": "Request body must include total_inventory."}
         return jsonify(invalid_data),400
     
-    new_video=Video(title=request_data["title"], release_date=request_data["release_date"], total_inventory=request_data["total_inventory"], available_inventory=request_data["available_inventory"])
+    new_video=Video(title=request_data["title"], release_date=request_data["release_date"], total_inventory=request_data["total_inventory"], available_inventory=request_data["total_inventory"])
     db.session.add(new_video)
     db.session.commit()
 
@@ -131,7 +131,7 @@ def create_customer():
         name = request_body["name"],
         postal_code = request_body["postal_code"],
         phone = request_body["phone"],
-        videos_checked_out_count = request_body["videos_checked_out_count"]
+        
     )
 
     db.session.add(new_customer)
@@ -242,11 +242,7 @@ rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 def create_check_out():
     request_body = request.get_json()
 
-    video=Video.query.get(request_body["video_id"])
-    customer=Customer.query.get(request_body["customer_id"])
-
-    # if video is None or customer is None:
-    #     return{"message": "No video or no customer"}
+   
     
     # # check video's available_inventory
     # if not zero, create Rental
@@ -255,10 +251,16 @@ def create_check_out():
         video_id = request_body["video_id"],
         customer_id = request_body["customer_id"]
     )
+    
+    video=Video.query.get(new_rental.video_id)
+    customer=Customer.query.get(new_rental.customer_id)
 
+    if video is None or customer is None:
+        abort (404)
+    
     customer.videos_checked_out_count += 1
     video.available_inventory-=1
-    
+    # video.available_inventory=video.total_inventory-customer.videos_checked_out_count
 
 
     db.session.add(new_rental)
@@ -269,4 +271,4 @@ def create_check_out():
         "due_date": new_rental.due_date,
         "videos_checked_out_count": customer.videos_checked_out_count,
         "available_inventory": video.available_inventory
-        }), 201
+        }), 200
