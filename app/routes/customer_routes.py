@@ -109,12 +109,18 @@ def delete_customer(customer_id):
 # CUSTOMER RENTAL ROUTE
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def get_videos_checked_out(customer_id):
-    rental = Rental.query.filter_by(customer_id=customer_id)
+    video_id_list = []
+
+    rental_query = Rental.query.filter_by(customer_id=customer_id)
+    for rentals in rental_query:
+        video_id_list.append(rentals.video_id)
 
     video_list = []
-    video_query = Video.query.filter_by(id=rental.video_id)
 
-    for video in video_query:
-        video_list.append(video.to_dict())
+    for video_id in video_id_list:
+        video_query = Video.query.filter_by(id=video_id)
+        
+        for video in video_query:
+            video_list.append(video.to_dict())
     
     return jsonify(video_list)
