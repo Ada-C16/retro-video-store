@@ -39,4 +39,5 @@ def create_app(test_config=None):
     from app.models.customer import Customer
     from app.customers_routes import customers_bp
     app.register_blueprint(customers_bp)
+    #app.register_blueprint(rentals_bp)
     return app
