@@ -16,12 +16,12 @@ class Rental(db.Model):
         # num_checked_out = 0
         # total_rentals = Rental.query.filter_by(customer_id=self.customer_id).all()
         # num_checked_out = len(total_rentals) 
-        num_checked_out = len(Rental.query.filter_by(customer_id=self.customer_id).all())
+        num_checked_out = len(Rental.query.filter_by(customer_id=self.customer_id, checked_in=False).all())
 
         # available inventory
         video = Video.query.get(self.video_id)
         total_inventory = int(video.total_inventory)
-        total_checked_out = len(Rental.query.filter_by(video_id=self.video_id).all())
+        total_checked_out = len(Rental.query.filter_by(video_id=self.video_id, checked_in=False).all())
         available_inv = total_inventory - total_checked_out
         return {
             'customer_id': self.customer_id,
