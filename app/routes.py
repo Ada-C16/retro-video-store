@@ -42,15 +42,20 @@ def get_all_customers():
 
 
 # returns one instance of a specific customer 
-# *for this route need to produce status code 400*
 @customers_bp.route("/<customer_id>", methods=["GET"])
 def get_one_customer(customer_id):
+    if not customer_id.isnumeric():
+        return jsonify(None), 400
+    
     customer = Customer.query.get(customer_id)
-    if not customer:
-        return customer_not_found(customer_id), 404
-    #code for 400 can go here
 
-    return jsonify(display_customer_info(customer)), 200
+    if customer == None:
+        response_body = {"message" : f"Customer {customer_id} was not found"}
+        return jsonify(response_body), 404
+    
+    response_body = {"id": customer.id, "name": customer.name, "postal_code": customer.postal_code, "phone": customer.phone}
+
+    return jsonify(response_body), 200
 
 
 # creates a new customer
@@ -121,3 +126,4 @@ def delete_existing_customer(customer_id):
     return {
         "id": customer.id
         }, 200
+
