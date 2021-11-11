@@ -198,28 +198,32 @@ def rental_status(rental_status):
     dict_rent = rental.to_dict()
 
     if rental_status == "check-out":
-
-        db.session.add(rental)
-        db.session.commit()
-
         if video.total_inventory == 0:
             return make_response(jsonify({"message": "Could not perform checkout"}), 400)
         else:
             video.total_inventory -= 1
-        # customer.number_of_rentals += 1
-
-        if customer.number_of_rentals == None:
-            customer.number_of_rentals = 0
             customer.number_of_rentals += 1
-        else:
-            customer.number_of_rentals += 1
+            rental.status = "checked-out"
 
-        dict_rent["videos_checked_out_count"] = customer.number_of_rentals
-        dict_rent["available_inventory"] = video.total_inventory
+        db.session.add(rental)
+        db.session.commit()
     
     elif rental_status == "check-in":
-        rental.status = "checked-in"
-        customer.number_of_rentals -= 1 # Nonetype - 1 ????
-        video.total_inventory += 1
+
+        customer_rental_ls = []
+        for each_rental in customer.rentals:
+            customer_rental_ls.append(each_rental.video.title)
+
+        if video.title not in customer_rental_ls:
+            return make_response(jsonify({"message": "No outstanding rentals for customer 1 and video 1"}), 400)
+
+        else:
+            rental.status = "checked-in"
+            customer.number_of_rentals -= 1 
+            video.total_inventory += 1
+            db.session.commit()
+
+    dict_rent["videos_checked_out_count"] = customer.number_of_rentals
+    dict_rent["available_inventory"] = video.total_inventory
         
     return make_response(jsonify(dict_rent), 200)
