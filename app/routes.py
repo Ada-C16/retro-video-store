@@ -19,16 +19,55 @@ def handle_videos():
             videos_response.append({
                 "id": video.video_id,
                 "title": video.title,
-                "description": task.description,
-                "is_complete": False if task.completed_at == None else True
+                "release_date": video.release_date,
+                "total_inventory": video.total_inventory
             })
+        
+        return jsonify(videos_response), 200
 
+    elif request.method == "POST":
+        request_body = request.get_json()`
+        if not (title and release_date and total_inventory):
+            return jsonify({
+                "details" : "Invalid data"
+            }), 400
+        
+        new_video = Video(
+            title= request_body["title"],
+            release_date= request_body["release_date"],
+            total_inventory= request_body["total_inventory"]
+        )
+        db.session.add(new_video)
+        db.session.commit()
 
+        return {
+            "video": {
+                "id": new_video.video_id,
+            }
+        }, 201
 
 
 @videos_bp.route("/<video_id>", methods= ["GET", "PUT", "DELETE"])
+def handle_video(video_id):
+    video = Video.query.get(video_id)
+    if request.method == "GET":
+        if video is None:
+            return jsonify(None), 404
+    
+    else:
+             return {
+                "video": {
+                    "id": video.video_id,
+                }
+            }
 
+    elif request.method == "DELETE":
+    db.session.delete(video)
+    db.session.commit()
 
+        return jsonify({
+            "id" : video.id
+        }), 200
 
 @customers_bp.route("", methods=["GET", "POST"])
 def handle_customers():
@@ -134,4 +173,4 @@ def handle_customer(customer_id):
         return jsonify({
             "id" : customer.id
         }), 200
->>>>>>> bacd02f44bd396d3d659159dda3bf39149a0cb23
+
