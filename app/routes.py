@@ -50,23 +50,18 @@ def get_all_videos():
 
         return make_response(jsonify(new_video.to_dict()), 201)
 
-@videos_bp.route("/<video_id>", methods=["GET"])
-def get_one_video(video_id):
-
+@videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
+def handle_one_video(video_id):
     video_id = is_id_valid(video_id)
     video = Video.query.get(video_id)
 
     if not video:
         return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404) 
-    else:
-        return make_response(jsonify(video.to_dict()), 200)
 
-@videos_bp.route("/<video_id>", methods=["DELETE"])
-def delete_one_video(video_id):
-    video = Video.query.get(video_id)
-    if not video:
-        return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404) 
-    else:
+    if request.method == "GET":
+        return make_response(jsonify(video.to_dict()), 200)
+    
+    elif request.method == "DELETE":
         if not video.rentals:
             db.session.delete(video)
             db.session.commit()
@@ -78,23 +73,18 @@ def delete_one_video(video_id):
             db.session.delete(video)
             db.session.commit()
             return make_response("", 200)
+    
+    elif request.method == "PUT":
+        required_attributes = ["title", "release_date", "total_inventory"]
+        request_body = validate_data(request.get_json(), required_attributes)
 
-@videos_bp.route("/<video_id>", methods=["PUT"])
-def update_video(video_id):
-    video = Video.query.get(video_id)
-    required_attributes = ["title", "release_date", "total_inventory"]
-    request_body = validate_data(request.get_json(), required_attributes)
+        video.title = request_body["title"]
+        video.total_inventory = request_body["total_inventory"]
+        video.release_date = request_body["release_date"]
 
-    if not video:
-        return make_response(jsonify({"message": f"Video {video_id} was not found"}), 404) 
+        db.session.commit()
 
-    video.title = request_body["title"]
-    video.total_inventory = request_body["total_inventory"]
-    video.release_date = request_body["release_date"]
-
-    db.session.commit()
-
-    return make_response(jsonify(video.to_dict()), 200)
+        return make_response(jsonify(video.to_dict()), 200)
 
 
 # Customer Routes
