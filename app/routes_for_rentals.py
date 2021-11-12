@@ -23,6 +23,8 @@ def handle_rentals():
     elif not video:
         return make_response({"message":"Could not perform checkout"}, 404)
 
+    video_total_inventory = video.total_inventory
+    video_rentals = Rental.query.get("video_id")
 
     new_rental = Rental(
             customer_id=request_body["customer_id"],
@@ -31,9 +33,11 @@ def handle_rentals():
     db.session.add(new_rental)
     db.session.commit()
 
+    # videos_checked_out_count = rentals.video_id
+    # available_inventory = video.total_inventory - rentals.video_id
 
-    rentals_per_customer = len(customer.rentals)
-    available_rentals_per_video= video.total_inventory - rentals_per_customer
+    # rentals_per_customer = len(customer.rentals)
+    # available_rentals_per_video= video.total_inventory - rentals_per_customer
 
     response_value = {"customer_id":new_rental.customer_id,
         "video_id":new_rental.video_id,
