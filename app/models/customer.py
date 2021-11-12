@@ -6,3 +6,10 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
 
+    def customer_details(self):
+        return {
+        "id": self.id,
+        "name": self.name,
+        "postal_code": self.postal_code,
+        "phone": self.phone
+        }

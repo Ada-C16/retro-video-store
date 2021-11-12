@@ -15,7 +15,7 @@ from flask import Blueprint, json, jsonify, request, make_response
 from flask_sqlalchemy import _make_table
 from app import db
 from app.helpers import *
-from app.models.customer import Customer
+from app.models.customer import *
 
 # Write blueprint for customer 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
@@ -45,7 +45,7 @@ def add_new_customer(request_body):
     db.session.add(new_customer)
     db.session.commit()
 
-    response_body = customer_details(new_customer), 201
+    response_body = new_customer.customer_details(), 201
 
     return response_body
     
@@ -56,7 +56,7 @@ def add_new_customer(request_body):
 @require_valid_id
 def get_one_customer(customer):
 
-    response_body = customer_details(customer), 200
+    response_body = customer.customer_details(), 200
     return response_body
 
 # PUT /customers/<id> Updates and returns details about specific customer
@@ -85,6 +85,8 @@ def delete_customer(customer):
     db.session.delete(customer)
     db.session.commit()
 
-    return customer_details(customer), 200
+    response_body = customer.customer_details(), 200
+
+    return response_body
 
 

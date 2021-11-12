@@ -2,9 +2,10 @@ from functools import wraps
 from .models.customer import Customer
 from flask import jsonify, request
 
-# decorator to check if id is valid
 
 # decorator to check if response body is valid
+
+# Decorator to check if id is an integer and if the customer exists.
 
 def require_valid_id(endpoint):
     @wraps(endpoint)
@@ -22,6 +23,7 @@ def require_valid_id(endpoint):
         return endpoint(*args, customer=customer, **kwargs)
     return fn
 
+# Decorator to check if the request_body includes name, postal_code, and phone.
 def require_valid_request_body(endpoint):
     @wraps(endpoint)
     def fn(*args, **kwargs):
@@ -37,22 +39,5 @@ def require_valid_request_body(endpoint):
             return endpoint(*args, request_body=request_body, **kwargs)
     return fn
 
-def customer_details(customer):
-    return {
-    "id": customer.id,
-    "name": customer.name,
-    "postal_code": customer.postal_code,
-    "phone": customer.phone
-    } 
-
 def list_of_customers(customers):
-    return jsonify([customer_details(customer) for customer in customers])
-
-
-def is_invalid(request_body):
-    if "name" not in request_body:
-        return {"details": "Request body must include name."}, 400
-    elif "postal_code" not in request_body:
-        return {"details": "Request body must include postal_code."}, 400
-    elif "phone" not in request_body:
-        return {"details": "Request body must include phone."}, 400
+    return jsonify([customer.customer_details() for customer in customers])
