@@ -86,6 +86,20 @@ def handle_one_video(video_id):
 
         return make_response({"id": video.id})
 
+@video_bp.route('/<id>/rentals', methods=['GET'])
+def handle_rentals_by_video(id):
+    video = Video.query.get(id)
+    if video is None:
+        return jsonify({"detials": "Video does not exist"}), 404
+    else: 
+        customers = Customer.query.filter_by(video_id=id).all
+        return [{
+                "due_date": customer.due_date,
+                "name": customer.name,
+                "phone": customer.phone,
+                "postal_code": customer.postal_code,
+                } for customer in customers]
+
 # CUSTOMER ENDPOINTS
 
 # Get all customers (no customer ids)
