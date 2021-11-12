@@ -201,7 +201,7 @@ def check_out_one_rental():
     request_body = request.get_json()
     # return 400 if video_id or customer_id is missing
     if "video_id" not in request_body or "customer_id" not in request_body:
-            return {"details": "Invalid data"}, 400
+            return jsonify({"details": "Invalid data"}), 400
 
     timestamp = datetime.now()
     due_date = timestamp + timedelta(weeks=1)
@@ -238,14 +238,18 @@ def check_out_one_rental():
         available_inventory = video.available_inventory() 
         rented_vids = video.video_checked_out_count()
 
-        return make_response({"customer_id": new_rental.customer_id,
+        return jsonify({"customer_id": new_rental.customer_id,
                                             "video_id": new_rental.video_id,
                                             "due_date": new_rental.due_date,
                                             "videos_checked_out_count": rented_vids,
-                                            "available_inventory": available_inventory}, 200)
+                                            "available_inventory": available_inventory}), 200
 
     else: 
         return jsonify(""), 404
+
+@rentals_bp.route("/check-in", methods=["POST"])
+def check_in_one_rental():
+    pass
                                 
     
 
