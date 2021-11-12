@@ -128,19 +128,18 @@ def rental_check_in():
 
     customer = Customer.query.get(request_body["customer_id"])
     video = Video.query.get(request_body["video_id"])
-    due_date = Rental.generate_due_date()
+    #due_date = Rental.generate_due_date()
     
     #rental = Rental.query.get(Rental).filter(Rental.video_id,Rental.customer_id)
-    rental = Rental.query.filter(video_id = Rental.video.id, customer_id = Rental.customer.id)
+    Rental.query.filter(Rental.video_id == video.id, Rental.customer_id == customer.id).delete()
 
     # query = meta.Session.query(User).filter(
     # User.firstname.like(search_var1),
     # User.lastname.like(search_var2)
     # )
-    db.session.delete(rental)
-    db.session.commit
+    db.session.commit()
 
-    return make_response(f"Message: Video {video.id} succesfully deleted",200)
+    return make_response(f"Message: Rental succesfully deleted",200)
 
 #----------- GET ---------------------
 @video_bp.route("", methods=["GET"])
