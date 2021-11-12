@@ -222,7 +222,6 @@ def check_out_one_rental():
 
     # checks for validity of video id and customer id
     if video and customer:
-    
         # customer_id and video_id both come fr request_body, due_date is calculated with timedelta  
         # checked_in starts as False bc the first time this record is created is when vid is checked out
         new_rental = Rental(customer_id = request_body["customer_id"], 
@@ -249,7 +248,42 @@ def check_out_one_rental():
 
 @rentals_bp.route("/check-in", methods=["POST"])
 def check_in_one_rental():
-    pass
+    request_body = request.get_json()
+    # return 400 if video_id or customer_id is missing
+    if "video_id" not in request_body or "customer_id" not in request_body:
+            return jsonify({"details": "Invalid data"}), 400
+    
+    # getting the specific video object to access its attributes
+    video = Video.query.get(request_body["video_id"])
+
+    if video == None:
+        return jsonify(""), 404
+
+    #
+    customer = Customer.query.get(request_body["customer_id"])
+
+    # checks for validity of video id and customer id
+    if video and customer:
+        # rental query is one specific object that matches the given parameters 'video_id' and 'customer_id'
+        rental_query = Rental.query.filter_by(video_id=request_body["video_id"], customer_id=request_body["customer_id"],checked_in= False)
+
+        rental_query.checked_in = True
+        rental_query.due_date = None
+
+        db.session.commit()
+
+        num_customer_videos = customer.customers_checked_out_videos()
+        available_inventory = video.available_inventory()
+
+        return jsonify({"customer_id": rental_query.customer_id,
+                        "video_id": rental_query.video_id,
+                        "videos_checked_out_count": num_customer_videos,
+                        "available_inventory": available_inventory}), 200
+
+                                           
+ 
+
+     
                                 
     
 

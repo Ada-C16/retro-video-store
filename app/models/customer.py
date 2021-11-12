@@ -1,6 +1,7 @@
 from app import db
 from flask import current_app
 from sqlalchemy.orm import backref
+from app.models.rental import Rental
 
 
 class Customer(db.Model):
@@ -15,3 +16,10 @@ class Customer(db.Model):
     # backref is creating Customer.videos as well as Video.customers    
 
     videos = db.relationship("Video", secondary="rental", backref="customers")
+
+    # returns the number of videos that an individual customer has checked out
+    def customers_checked_out_videos(self):
+        rental_query = Rental.query.filter_by(customer_id=self.id)
+        return rental_query.count()
+
+    
