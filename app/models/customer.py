@@ -1,3 +1,4 @@
+from enum import unique
 from app import db
 from flask import current_app
 class Customer(db.Model):
