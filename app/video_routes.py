@@ -37,7 +37,6 @@ def post_video():
 
 @video_bp.route("<video_id>", methods = ["GET"])
 def get_video (video_id): 
-    # have to check before query otherwise get a data error
     if not video_id.isnumeric():
         return jsonify({"details": "id must be numerical"}),400
     
@@ -47,6 +46,29 @@ def get_video (video_id):
 
     response_body = build_video_response(video)
     return jsonify(response_body), 200
+
+# WAVE 02 GET
+@video_bp.route("<video_id>/rentals", methods = ["GET"])
+def get_video_customer_current_rentals(video_id):
+    if not video_id.isnumeric():
+        return jsonify({"details": "id must be numerical"}),400
+    video = Video.query.get(video_id)
+    if video == None:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
+
+    customers =  Customer.query.join(Rental).join(Video)\
+    .filter(Video.id == video_id, Rental.checked_in == False).all()
+    response = []
+    for customer in customers:
+        response.append({
+            "id": customer.id,
+            "name": customer.name,
+            "registered_at": customer.registered_at,
+            "postal_code": customer.postal_code,
+            "phone": customer.phone
+        })
+    return jsonify(response), 200
+
 
 @video_bp.route("<video_id>", methods = ["PUT"])
 def put_video(video_id):
