@@ -1,23 +1,12 @@
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
-from app.routes.video_routes import validate_id
+from .helper_functions import *
 from app.models.rental import Rental
 from flask import Blueprint, jsonify, make_response, request, abort
 
 # BLUEPRINT
 customers_bp = Blueprint("customers_bp", __name__, url_prefix = "/customers")
-
-
-# HELPER FUNCTIONS
-def get_customer_data_with_id(customer_id):
-    validate_id(customer_id, "id")
-    customer = Customer.query.get(customer_id)
-
-    if customer is None:
-        abort(make_response({"message": f"Customer {customer_id} was not found"}, 404))
-
-    return customer
 
 
 # GENERAL CUSTOMER ROUTES
@@ -106,8 +95,6 @@ def delete_customer(customer_id):
 def get_videos_checked_out(customer_id):
     # check if customer exists
     get_customer_data_with_id(customer_id)
-
-    video_id_list = []
 
     rental_query = Rental.query.filter_by(customer_id=customer_id, checked_in=False)
     rental_record = [record for record in rental_query]

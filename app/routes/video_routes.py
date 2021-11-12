@@ -3,32 +3,9 @@ from flask import Blueprint, jsonify, request, abort, make_response
 from app.models.video import Video
 from app.models.rental import Rental
 from app.models.customer import Customer
+from .helper_functions import *
 from sqlalchemy.exc import DataError
 
-# helper functions
-def validate_id(id, id_type):
-    try:
-        int(id)
-    except:
-        abort(make_response({"error": f"{id_type} must be an int"}, 400))
-
-def get_video_from_id(id):
-    validate_id(id, 'video id')
-    selected_video = Video.query.get(id)
-    if not selected_video:
-        abort(make_response({'message': f'Video {id} was not found'}, 404))
-    return selected_video
-
-def confirm_all_video_fields_present(request_body):
-    missing_fields = []
-    if 'title' not in request_body:
-        missing_fields.append('Request body must include title.')
-    if 'release_date' not in request_body:
-        missing_fields.append('Request body must include release_date.')
-    if 'total_inventory' not in request_body:
-        missing_fields.append('Request body must include total_inventory.')
-    if missing_fields:
-        abort(make_response({'details': missing_fields}, 400))
 
 videos_bp = Blueprint('videos', __name__, url_prefix='/videos')
 
