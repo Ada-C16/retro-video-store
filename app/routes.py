@@ -1,9 +1,10 @@
 from flask import Blueprint, jsonify, request, make_response, abort
 from app.models.video import Video
 from app.models.customer import Customer
+from app.models.rental import Rental
 from app import db
 from sqlalchemy import desc
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import os
 
@@ -187,5 +188,40 @@ def handle_one_customer(id):
     elif request.method == "DELETE":
         db.session.delete(customer)
         db.session.commit()
-
         return jsonify({"id": customer.id}), 200
+
+# begin endpoints/ functions for Rental Model
+# create rentals_bp, a new instance of Blueprint
+rentals_bp = Blueprint("rentals_bp", __name__, url_prefix="/rentals")
+
+@rentals_bp.route("/check-out", methods=["POST"])
+def check_out_one_rental():
+# request_body will be the user's input, converted to json. it will be a new record 
+# for the db, with all fields (a dict)    
+    request_body = request.get_json()
+    timestamp = datetime.now()
+    due_date = timestamp + timedelta(weeks=1)
+# getting the specific video object to access its attributes
+    video = Video.query.get(request_body["video_id"])
+    if video:
+    
+# customer_id and video_id both come fr request_body, due_date is calculated with timedelta  
+# checked_in starts as False bc the first time this record is created is when vid is checked out
+        new_rental = Rental(customer_id = request_body["customer_id"], 
+                            video_id = request_body["video_id"],
+                            checked_in = False,
+                            due_date = due_date)
+        db.session.add(new_rental)
+        db.session.commit()
+    # begin checked_out calculations after db commit to include most recent rental    
+    #rented_vids is list of objects matching request_body["video_id"] AND not marked as checked_in
+        rented_vids = Rental.query.filter_by(video_id = request_body["video_id"], checked_in= False).all()
+        #videos_checked_out_count =video.total_inventory - len(rented_vids)
+        available_inventory = video.total_inventory - len(rented_vids)
+        return make_response({"customer_id": new_rental.customer_id,
+                                            "video_id": new_rental.video_id,
+                                            "due_date": new_rental.due_date,
+                                            "videos_checked_out_count": len(rented_vids),
+                                            "available_inventory": available_inventory}, 200)
+    else:
+        abort(404)
