@@ -33,15 +33,6 @@ class Rental(db.Model):
             "postal_code" : customer.postal_code 
         }
 
-    def customer_details(self):
-        customer = Customer.query.get(self.customer_id)
-        return {
-            "due_date" : self.due_date,
-            "name" : customer.name,
-            "phone" : customer.phone,
-            "postal_code" : customer.postal_code 
-        }
-
     def video_details(self):
         video = Video.query.get(self.video_id)
         return {
