@@ -14,6 +14,7 @@
 from flask import Blueprint, json, jsonify, request, make_response
 from flask_sqlalchemy import _make_table
 from app import db
+from app.helpers import require_valid_id
 from app.models.customer import Customer
 
 # Write blueprint for customer 
@@ -28,7 +29,7 @@ customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 # Successful response status: 200
 # If no customers, return empty array and 200 status
 # Return list of dictionaries of customer data.
-@customers_bp .route("", methods = ["GET"])
+@customers_bp.route("", methods = ["GET"])
 def get_customers():
 
     customers = Customer.query.all()
@@ -41,7 +42,7 @@ def get_customers():
 # Successful response status: 201:Created
 # Error status: 400: Bad request. Provide details of error if invalid input.
 # Return dictionary with customer data. "id" is the minimum required field tested for.
-@customers_bp .route("", methods = ["POST"])
+@customers_bp.route("", methods = ["POST"])
 def add_new_customer():
 
     request_body = request.get_json()
@@ -63,19 +64,9 @@ def add_new_customer():
 # Successful response status: 200
 # Error status: 404: Not found. Provide details of error if customer does not exist.
 # Return one dictionary of customer's data.
-@customers_bp .route("/<id>", methods = ["GET"])
-def get_one_customer(id):
-
-    ### Opportunity to use the invalid id decorator here if we figure out how to create one! ###
-    try:
-        id = int(id)
-    except ValueError:
-        return {"message": "Customer id needs to be an integer"}, 400
-
-    customer = Customer.query.get(id)
-    
-    if not customer: 
-        return {"message": f"Customer {id} was not found"}, 404
+@customers_bp.route("/<id>", methods = ["GET"])
+@require_valid_id
+def get_one_customer(customer):
 
     return customer_details(customer), 200
 
@@ -86,24 +77,14 @@ def get_one_customer(id):
 # Error status: 404: Not found. Provide details of error if customer does not exist.
 # Error status: 400: Bad request. Provide details of error if invalid input.
 # Return dictionary of customer's updated data.
-@customers_bp .route("<id>", methods = ["PUT"])
-def update_customer(id):
+@customers_bp.route("<id>", methods = ["PUT"])
+@require_valid_id
+def update_customer(customer):
     request_body = request.get_json()
-
-    ### Opportunity to use the invalid id decorator here if we figure out how to create one! ###
-    try:
-        id = int(id)
-    except ValueError:
-        return {"message": "Customer id needs to be an integer"}, 400
 
     ### Opportunity to use the invalid input decorator here if we figure out how to create one! ###
     if is_invalid(request_body):
         return is_invalid(request_body)
-
-    customer = Customer.query.get(id)
-
-    if not customer: 
-        return {"message": f"Customer {id} was not found"}, 404
 
     customer.name =request_body["name"]
     customer.postal_code=request_body["postal_code"]
@@ -117,7 +98,7 @@ def update_customer(id):
 # Successful response status: 200
 # Error status: 404: Not found. Provide details of error if customer does not exist.
 # Return dictionary with customer data. "id" is the minimum required field tested for.
-@customers_bp .route("<id>", methods = ["DELETE"])
+@customers_bp.route("<id>", methods = ["DELETE"])
 def delete_customer(id):
 
     try:
@@ -155,10 +136,3 @@ def is_invalid(request_body):
     elif "phone" not in request_body:
         return {"details": "Request body must include phone."}, 400
 
-
-
-## Could we write a decorator to verify input?
-# def is_id_valid(wrapped_function):
-#     def inner():
-
-#     return inner
