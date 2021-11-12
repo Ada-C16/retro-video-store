@@ -1,29 +1,11 @@
 from app.models.customer import Customer
 from flask import Blueprint, make_response, request, jsonify, abort
 from app import db
+from app.validate import Validate
 
 customer_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
-
-def missing_fields(request_body):
-    required_fields = ["name", "phone", "postal_code"]
-
-    for field in required_fields:
-        if field not in request_body:
-            return {"details": f"Request body must include {field}."}
-    return False
-
-
-def valid_customer(id):
-    try:
-        id = int(id)
-    except ValueError:
-        abort(400)
-    customer = Customer.query.get(id)
-    if customer:
-        return customer
-
-    abort(make_response({"message": f"Customer {id} was not found"}, 404))
+# having to do validation in nearly every funcion, is there a way to only do it once and pass around?
 
 
 @customer_bp.route("", methods=["POST"])
@@ -42,7 +24,7 @@ def create_customer():
         return jsonify(new_customer.to_dict()), 201
 
     except KeyError:
-        return make_response(missing_fields(request_body), 400)
+        return make_response(Validate.missing_fields(request_body, Customer), 400)
 
 
 @customer_bp.route("", methods=["GET"])
@@ -53,15 +35,17 @@ def get_all():
 
 @customer_bp.route("/<id>", methods=["GET"])
 def get_one(id):
-    customer = valid_customer(id)
+    customer_id = Validate.valid_id(id)
+    customer = Validate.valid_customer(customer_id)
     return customer.to_dict()
 
 
 @customer_bp.route("/<id>", methods=["PUT"])
 def update_cutomer(id):
-    customer = valid_customer(id)
+    customer_id = Validate.valid_id(id)
+    customer = Validate.valid_customer(customer_id)
     request_body = request.get_json()
-    missing = missing_fields(request_body)
+    missing = Validate.missing_fields(request_body, Customer)
 
     if not missing:
         customer.update(request_body)
@@ -73,7 +57,8 @@ def update_cutomer(id):
 
 @customer_bp.route("/<id>", methods=["DELETE"])
 def delete_customer(id):
-    customer = valid_customer(id)
+    customer_id = Validate.valid_id(id)
+    customer = Validate.valid_customer(customer_id)
     db.session.delete(customer)
     db.session.commit()
     return {"id": customer.id}
@@ -81,13 +66,9 @@ def delete_customer(id):
 
 @customer_bp.route("/<id>/rentals", methods=["GET"])
 def get_customer_rentals(id):
-    customer = valid_customer(id)
-    rentals = []
-    for rental in customer.rentals:
-        rental_dict = {
-            "release_date": rental.video.release_date,
-            "title": rental.video.title,
-            "due_date": rental.due_date,
-        }
-        rentals.append(rental_dict)
+
+    customer_id = Validate.valid_id(id)
+    customer = Validate.valid_customer(customer_id)
+
+    rentals = customer.get_rentals()
     return jsonify(rentals), 200

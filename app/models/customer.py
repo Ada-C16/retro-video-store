@@ -9,6 +9,7 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     register_at = db.Column(db.DateTime)
+    required_fields = ["name", "phone", "postal_code"]
 
     def to_dict(self):
         return {
@@ -23,3 +24,7 @@ class Customer(db.Model):
         for key, value in request_body.items():
             if key in Customer.__table__.columns.keys():
                 setattr(self, key, value)
+
+    def get_rentals(self):
+        rentals = [rental.customer_rentals_dict() for rental in self.rentals]
+        return rentals

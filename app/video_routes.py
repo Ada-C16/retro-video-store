@@ -1,41 +1,13 @@
 from flask import Blueprint, jsonify, request, abort, make_response
 from app import db
 from app.models.video import Video
+from app.validate import Validate
 
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
-# test
-
-
-def valid_video(id):
-
-    try:
-        id = int(id)
-    except ValueError:
-        abort(400)
-
-    video = Video.query.get(id)
-    if video:
-        return video
-
-    abort(make_response({"message": f"Video {id} was not found"}, 404))
-
-
-def missing_fields(request_body):
-
-    required_fields = [
-        "title",
-        "release_date",
-        "total_inventory",
-    ]
-
-    for field in required_fields:
-        if field not in request_body:
-            return {"details": f"Request body must include {field}."}
-    return False
 
 
 @videos_bp.route("", methods=["POST"])
-def create_video():
+def create_video():  # Do the same thing has routes with video and customer, make class methods and combine routes
     request_body = request.get_json()
     try:
         new_video = Video(
@@ -50,7 +22,7 @@ def create_video():
 
     except KeyError:
 
-        return make_response(missing_fields(request_body), 400)
+        return make_response(Validate.missing_fields(request_body, Video), 400)
 
 
 @videos_bp.route("", methods=["GET"])
@@ -62,17 +34,19 @@ def get_all():
 
 @videos_bp.route("/<id>", methods=["GET"])
 def get_one(id):
+    video_id = Validate.valid_id(id)
+    video = Validate.valid_video(video_id)
 
-    video = valid_video(id)
     return video.to_dict()
 
 
 @videos_bp.route("/<id>", methods=["PUT"])
 def update_video(id):
 
-    video = valid_video(id)
+    video_id = Validate.valid_id(id)
+    video = Validate.valid_video(video_id)
     request_body = request.get_json()
-    missing = missing_fields(request_body)
+    missing = Validate.missing_fields(request_body, Video)
 
     if not missing:
 
@@ -87,23 +61,18 @@ def update_video(id):
 @videos_bp.route("/<id>", methods=["DELETE"])
 def delete_video(id):
 
-    video = valid_video(id)
+    video_id = Validate.valid_id(id)
+    video = Validate.valid_video(video_id)
     db.session.delete(video)
     db.session.commit()
     return {"id": video.id}
 
 
 @videos_bp.route("/<id>/rentals", methods=["GET"])
-def read_rentals_by_video(id):
-    video = valid_video(id)
-    rentals = []
-    for rental in video.rentals:
-        rental_dict = {
-            "due_date": rental.due_date,
-            "name": rental.customer.name,
-            "phone": rental.customer.phone,
-            "postal_code": rental.customer.postal_code,
-        }
-        rentals.append(rental_dict)
+def current_rentals(id):
 
+    video_id = Validate.valid_id(id)
+    video = Validate.valid_video(video_id)
+
+    rentals = video.get_customers()
     return jsonify(rentals), 200
