@@ -1,6 +1,7 @@
 from flask import Blueprint
 from app import db
 from app.models.customer import Customer
+from app.models.rental import Rental
 from flask import Blueprint, jsonify, make_response, request, abort
 import datetime, requests, os
 import os
@@ -38,19 +39,22 @@ def read_one_customer(id):
 
     return customer.to_dict(), 200
 
-# @customers_bp.route("/<id>/rentals", methods=["GET"])
-# def read_one_customer_rentals(id):
-#     try:
-#         int(id)
-#     except:
-#         return {"message": "Invalid data"}, 400
+@customers_bp.route("/<id>/rentals", methods=["GET"])
+def read_one_customer_rentals(id):
+    try:
+        int(id)
+    except:
+        return {"message": "Invalid data"}, 400
 
-#     customer = Customer.query.get(id)
+    customer = Customer.query.get(id)
 
-#     if not customer:
-#         return {"message": f"Customer {id} was not found"}, 404        
+    if not customer:
+        return {"message": f"Customer {id} was not found"}, 404        
 
-#     return customer.to_dict(), 200
+    rentals = customer.rentals
+    response_body  = [rental.get_video() for rental in rentals]
+    return make_response(jsonify(response_body), 200)
+
 
 @customers_bp.route("", methods=["GET"])
 def get_all_cusotmers():

@@ -1,6 +1,6 @@
 from app import db
 from app.models.customer import Customer
-from app.models.customer import Video
+from app.models.video import Video
 
 class Rental(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
