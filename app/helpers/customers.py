@@ -2,11 +2,7 @@ from functools import wraps
 from app.models.customer import Customer
 from flask import jsonify, request
 
-
-# decorator to check if response body is valid
-
 # Decorator to check if id is an integer and if the customer exists.
-
 def require_valid_id(endpoint):
     @wraps(endpoint)
     def fn(*args, id, **kwargs):

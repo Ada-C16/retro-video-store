@@ -14,7 +14,7 @@
 from flask import Blueprint, json, jsonify, request, make_response
 from flask_sqlalchemy import _make_table
 from app import db
-from app.helpers import *
+from app.helpers.customers import *
 from app.models.customer import *
 
 # Write blueprint for customer 
@@ -82,5 +82,3 @@ def delete_customer(customer):
     db.session.commit()
 
     return customer.customer_details(), 200
-
-

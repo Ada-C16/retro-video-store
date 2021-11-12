@@ -7,6 +7,19 @@ class Video(db.Model):
     release_date = db.Column(db.DateTime)
     total_inventory = db.Column(db.Integer)
     
+    def video_details(self):
+        return {
+        "id": self.id,
+        "title": self.title,
+        "release_date": self.release_date,
+        "total_inventory": self.total_inventory
+        }
+
+    def update_attributes(self, request_body):
+        self.title =request_body["title"]
+        self.release_date=request_body["release_date"]
+        self.total_inventory=request_body["total_inventory"]
+
     def videos_checked_out_count(self):
         """
         We are creating this method here because this is where 
