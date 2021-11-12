@@ -160,6 +160,12 @@ def delete_one_video(video_id):
     if video is None:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
     else:
+# before deleting the video, delete associated rentals
+        rentals = Rental.query.filter(Rental.video_id == video_id)
+        for rental in rentals:
+            db.session.delete(rental)
+        db.session.commit()
+
         db.session.delete(video)
         db.session.commit()
         return {"id": video_id}, 200
@@ -239,5 +245,30 @@ def get_rentals_by_customer(customer_id):
     if not customer:
         return {'message': f'Customer {customer_id} was not found'}, 404
     video_ids = Rental.query.with_entities(Rental.video_id).filter(Rental.customer_id == int(customer_id))
-    result = [Video.query.get(id).to_dict() for id in video_ids]
+    result = [Video.query.get(id).to_dict() for id in video_ids] # List comprehension
     return jsonify(result), 200
+
+# Rentals x Videos
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def get_rentals_by_video(video_id):
+    video_id = int(video_id)
+    video = Video.query.get(video_id)
+    if video is None:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
+    customer_ids_and_due_dates = Rental.query.with_entities(Rental.customer_id, Rental.due_date).filter(Rental.video_id == video_id)
+    customer_ids_and_due_dates = list(customer_ids_and_due_dates)
+    # customer_ids looks like [(1, "12-1-2021"), (2, "3/2/2022")] potentially
+    result = []
+    for customer_id, due_date in customer_ids_and_due_dates:
+        customer = Customer.query.get(customer_id)
+        data = {
+            "due_date": due_date,
+            "name": customer.name,
+            "phone": customer.phone,
+            "postal_code": customer.postal_code,
+        }
+        result.append(data)
+    return jsonify(result), 200
+
+
+
