@@ -102,45 +102,35 @@ def handle_customers():
     elif request.method == 'POST':
         pass
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
 # # RENTAL ENDPOINTS
-# @rental_bp.route('/check-out', methods=['POST'])
-# def handle_checkout():
-#     response_body = request.get_json()
-#     new_checkout = Rental(customer_id=response_body['customer_id'],
-#                             video_id=response_body['video_id'],
-#                             due_date=response_body['due_date'],
-#                             videos_checked_out_count=response_body['videos_checked_out_count'],
-#                             # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
-#                             available_inventory=response_body['available_inventory'])
-#     db.session.add(new_checkout)
-#     db.session.commit()
+@rental_bp.route('/check-out', methods=['POST'])
+def handle_checkout():
+    request_body = request.get_json()
+    if 'customer_id' not in request_body.keys() :
+            return make_response({"details": "Request body must include customer."}, 404)
+    elif 'video_id' not in request_body.keys():
+            return make_response({"details":"Request body must include video."}, 404)
+    elif Rental.calculate_available_inventory() == 0:
+            return make_response({"details": "All videos currently checked out."}, 400)
+    else:
+        new_checkout = Rental(customer_id=request_body['customer_id'],
+                                video_id=request_body['video_id'],
+                                due_date=request_body['due_date'],
+                                videos_checked_out_count=request_body['videos_checked_out_count'],
+                                # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
+                                    # Used a class method to calculate available_inventory
+                                available_inventory=Rental.calculate_available_inventory())
 
-#     return make_response({"customer_id": new_checkout.customer_id,
-#                             "video_id": new_checkout.video_id,
-#                             "due_date": new_checkout.due_date,
-#                             "videos_checked_out_count": new_checkout.videos_checked_out_count,
-#                             "available_inventory": new_checkout.available_inventory})
+        db.session.add(new_checkout)
+        db.session.commit()
+
+        return make_response({"customer_id": new_checkout.customer_id,
+                                "video_id": new_checkout.video_id,
+                                "due_date": new_checkout.due_date,
+                                "videos_checked_out_count": new_checkout.videos_checked_out_count,
+                                "available_inventory": new_checkout.available_inventory})
     
 
-# @rental_bp.route('/check-in', methods=['POST'])
-# def handle_checkin():
-#     pass
+@rental_bp.route('/check-in', methods=['POST'])
+def handle_checkin():
+    pass
