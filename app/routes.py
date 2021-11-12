@@ -265,6 +265,7 @@ def check_in_one_rental():
     # checks for validity of video id and customer id
     if video and customer:
         # rental query is one specific object that matches the given parameters 'video_id' and 'customer_id'
+        # in order to access the object from the query and perform pythonic methods on it, etc., you need to add the .first() function 
         rental_query = Rental.query.filter_by(video_id=request_body["video_id"], customer_id=request_body["customer_id"],checked_in= False).first()
         if rental_query == None:
             return jsonify({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}), 400
