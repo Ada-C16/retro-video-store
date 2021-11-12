@@ -31,8 +31,7 @@ def post_videos():
         response_body = {"details": "Request body must include release_date."}
         return jsonify(response_body), 400
     elif "total_inventory" not in request_body:
-        response_body = {
-            "details": "Request body must include total_inventory."}
+        response_body = {"details": "Request body must include total_inventory."}
         return jsonify(response_body), 400
     new_video = Video.from_json()
     video_response = new_video.create_dict()

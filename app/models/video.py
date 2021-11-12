@@ -28,10 +28,11 @@ class Video(db.Model):
     def from_json(cls):
         request_body = request.get_json()
 
-        new_video = Video(title=request_body["title"],
-                          release_date=request_body["release_date"],
-                          total_inventory=request_body["total_inventory"]
-                          )
+        new_video = Video(
+            title=request_body["title"],
+            release_date=request_body["release_date"],
+            total_inventory=request_body["total_inventory"]
+        )
         db.session.add(new_video)
         db.session.commit()
 
