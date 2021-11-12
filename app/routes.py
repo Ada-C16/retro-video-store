@@ -265,8 +265,8 @@ def check_in_one_rental():
     # checks for validity of video id and customer id
     if video and customer:
         # rental query is one specific object that matches the given parameters 'video_id' and 'customer_id'
-        rental_query = Rental.query.filter_by(video_id=request_body["video_id"], customer_id=request_body["customer_id"],checked_in= False)
-
+        rental_query = Rental.query.filter_by(video_id=request_body["video_id"], customer_id=request_body["customer_id"],checked_in= False).first()
+        print(rental_query)
         rental_query.checked_in = True
         rental_query.due_date = None
 
