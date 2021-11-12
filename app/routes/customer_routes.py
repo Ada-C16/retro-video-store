@@ -2,6 +2,8 @@ from flask import Blueprint, jsonify, make_response, request, abort
 from werkzeug.exceptions import RequestEntityTooLarge
 from app import db
 from app.models.customer import Customer
+from app.models.video import Video
+from datetime import timedelta
 
 customer_bp = Blueprint("customer", __name__, url_prefix="/customers")
 
@@ -91,6 +93,24 @@ def delete_customer(customer_id):
     customer
     return {"id":customer.id}, 200
 
+# List the videos a customer currently has checked out
+@customer_bp.route("/<customer_id>/rentals", methods =["GET"])
+def customer_rentals(customer_id):
+    customer = get_customer_from_id(customer_id)
 
+    rentals = customer.rentals
+
+    rentals_list = []
+    for rental in rentals:
+        video = Video.query.get(rental.video_id)
+        rentals_list.append(
+            {
+        "release_date": video.release_date,
+        "title": video.title,
+        "due_date": str(rental.checkout_date + timedelta(days=7)),
+    }
+        )
+
+    return jsonify(rentals_list), 200
 
 
