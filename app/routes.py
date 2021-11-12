@@ -276,12 +276,52 @@ def create_rental():
     videos_checked_out_count = rentals.count()
     new_rental_response["videos_checked_out_count"] = videos_checked_out_count
 
-    # available_inventory = 
+    video = Video.query.filter_by(id=request_body["video_id"])
+    video_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
+
+
+    # available_inventory = video.count() - video_in_rentals.count()
+    # if available_inventory < 0:
+    #     return "Could not perform checkout", 400
+    # new_rental_response["available_inventory"] = available_inventory
 
     # Count all rentals where video_id is current video_id
     # Then subract from total_inventory for video with this video_id
 
     return jsonify(new_rental_response), 201
+
+
+@rentals_bp.route("/check-in", methods = ["POST"])
+def update_rentals():
+    request_body = request.get_json()
+    if "video_id" not in request_body or "customer_id" not in request_body:
+        return "Bad data", 400
+    rentals = Rental.query.filter_by(customer_id=request_body["customer_id"], video_id=request_body["video_id"])
+    rental_response = []
+    if not rentals:
+        return "No records found", 404
+    for rental in rentals:
+        
+        # rental_response.append(rental.to_dict())
+        rental_response.append(rental.to_dict())
+        db.session.delete(rental)
+        db.session.commit()
+        
+    videos_in_rental = Rental.query.filter_by(customer_id=request_body["customer_id"])    
+    videos_checked_out_count = videos_in_rental.count()
+    rental_response[0]["videos_checked_out_count"] = videos_checked_out_count
+    
+
+    return jsonify(rental_response), 200
+    # except TypeError:
+    #     return make_response("Customer not found"),404
+    # if not rentals:
+    #     return make_response("Customer not found"), 404
+    
+
+
+
+
 
 
 
