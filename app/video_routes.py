@@ -6,6 +6,7 @@ from datetime import date
 from flask import Blueprint, jsonify, make_response, request, abort
 import requests
 import inspect
+from flask_paginate import Pagination, get_page_parameter
 
 # Create Blueprint
 
@@ -31,10 +32,14 @@ def get_video_from_id(video_id):
 
 @videos_bp.route("", methods=["GET"])
 def read_all_videos():
-    videos = Video.query.all()
+    n = request.args.get("n")
+    p = request.args.get("p")
 
-    response_body = [video.to_dict() for video in videos]
+    sort_query = request.args.get("sort")
 
+    videos = Video.query.paginate(page=p, per_page=n, max_per_page=None)
+
+    response_body = [video.to_dict() for video in videos.items]
     return jsonify(response_body)
 
 @videos_bp.route("", methods=["POST"])
