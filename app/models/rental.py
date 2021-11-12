@@ -11,10 +11,11 @@ class Rental(db.Model):
     customer_id = db.Column(db.Integer,db.ForeignKey('customer.id'))
     video_id = db.Column(db.Integer, db.ForeignKey('video.id'))
     due_date = db.Column(db.DateTime)
-    videos_checked_out_count = db.relationship("Customer", back_populates="videos_checked_out")
-    available_inventory = db.Column(db.Integer)
+    video = db.relationship("Video", back_populates="rentals")
+    customer= db.relationship("Customer", back_populates="rentals")
 
-    def generate_due_date(self):
+    @staticmethod
+    def generate_due_date():
         rental_window = timedelta(days=+7)
         now = date.today()
         due_date = now + rental_window
@@ -24,3 +25,13 @@ class Rental(db.Model):
         video = Video.get.query(video_id)
         count = Rental.query.filter_by(video_id).count()
         return video.total_inventory() - count
+
+    def to_dict(self):
+        return {
+            "id" : self.id, 
+            "customer_id" : self.customer_id,
+            "video_id" : self.video.id, 
+            "due_date" : self.due_date,
+            "videos_checked_out_count":self.customer.video_checked_out(),
+            "available_inventory": self.video.remaining_videos()
+        }

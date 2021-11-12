@@ -79,17 +79,19 @@ def new_rental():
     request_body = request.get_json()
     customer = Customer.query.get(request_body["customer_id"])
     video = Video.query.get(request_body["video_id"])
-    due_date = Rental().generate_due_date()
+    due_date = Rental.generate_due_date()
 
-    new_rental = Rental({"customer_id": customer.id,
-    "video_id": video.id,
-    "due_date": due_date,
-    "videos_checked_out_count": Customer.video_checked_out(customer.id),
-    "available_inventory": Rental().get_available_inventory(video.id)
-    }
+    new_rental = Rental(
+        customer=customer,
+        #video_id=video.id,
+        video= video,
+        due_date = due_date,
     )
+    
+    db.session.add(new_rental)
+    db.session.commit()
 
-    return new_rental
+    return new_rental.to_dict()
 
 #----------- GET ---------------------
 @video_bp.route("", methods=["GET"])

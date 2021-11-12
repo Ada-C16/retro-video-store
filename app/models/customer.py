@@ -9,7 +9,8 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     register_at = db.Column(db.DateTime)
-    videos_checked_out = db.Column(db.Integer, default=0)
+    #videos_checked_out = db.Column(db.Integer, default=0)
+    rentals = db.relationship("Rental", back_populates= "customer") #NEW
     
     def to_dict(self): 
         return {
@@ -21,8 +22,4 @@ class Customer(db.Model):
         }
     
     def video_checked_out(self):
-        #customer = Customer.get.query(customer_id)
-        #count = Rental.query.filter_by(Rental.customer_id==c_id).count()
-        #count = db.session.query(Rental).filter_by(Rental.customer_id==c_id).count
-        self.videos_checked_out += 1
-        return self.videos_checked_out
+        return len(self.rentals)

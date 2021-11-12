@@ -7,6 +7,8 @@ class Video(db.Model):
     title = db.Column(db.String)
     release_date = db.Column(db.DateTime)
     total_inventory = db.Column(db.Integer)
+    #trying some stuff
+    rentals = db.relationship("Rental", back_populates= "video") #NEW
 
     def to_dict(self):
             
@@ -16,3 +18,6 @@ class Video(db.Model):
             "release_date" : self. release_date,
             "total_inventory" : self.total_inventory,
         }
+    
+    def remaining_videos(self):
+        return self.total_inventory - len(self.rentals)
