@@ -239,7 +239,7 @@ def validate_rental_request_body(request_body):
         return jsonify({"details": "Request body must include video_id."}), 400
     return False
 
-# Posts a rental, aka check-out
+# Check-out/Posts a rental
 @rentals_bp.route("/check-out", methods = ["POST"])
 def create_rental():
     request_body = request.get_json()
