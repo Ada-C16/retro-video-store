@@ -1,6 +1,7 @@
 from flask import Blueprint
 from app import db
 from app.models.customer import Customer
+from app.models.rental import Rental
 from flask import Blueprint, jsonify, make_response, request, abort
 import datetime, requests, os
 import os
@@ -116,3 +117,25 @@ def update_customer(customer_id):
     db.session.commit()
     
     return customer.to_dict(), 200
+
+#rental routes
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
+
+@rentals_bp.route("/check-out", methods=["POST"])
+def create_rental():
+    request_body = request.get_json()
+
+    missing = ""
+    if "customer_id" not in request_body:
+        missing = "customer_id"
+    elif "video_id" not in request_body:
+        missing = "video_id"
+    if missing:
+        return {"details": f"Request body must include {missing}."}, 400
+
+    new_rental = Rental(
+        customer_id=request_body["customer_id"],
+        video_id=request_body["video_id"],
+        due_date=request_body["due_date"],
+      
+    )
