@@ -13,3 +13,8 @@ class Customer(db.Model):
         "postal_code": self.postal_code,
         "phone": self.phone
         }
+
+    def update_attributes(self, request_body):
+        self.name =request_body["name"]
+        self.postal_code=request_body["postal_code"]
+        self.phone=request_body["phone"]

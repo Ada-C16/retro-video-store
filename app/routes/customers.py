@@ -41,14 +41,13 @@ def get_customers():
 @require_valid_request_body
 def add_new_customer(request_body):
 
-    new_customer = Customer(name=request_body["name"], postal_code=request_body["postal_code"], phone=request_body["phone"])
+    new_customer = Customer()
+    new_customer.update_attributes(request_body)
+    
     db.session.add(new_customer)
     db.session.commit()
 
-    response_body = new_customer.customer_details(), 201
-
-    return response_body
-    
+    return new_customer.customer_details(), 201
 
 # GET /customers/<id> Gives back details about specific customer.
 # Return one dictionary of customer's data.
@@ -56,8 +55,7 @@ def add_new_customer(request_body):
 @require_valid_id
 def get_one_customer(customer):
 
-    response_body = customer.customer_details(), 200
-    return response_body
+    return customer.customer_details(), 200
 
 # PUT /customers/<id> Updates and returns details about specific customer
 # Required request body params:
@@ -68,13 +66,11 @@ def get_one_customer(customer):
 @require_valid_request_body
 def update_customer(customer, request_body):
 
-    customer.name =request_body["name"]
-    customer.postal_code=request_body["postal_code"]
-    customer.phone=request_body["phone"]
+    customer.update_attributes(request_body)
 
     db.session.commit()
 
-    return request_body, 200
+    return customer.customer_details(), 200
 
 # DELETE /customer/<id> Deletes a specific customer.
 # Return dictionary with customer data. "id" is the minimum required field tested for.
@@ -85,8 +81,6 @@ def delete_customer(customer):
     db.session.delete(customer)
     db.session.commit()
 
-    response_body = customer.customer_details(), 200
-
-    return response_body
+    return customer.customer_details(), 200
 
 
