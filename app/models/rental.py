@@ -2,6 +2,7 @@ from app import db
 from datetime import timedelta, date
 from flask import abort, make_response
 from app.models.video import Video
+from app.models.customer import Customer
 
 
 class Rental(db.Model):
