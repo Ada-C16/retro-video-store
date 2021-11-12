@@ -6,5 +6,5 @@ class Rental(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.customer_id'), primary_key=True,nullable=False)
     video_id = db.Column(db.Integer, db.ForeignKey('video.video_id'), primary_key=True,nullable=False)
     due_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow() + timedelta(days = 7))
-    video = db.relationship("Video", back_populates="customers")
-    customer = db.relationship("Customer", back_populates="videos")
+    #video = db.relationship("Video", back_populates="customers")
+    #customer = db.releationship("Customer", back_populates="videos")

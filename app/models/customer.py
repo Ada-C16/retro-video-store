@@ -10,8 +10,10 @@ class Customer(db.Model):
     # func.now() or func.current_timestamp() - they are aliases of each other. This tells DB to calcaate the timestamp itself
     registered_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     #I DON'T KNOW IF THIS IS CORRECT
-    videos = db.relationship("Rental", back_populates="customer")
+    videos = db.relationship("Video", secondary="rental", backref="customers")
+    #videos = db.relationship("Rental", back_populates="customer")
 
+ 
     def customer_dict(self):
         dict = {
             "id": self.customer_id,
