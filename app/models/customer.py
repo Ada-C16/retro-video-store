@@ -38,6 +38,3 @@ class Customer(db.Model):
         for rental in self.rentals:
             rental_titles.append(rental.video.title)
         return rental_titles
-
-
-

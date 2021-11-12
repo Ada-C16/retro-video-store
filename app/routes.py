@@ -46,6 +46,21 @@ def db_delete(instance):
     """Defined helper function to delete instance from database"""
     db.session.delete(instance)
     db.session.commit()
+    
+def handle_query_params(query_sort, query_page, query_limit, class_type, class_attribute):
+    """Defined helper function build and execute the query by chaining the appropriate commands"""
+    list = class_type.query
+    if query_sort == "desc":
+        list = list.order_by(class_attribute.desc())
+    elif query_sort == "asc":
+        list = list.order_by(class_attribute)
+    if query_limit:
+        list = list.limit(query_limit)
+    if query_page:
+        list = list.offset(int(query_limit)*int(query_page))
+    else:
+        list = list.all()
+    return list
 
 #Videos Routes
 @videos_bp.route("", methods=["GET", "POST"])
@@ -53,12 +68,10 @@ def handle_all_videos():
     """Defined endpoint to handle all HTTPS endpoints for handling video https request methods"""
     if request.method == "GET":
         query_sort = request.args.get("sort")
-        if query_sort == "asc":
-            videos = Video.query.order_by(Video.title)
-        elif query_sort == "desc":
-            videos = Video.query.order_by(Video.title.desc())
-        else:
-            videos = Video.query.all()
+        query_limit = request.args.get("n")
+        query_page = request.args.get("p")
+
+        videos = handle_query_params(query_sort, query_page, query_limit, Video, Video.title)
         
         video_list = []
         for video in videos:
@@ -123,20 +136,9 @@ def handle_customers():
     if request.method == "GET":
         query_sort = request.args.get("sort")
         query_limit = request.args.get("n")
-        if query_sort == "asc":
-            if query_limit:
-                customers = Customer.query.order_by(Customer.name).limit(query_limit)
-            else:
-                customers = Customer.query.order_by(Customer.name)
-        elif query_sort == "desc":
-            if query_limit:
-                customers = Customer.query.order_by(Customer.name.desc()).limit(query_limit)
-            else:
-                customers = Customer.query.order_by(Customer.name.desc())
-        elif query_limit:
-            customers = Customer.query.limit(query_limit).all()
-        else:
-            customers = Customer.query.all()
+        query_page = request.args.get("p")
+
+        customers = handle_query_params(query_sort, query_page, query_limit, Customer, Customer.name)
 
         customers_list = []
         for customer in customers:
