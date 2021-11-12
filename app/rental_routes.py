@@ -21,14 +21,13 @@ def handle_rental_checkout():
     video_id = request_body["video_id"]
     customer = Customer.query.get(customer_id)
     video = Video.query.get(video_id)
-    # print(video)
-    available_inventory = Rental.calc_available_inventory(video_id)
     if customer is None:
         return ({"message": f"Customer {customer_id} was not found"}, 404)
     elif video is None:
         return ({"message": f"Video {video_id} was not found"}, 404)
-    elif available_inventory == 0:
-        return ("Could not perform checkout", 400) 
+    available_inventory = Rental.calc_available_inventory(video_id)
+    if available_inventory == 0:
+        return ({"message": "Could not perform checkout"}, 400) 
     else:
         new_rental = Rental.from_json(request_body)
         db.session.add(new_rental)
@@ -52,7 +51,7 @@ def handle_rental_checkin():
         return ({"message": f"Customer {customer_id} was not found"}, 404)
     elif video is None:
         return ({"message": f"Video {video_id} was not found"}, 404)
-    rental = Rental.query.get(customer_id, video_id)
+    rental = Rental.query.get((customer_id, video_id))
     if rental is None:
         return ({"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}, 400) 
     else:
@@ -63,8 +62,7 @@ def handle_rental_checkin():
             "customer_id": customer_id,
             "video_id": video_id,
             "videos_checked_out_count": Rental.calc_videos_checked_out(customer_id),
-            # "available_inventory": Rental.calc_available_inventory(video_id)
-            "videos_checked_out_count": calc_available_inventory(video_id)
+            "available_inventory": Rental.calc_available_inventory(video_id)
         }, 200
 
 def calc_available_inventory(video_id):

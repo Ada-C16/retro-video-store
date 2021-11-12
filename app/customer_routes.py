@@ -42,24 +42,33 @@ def get_customer(customer_id):
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def get_customer_rental(customer_id):
-    
+    if not customer_id.isnumeric():
+        return jsonify("Customer id must be an integer"), 400
     customer = Customer.query.get(customer_id)
-    videos = customer.videos
-    rental = customer.rentals
-    video_list = []
-    if not customer:
-        return ({"message": f"Customer {customer_id} was not found"}, 404)
-    elif not videos:
-        return (video_list, 404)
-    for video in videos:
-        video_list.append(
-                {
-                    "release_date": video.release_date,
-                    "title": video.title,
-                    "due_date": rental.due_date
-                        }
-        )
-    return video_list, 200
+
+    if customer:
+        videos = customer.videos
+        videos_response = [video.to_json() for video in videos]
+        return jsonify(videos_response), 200
+    else:
+        return jsonify(message=f"Customer {customer_id} was not found"), 404
+
+    # videos = customer.videos
+    # rental = customer.rentals
+    # video_list = []
+    # if not customer:
+    #     return ({"message": f"Customer {customer_id} was not found"}, 404)
+    # elif not videos:
+    #     return (video_list, 404)
+    # for video in videos:
+    #     video_list.append(
+    #             {
+    #                 "release_date": video.release_date,
+    #                 "title": video.title,
+    #                 "due_date": rental.due_date
+    #                     }
+    #     )
+    # return video_list, 200
 
 
 

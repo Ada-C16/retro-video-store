@@ -78,18 +78,13 @@ def handle_video(video_id):
 
 @videos_bp.route("/<video_id>/rentals", methods=["GET"])
 def handle_video_rentals(video_id):
-    if type(video_id) != int:
+    if not video_id.isnumeric():
         return jsonify("Video id must be an integer"), 400
 
     video = Video.query.get(video_id)
-
     if video:
         customers = video.customers
-        # 
-        customers.pop("id")
-        customers.pop("registered_at")
-
-        customers_response = [customer.to_json(customer) for customer in customers]
+        customers_response = [customer.to_json() for customer in customers]
         return jsonify(customers_response), 200
     else:
         return jsonify(message=f"Video {video_id} was not found"), 404

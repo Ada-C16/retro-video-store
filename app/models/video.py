@@ -1,5 +1,6 @@
 from app import db
 from flask import current_app
+
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String)
