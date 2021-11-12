@@ -26,7 +26,7 @@ def get_customer_data_with_id(customer_id):
 
 
 # GENERAL CUSTOMER ROUTES
-@customers_bp.route("", methods=["GET"])
+@customers_bp.route("", methods=["GET"], strict_slashes=False)
 def get_all_customers():
     customer_data = []
 
@@ -36,7 +36,7 @@ def get_all_customers():
 
     return jsonify(customer_data)
 
-@customers_bp.route("", methods=["POST"])
+@customers_bp.route("", methods=["POST"], strict_slashes=False)
 def create_customer():
     request_body = request.get_json()
 
@@ -63,14 +63,14 @@ def create_customer():
 
 
 # CUSTOMER_ID ROUTES
-@customers_bp.route("/<customer_id>", methods=["GET"])
+@customers_bp.route("/<customer_id>", methods=["GET"], strict_slashes=False)
 def get_one_customer(customer_id):
     customer = get_customer_data_with_id(customer_id)
 
     return jsonify(customer.to_dict())
 
 
-@customers_bp.route("/<customer_id>", methods=["PUT"])
+@customers_bp.route("/<customer_id>", methods=["PUT"], strict_slashes=False)
 def update_one_customer(customer_id):
     request_body = request.get_json()
     customer = get_customer_data_with_id(customer_id)
@@ -96,7 +96,7 @@ def update_one_customer(customer_id):
 
 
 # DELETE ROUTE
-@customers_bp.route("/<customer_id>", methods=["DELETE"])
+@customers_bp.route("/<customer_id>", methods=["DELETE"], strict_slashes=False)
 def delete_customer(customer_id):
     customer = get_customer_data_with_id(customer_id)
 
@@ -107,7 +107,7 @@ def delete_customer(customer_id):
 
 
 # CUSTOMER RENTAL ROUTE
-@customers_bp.route("/<customer_id>/rentals", methods=["GET"])
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"], strict_slashes=False)
 def get_videos_checked_out(customer_id):
     #check if customer exists
     get_customer_data_with_id(customer_id)
