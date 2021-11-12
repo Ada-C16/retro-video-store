@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request, make_response
 from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import os
 from dotenv import load_dotenv
@@ -171,39 +171,45 @@ def handle_customer(customer_id):
         return {"name" : customer.name, "phone" : customer.phone, "postal_code": customer.postal_code}, 200
 
 def due_date():
-    due_date =datetime.now() + datetime.timedelta(days=7)
+    due_date =datetime.today() + timedelta(days=7)
     return due_date
     
 
 @rentals_bp.route("/check-out", methods=["POST"])
-def handle_customer():
+def handle_rental():
 
         request_body = request.get_json()
+
+        if "customer_id" not in request_body:
+            return {"details": "Request body must include customer_id."}, 400
+        if "video_id" not in request_body:
+            return {"details": "Request body must include video_id."}, 400
         video_id = request_body["video_id"]
         video = Video.query.get(video_id)
+        if video is None:
+            return {"message": f"Video {video_id} was not found"}, 404
+        
         customer_id = request_body["customer_id"]
         customer = Customer.query.get(customer_id)
-
-        
-
+        if customer is None:
+            return {"message": f"Customer {customer_id} was not found"}, 404
+        movie_due = due_date()
         rental= Rental(
-        customer_id = request_body["customer_id"],
-        video_id = request_body["video_id"],
-        due_date = due_date())
-        
-            
-
+            customer_id = request_body["customer_id"],
+            video_id = request_body["video_id"],
+            due_date = movie_due)
+        # if not due_date:
+        #     return {"message": "Movie not avaialble."}, 400
         db.session.add(rental)
         db.session.commit()
-        rentals = Rental.query.filter_by(video_id=video_id).all()
+        rentals = Rental.query.filter_by(video_id=video_id).count()
         customers_rentals = customer.videos
         
         checked_out = {
                     "video_id": rental.video_id,
                     "customer_id" : rental.customer_id,
-                    "due_date": due_date(),
+                    "due_date": movie_due,
                     "available_inventory": video.total_inventory - rentals,
                     "videos_checked_out_count": len(customers_rentals)
-                    
                     }
-        return jsonify (checked_out), 201
+        return jsonify (checked_out), 200
