@@ -1,5 +1,6 @@
 from app import db
 
+
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String)
@@ -8,7 +9,7 @@ class Video(db.Model):
     # Many to many: only counts each customer once. Secondary joins the third table
     # backref - joins two tables
     renters = db.relationship('Customer', secondary='rental')
-    # # One to many. Counts for all videos currently checked out
+    # One to many. Counts for all videos currently checked out
     rentals = db.relationship('Rental')
 
     def to_dict(self):
@@ -17,5 +18,3 @@ class Video(db.Model):
             "title": self.title,
             "total_inventory": self.total_inventory
         }
-
-
