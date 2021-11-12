@@ -37,3 +37,17 @@ def check_out_video():
 def check_in_video():
     request_body = request.get_json()
 
+    try:
+        customer = Customer.query.get_or_404(request_body["customer_id"])
+        video = Video.query.get_or_404(request_body["video_id"])
+    except KeyError:
+        return jsonify(None), 400
+
+    rental = Rental.query.filter_by(customer_id = customer.id, video_id = video.id).first()
+
+    rental.is_checked_in = True
+    # customer.videos.remove(video)
+
+    db.session.commit()
+
+    return jsonify(rental.to_dict())
