@@ -73,7 +73,32 @@ def check_in_video_to_customer():
     return jsonify(response_body), 200
 
 
-    
+# WAVE 03 CUSTOM ENDPOINT
+
+@rentals_bp.route("/overdue", methods=["GET"])
+def read_all_customers_with_overdue_rentals():
+
+    overdue_rentals = Rental.query.filter(Rental.due_date<date.today(), Rental.return_date==None).all()
+
+    list_of_customers = []
+
+    for rental in overdue_rentals:
+        video = Video.query.get(rental.video_id)
+        customer = Video.query.get(rental.customer_id)
+
+        customer_data = {
+            "video_id": video.id,
+            "title": video.title,
+            "customer_id": customer.id,
+            "name": customer.name,
+            "postal_code": customer.postal_code,
+            "checkout_date": rental.checkout_date,
+            "due_date": rental.due_date
+        }
+
+        list_of_customers.append(customer_data)
+
+    return jsonify(list_of_customers), 200
 
 
 #GET AT THE CUSTOMERS_ID_RENTALS, GET VIDEOS_ID_RENTALS

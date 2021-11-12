@@ -2,6 +2,7 @@ from flask.wrappers import Response
 from app import db
 from app.models.video import Video
 from app.models.rental import Rental
+from app.models.customer import Customer
 from datetime import date
 from flask import Blueprint, jsonify, make_response, request, abort
 import requests
@@ -130,3 +131,27 @@ def all_customers_for_checked_out_video(id):
 
     return jsonify(customer_list), 200
 
+
+# WAVE 03 CUSTOM ENDPOINT
+
+@videos_bp.route("/<id>/history", methods=["GET"])
+
+def read_all_customers_with_checkout_video(id):
+    video = get_video_from_id(id)
+
+    past_rentals = Rental.query.filter(Rental.video_id==id, Rental.return_date!=None).all()
+
+    customer_list = []
+
+    for rental in past_rentals:
+        customer = Customer.query.get(rental.customer_id)
+        
+        customer_data = {
+            "customer_id" : customer.id,
+            "name": customer.name,
+            "postal_code": customer.postal_code,
+            "checkout_date": rental.checkout_date,
+            "due_date": rental.due_date
+        }
+
+    return jsonify(customer_list),200
