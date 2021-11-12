@@ -2,9 +2,13 @@ import pytest
 from app import create_app
 from app.models.video import Video
 from app.models.customer import Customer
+from app.models.rental import Rental
+
 from app import db
 from datetime import datetime
 from flask.signals import request_finished
+
+from tests.test_wave_03 import CUSTOMER_ID, CUSTOMER_ID_2, VIDEO_ID, VIDEO_ID_2
 
 VIDEO_TITLE = "A Brand New Video"
 VIDEO_INVENTORY = 1
@@ -90,15 +94,24 @@ def one_checked_out_video(app, client, one_customer, one_video):
         "due_date": "11-11-2021"
     })
 
+
 @pytest.fixture
-def second_checked_out_video(app, client, second_customer, second_video):
-    response = client.post("/rentals/check-out", json={
-        "customer_id": 2,
-        "video_id": 2,
-        "due date": "12-12-2021"
-    })
+def two_rentals(app, one_customer, one_video, second_customer, second_video):
+    new_rental1 = Rental(
+        customer_id=CUSTOMER_ID_2,
+        video_id=VIDEO_ID_2,
+        due_date="12-12-2021"
+    )
 
+    new_rental2 = Rental(
+        customer_id=CUSTOMER_ID,
+        video_id=VIDEO_ID,
+        due_date="11-11-2021"
+    )
 
+    db.session.add(new_rental1)
+    db.session.add(new_rental2)
+    db.session.commit()
 
 
 

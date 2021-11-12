@@ -1,16 +1,18 @@
 from operator import contains
 from app.models.video import Video
 from app.models.customer import Customer
+from datetime import datetime, timedelta
 
-VIDEO_TITLE_2 = "Z Brand New Video"
-VIDEO_ID_2 = 1
-VIDEO_INVENTORY_2 = 2
-VIDEO_RELEASE_DATE_2 = "02-02-2002"
 
 VIDEO_TITLE = "A Brand New Video"
 VIDEO_ID = 2
 VIDEO_INVENTORY = 1
 VIDEO_RELEASE_DATE = "01-01-2001"
+
+VIDEO_TITLE_2 = "Z Brand New Video"
+VIDEO_ID_2 = 1
+VIDEO_INVENTORY_2 = 2
+VIDEO_RELEASE_DATE_2 = "02-02-2002"
 
 CUSTOMER_NAME_2 = "Z Brand New Customer"
 CUSTOMER_ID_2 = 1
@@ -116,25 +118,37 @@ def test_get_customers_sort_by_postal_code(client, second_customer, one_customer
     assert response_body[1]["phone"] == CUSTOMER_PHONE_2
     assert response_body[1]["postal_code"] == CUSTOMER_POSTAL_CODE_2
 
-def test_get_rentals(client, one_checked_out_video, second_checked_out_video):
+def test_get_rentals(client, two_rentals):
     response = client.get("/rentals")
     response_body = response.get_json()
     assert response.status_code == 200
     assert len(response_body) == 2
 
-    assert response_body[0]["id"] == 1
-    assert response_body[0]["customer_id"] == 1
-    assert response_body[0]["video_id"] == 1
+    assert response_body[0]["id"] == 2
+    assert response_body[0]["customer_id"] == 2
+    assert response_body[0]["video_id"] == 2
+    assert response_body[0]["due_date"] == "2021-12-12"
+    assert response_body[0]["customer_name"] == CUSTOMER_NAME_2
+    assert response_body[0]["video_title"] == VIDEO_TITLE_2
 
-    assert response_body[1]["id"] == 2
-    assert response_body[1]["customer_id"] == 2
-    assert response_body[1]["video_id"] == 2
+    assert response_body[1]["id"] == 1
+    assert response_body[1]["customer_id"] == 1
+    assert response_body[1]["video_id"] == 1
+    assert response_body[1]["due_date"] == "2021-11-11"
+    assert response_body[1]["customer_name"] == CUSTOMER_NAME
+    assert response_body[1]["video_title"] == VIDEO_TITLE
 
 
-    # assert response_body[1]["name"] == CUSTOMER_NAME_2
-    # assert response_body[1]["id"] == CUSTOMER_ID_2
-    # assert response_body[1]["phone"] == CUSTOMER_PHONE_2
-    # assert response_body[1]["postal_code"] == CUSTOMER_POSTAL_CODE_2
+def test_get_rentals(client, two_rentals):
+    response = client.get("/rentals?sort=due_date")
+    response_body = response.get_json()
+    assert response.status_code == 200
+    assert len(response_body) == 2
+    
+    assert response_body[0]["due_date"] == "2021-11-11"
+
+    assert response_body[1]["due_date"] == "2021-12-12"
+
 
 # def test_checkin_video(client, one_checked_out_video):
 #     response = client.post("/rentals/check-in", json={

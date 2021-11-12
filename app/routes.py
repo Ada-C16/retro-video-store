@@ -249,7 +249,6 @@ def gets_customers_by_rental(id):
     if video_id_error:
         return video_id_error
 
-    #gets/filters to get all videos 
     rentals = Rental.query.filter_by(video_id = id).all()
     rental_list = []
     for rental in rentals:

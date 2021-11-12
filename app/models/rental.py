@@ -1,10 +1,11 @@
 from app import db
 from datetime import datetime, timedelta, date
 from .video import Video
+from .customer import Customer
 
 class Rental(db.Model):
 
-    sort_fields = ["title", "name", "due_date"]
+    sort_fields = ["due_date"]
 
     __tablename__ = "rentals"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -17,7 +18,9 @@ class Rental(db.Model):
         return {
             "id": self.id,
             "customer_id": self.customer_id,
+            "customer_name": Customer.query.get(self.customer_id).name,
             "video_id": self.video_id,
+            "video_title": Video.query.get(self.video_id).title,
             "checked_out": self.checked_out,
             "due_date": self.due_date.strftime("%Y-%m-%d"),
         }
