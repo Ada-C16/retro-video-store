@@ -53,12 +53,15 @@ def checkin_rental():
     customer = get_customer_from_id(request_body["customer_id"])
     video = is_parameter_found(Video, request_body["video_id"])
 
-    if video.rentals not in customer.rented_videos:
-        abort(make_response({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}, 400))
-
+    # if video.rentals not in customer.rentals:
+    #     abort(make_response({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}, 400))
 
     rental_checkin = db.session.query(Rental).filter_by(customer_id=customer.id, video_id=video.id).first()
+    if rental_checkin not in customer.rentals:
+        abort(make_response({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}, 400))
+
     db.session.delete(rental_checkin)
+    db.session.commit()
 
     videos_checked_out_count = len(customer.rentals)
     available_inventory = video.total_inventory - len(video.rentals)
@@ -72,3 +75,4 @@ def checkin_rental():
     print(response_body)
     return jsonify(response_body),200
     
+
