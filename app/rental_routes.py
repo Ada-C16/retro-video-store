@@ -41,3 +41,29 @@ def check_out():
     customer.videos_checked_out = len(customer.rentals)
     response_body = new_rental.rental_dict()
     return jsonify(response_body), 200
+
+
+@rentals_bp.route("/check-in", methods=["POST"])
+def check_in():
+    request_body = request.get_json()
+    if "customer_id" not in request_body:
+        response_body = {"details": "Request body must include customer_id."}
+        return jsonify(response_body), 400
+    elif "video_id" not in request_body:
+        response_body = {"details": "Request body must include video_id."}
+        return jsonify(response_body), 400
+
+    video_id = request_body["video_id"]
+    video = Video.query.get(video_id)
+    customer_id = request_body["customer_id"]
+    customer = Customer.query.get(customer_id)
+
+    if not (video and customer) or customer.videos_checked_out == 0:
+        response_body = {"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}
+        return jsonify(response_body), 400
+
+    Rental.query.filter_by(customer_id=customer_id, video_id=video_id).delete()
+
+    customer.videos_checked_out = len(customer.rentals)
+    response_body = Rental.checkin_dict(customer, video)
+    return jsonify(response_body), 200
