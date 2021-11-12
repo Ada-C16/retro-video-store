@@ -28,7 +28,7 @@ def get_single_video(video_id):
         if video:
             return jsonify(video.to_dict()), 200
         else:
-            return make_response({"message": "Video 1 was not found"}), 404
+            return make_response({"message": f"Video {video_id} was not found"}), 404
     except DataError:
         return make_response({"message": "invalid video id, please enter number"}), 400
 
@@ -226,10 +226,9 @@ def rental_checkin_update():
     if rental is None:
         return jsonify({"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}), 400
 
-    #changes rental to false
+    #changes rental to false for checked in
     rental.checked_out = False
     db.session.commit()
-    # db.session.delete(rental)
 
     return rental.to_dict_check_in(), 200
 
@@ -244,6 +243,7 @@ def gets_customers_by_rental(id):
     #gets/filters to get all videos 
     rentals = Rental.query.filter_by(video_id = id).all()
     rental_list = []
+
     for rental in rentals:
         rent = rental.to_dict()
         customer = Customer.query.get(rental.customer_id)
@@ -259,6 +259,7 @@ def gets_customers_by_rental(id):
 
 @rentals_bp.route("", methods=["GET"])
 def get_all_rentals():
+    #gets all rentals in the database
     rentals = Rental.query.all()
     return jsonify([rental.to_dict_customer_rentals() for rental in rentals]), 200
 
