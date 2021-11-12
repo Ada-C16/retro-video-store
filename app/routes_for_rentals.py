@@ -32,6 +32,8 @@ def handle_rentals():
         return make_response({"message": "Could not perform checkout"}),400
 
     else:
+        available_inventory-= 1
+        video_rentals+=1
         new_rental = Rental(
                 customer_id=request_body["customer_id"],
                 video_id=request_body["video_id"]
