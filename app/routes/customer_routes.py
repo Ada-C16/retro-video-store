@@ -109,21 +109,30 @@ def delete_customer(customer_id):
 # CUSTOMER RENTAL ROUTE
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"], strict_slashes=False)
 def get_videos_checked_out(customer_id):
-    #check if customer exists
+    # check if customer exists
     get_customer_data_with_id(customer_id)
 
     video_id_list = []
 
-    rental_query = Rental.query.filter_by(customer_id=customer_id)
-    for rentals in rental_query:
-        video_id_list.append(rentals.video_id)
-
+    rental_query = Rental.query.filter_by(customer_id=customer_id, checked_in=False)
+    rental_record = [record for record in rental_query]
+    
     video_list = []
-
-    for video_id in video_id_list:
-        video_query = Video.query.filter_by(id=video_id)
-        
-        for video in video_query:
-            video_list.append(video.to_dict())
+    for record in rental_record:
+        video = Video.query.get(record.video_id)
+        video_list.append(video.to_dict())
     
     return jsonify(video_list)
+
+    # for rentals in rental_query:
+    #     video_id_list.append(rentals.video_id)
+
+    # video_list = []
+
+    # for video_id in video_id_list:
+    #     video_query = Video.query.filter_by(id=video_id)
+        
+    #     for video in video_query:
+    #         video_list.append(video.to_dict())
+    
+    # return jsonify(video_list)
