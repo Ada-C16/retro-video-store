@@ -86,6 +86,8 @@ def delete_video(video_id):
     response_body = build_video_response(video)
     return jsonify(response_body), 200
 
+@video_bp.route("<video_id>/<rental>", methods = ["GET"])
+
 ##HELP##
 def build_videos_response(videos):
     response = []

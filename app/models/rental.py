@@ -20,11 +20,11 @@ class Rental(db.Model):
         }
 
     
-def query_customers_videos(customer_id):
-    rentals = Customer.query.join(Rental).filter(id == customer_id, Rental.checked_in == True).all()
-    return rentals
+def query_customers_videos(customer_id): 
+        rentals = Customer.query.join(Rental).filter(id == customer_id, Rental.checked_in == True).all()
+        return rentals
     
 
 def count_a_videos_inventory(video_id, video_inventory):
-    checked_out = Video.query.join(Rental).filter(id == video_id, Rental.checked_in == False).all()
-    return video_inventory - len(checked_out)
+        checked_out = Video.query.join(Rental).filter(id == video_id, Rental.checked_in == False).all()
+        return video_inventory - len(checked_out)

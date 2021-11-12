@@ -2,7 +2,7 @@ from app import db
 from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import *
-from flask import Blueprint, request, make_response
+from flask import Blueprint, request, make_response , jsonify
 import datetime as dt
 import os 
 
@@ -44,7 +44,17 @@ def check_out_rental():
 
 @rental_bp.route("/check-in", methods = ["POST"])
 def check_in_rental():
-    pass
+    request_body = request.get_json()
+    customer = Customer.query.get(request_body["customer_id"])
+    video = Video.query.get(request_body["video_id"])
+    rental = Rental.query.filter
+
+    if video == None or customer == None:
+        return jsonify({"message": f"not found"}), 404
+
+
+    return jsonify(rental_update.to_json(), 200)
+
 
 
 
