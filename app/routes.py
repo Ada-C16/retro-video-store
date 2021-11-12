@@ -234,13 +234,14 @@ def check_out_one_rental():
         db.session.commit()
         # begin checked_out calculations after db commit to include most recent rental    
         #rented_vids is list of objects matching request_body["video_id"] AND not marked as checked_in
-        rented_vids = Rental.query.filter_by(video_id = request_body["video_id"], checked_in= False).all()
-        available_inventory = video.total_inventory - len(rented_vids)
+
+        available_inventory = video.available_inventory() 
+        rented_vids = video.video_checked_out_count()
 
         return make_response({"customer_id": new_rental.customer_id,
                                             "video_id": new_rental.video_id,
                                             "due_date": new_rental.due_date,
-                                            "videos_checked_out_count": len(rented_vids),
+                                            "videos_checked_out_count": rented_vids,
                                             "available_inventory": available_inventory}, 200)
 
     else: 
