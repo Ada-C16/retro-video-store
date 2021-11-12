@@ -69,7 +69,7 @@ def change_data(video_id):
             return make_response({
                 "title":video.title, "release_date":video.release_date, "total_inventory":video.total_inventory})
         else:
-            return make_response({"message": "Video 1 was not found"}), 404
+            return make_response({"message": f"Video {video_id} was not found"}), 404
 
 @videos_bp.route("/<video_id>", methods=["DELETE"])
 def delete_video(video_id):
@@ -80,7 +80,7 @@ def delete_video(video_id):
         db.session.commit()
         return make_response({f"id": int(video_id)})
     else:
-        return make_response({"message": "Video 1 was not found"}), 404
+        return make_response({"message": f"Video {video_id} was not found"}), 404
 
 
 @customer_bp.route("", methods=["GET", "POST"])
