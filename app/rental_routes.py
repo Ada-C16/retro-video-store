@@ -68,7 +68,8 @@ def check_in():
         response_body = {"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}
         return jsonify(response_body), 400
 
-    # finding rental associated with specfic the custoemr_id and video_id and deleting their rental record.
+    # finding rental associated with specfic the custoemr_id and video_id and 
+    # deleting their rental record of the sepcified video.
     Rental.query.filter_by(customer_id=customer_id, video_id=video_id).delete()
 
     # creating checkin dictionary for the response body of a successful request.

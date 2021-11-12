@@ -24,8 +24,8 @@ class Rental(db.Model):
             "available_inventory": available_inventory
         }
 
-    # Using static method decorator. The function references Rental but doesn't
-    # depend on any instance or behavior of the Rental model, but add functionality to this model. 
+    # Using static method decorator. The method references Rental but doesn't
+    # depend on any instance or behavior of the Rental model, but adds functionality to this model. 
     @staticmethod
     def checkin_dict(customer, video):
         return {
