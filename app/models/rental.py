@@ -1,6 +1,6 @@
 from app import db
 from datetime import timedelta, date
-from flask import abort
+from flask import abort, make_response
 from sqlalchemy import delete
 
 
@@ -23,3 +23,21 @@ class Rental(db.Model):
             "videos_checked_out_count": len(self.customer.rentals),
             "available_inventory": self.video.total_inventory - len(self.video.rentals),
         }
+
+    @classmethod
+    def rental_lookup(cls, video_id, customer_id):
+
+        rental = cls.query.filter(
+            video_id == video_id, customer_id == customer_id
+        ).first()
+
+        if not rental:
+            abort(
+                make_response(
+                    {
+                        "message": f"No outstanding rentals for customer {customer_id} and video {video_id}"
+                    },
+                    400,
+                )
+            )
+        return rental

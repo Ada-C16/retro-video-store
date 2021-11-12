@@ -1,4 +1,5 @@
 from app import db
+from flask import abort, make_response
 
 
 class Video(db.Model):
@@ -19,3 +20,8 @@ class Video(db.Model):
         for key, value in request_body.items():
             if key in Video.__table__.columns.keys():
                 setattr(self, key, value)
+
+    def check_inventory(self):
+        available_inventory = self.total_inventory - len(self.rentals)
+        if available_inventory <= 0:
+            abort(make_response({"message": "Could not perform checkout"}, 400))
