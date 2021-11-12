@@ -53,13 +53,11 @@ def check_in_video():
     if error_msg is not None:
         return error_msg 
 
-    video_to_check_in = "video_that_is_not_checked_out"
-    for rental in Rental.query.all():
-        if rental.video_id == video_id and rental.customer_id == customer_id: 
-            video_to_check_in = rental 
+    video_to_check_in = Rental.query.filter_by(
+        video_id=video_id,
+        customer_id=customer_id).first()
 
-    # guard against trying to check in a video that isn't checked out 
-    if video_to_check_in == "video_that_is_not_checked_out":
+    if not video_to_check_in:
         msg = f"No outstanding rentals for customer {customer_id} and video {video_id}"
         return {"message": msg}, 400
 

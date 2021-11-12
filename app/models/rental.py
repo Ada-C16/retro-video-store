@@ -7,7 +7,7 @@ class Rental(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
     video_id = db.Column(db.Integer, db.ForeignKey('video.id'))
-    due_date = datetime.date.today() + datetime.timedelta(days=7)
+    due_date = db.Column(db.DateTime, default=datetime.date.today() + datetime.timedelta(days=7)) # fix databases/research how to migrate 
     
     def get_checked_out_count(self, video_id):
         return Rental.query.filter_by(video_id=video_id).count()
