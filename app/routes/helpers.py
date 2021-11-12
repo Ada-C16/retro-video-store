@@ -18,13 +18,13 @@ def id_is_valid(id, object_type):
 
     name = object_type.capitalize()
     if not object:
-        return object, ({"message": f"{name} {id} was not found"}, 404)  
+        return "invalid", ({"message": f"{name} {id} was not found"}, 404)  
     return object, None 
 
 def request_has_all_required_categories(object_type):
     '''
     returns two values: request data in json format and None 
-    (if no error is present), or the request data and an error message 
+    (if no error is present), or an "invalid" string and an error message 
     (if error is present)
     '''
     request_data = request.get_json()
@@ -38,6 +38,6 @@ def request_has_all_required_categories(object_type):
 
     for category in required_categories:
         if category not in request_data: 
-            return request_data, (
+            return "invalid", (
                 {"details" : f"Request body must include {category}."}, 400)
     return request_data, None 
