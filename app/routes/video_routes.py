@@ -1,5 +1,6 @@
 from app import db
 from app.models.video import Video
+from app.models.rental import Rental
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import os
@@ -80,3 +81,19 @@ def update_video(video_id):
     db.session.commit()
 
     return video.to_dict()
+
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def get_rentals_by_video(video_id):
+    video = Video.query.get(video_id)
+
+    if video is None:
+        return {"message": f"Video {video_id} was not found"}, 404
+
+    customers = []
+    for customer in video.customers:
+        rental = Rental.query.filter_by(customer_id = customer.id, video_id = video_id).first()
+        customer = customer.to_dict()
+        customer["due_date"] = rental.due_date
+        customers.append(customer)
+
+    return jsonify(customers)

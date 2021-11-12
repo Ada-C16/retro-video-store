@@ -32,3 +32,8 @@ def check_out_video():
     db.session.commit()
 
     return jsonify(new_rental.to_dict())
+
+@rentals_bp.route("/check-in", methods=["POST"])
+def check_in_video():
+    request_body = request.get_json()
+
