@@ -24,10 +24,17 @@ class Video(db.Model):
         self.total_inventory = video_dict["total_inventory"]
         return self
 
-    # def add_video(self, req):
-    #     "This is a method that adds videos based on their ids to the tasks attribute of the goal"
-    #     self.video = [Video.get_by_id(video_id) for video_id in req["video_ids"]]
-    #     return self
+    def get_rentals(self):
+        rentals = []
+        for rental in self.customers:
+            rental_dict = {
+                "due_date": rental.due_date,
+                "name": rental.customer.name,
+                "phone": rental.customer.phone,
+                "postal_code": rental.customer.postal_code
+            }
+            rentals.append(rental_dict)
+        return rentals
 
     def delete(self):
         if self.customers:

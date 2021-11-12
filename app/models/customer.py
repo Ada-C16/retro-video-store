@@ -27,6 +27,17 @@ class Customer(db.Model):
         self.phone = customer_dict["phone"]
         return self
 
+    def get_rentals(self):
+        rentals = []
+        for rental in self.videos:
+            rental_dict = {
+                "release_date": rental.video.release_date,
+                "title": rental.video.title,
+                "due_date": rental.due_date
+            }
+            rentals.append(rental_dict)
+        return rentals
+
     def delete(self):
         if self.videos:
             for rental in self.videos:

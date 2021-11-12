@@ -1,5 +1,4 @@
-import re
-from flask import Blueprint, json, jsonify, make_response, request, g, abort
+from flask import Blueprint, jsonify, request, g, abort
 from app.models.video import Video
 from app.models.customer import Customer
 from app.models.rental import Rental
@@ -23,9 +22,6 @@ def get_model_and_label():
         "customer_bp": Customer
     }
     g.model = bps[request.blueprint]
-
-# @video_bp.errorhandler(400)
-# def invalid_data(errorhandler)
 
 
 @customer_bp.route("", methods=["POST"])
@@ -146,32 +142,41 @@ def checkin_rental():
     }), 200
 
 
-@customer_bp.route("/<id>/rentals", methods=["GET"])
-def read_rentals_by_customer(id):
-    customer = Customer.get_by_id(id)
-    rentals = []
-    for rental in customer.videos:
-        rental_dict = {
-            "release_date": rental.video.release_date,
-            "title": rental.video.title,
-            "due_date": rental.due_date
-        }
-        rentals.append(rental_dict)
+# @customer_bp.route("/<id>/rentals", methods=["GET"])
+# def read_rentals_by_customer(id):
+#     customer = Customer.get_by_id(id)
+#     rentals = []
+#     for rental in customer.videos:
+#         rental_dict = {
+#             "release_date": rental.video.release_date,
+#             "title": rental.video.title,
+#             "due_date": rental.due_date
+#         }
+#         rentals.append(rental_dict)
 
-    return jsonify(rentals), 200
+#     return jsonify(rentals), 200
+
+
+# @video_bp.route("/<id>/rentals", methods=["GET"])
+# def read_rentals_by_video(id):
+#     video = Video.get_by_id(id)
+#     rentals = []
+#     for rental in video.customers:
+#         rental_dict = {
+#             "due_date": rental.due_date,
+#             "name": rental.customer.name,
+#             "phone": rental.customer.phone,
+#             "postal_code": rental.customer.postal_code
+#         }
+#         rentals.append(rental_dict)
+
+#     return jsonify(rentals), 200
 
 
 @video_bp.route("/<id>/rentals", methods=["GET"])
-def read_rentals_by_video(id):
-    video = Video.get_by_id(id)
-    rentals = []
-    for rental in video.customers:
-        rental_dict = {
-            "due_date": rental.due_date,
-            "name": rental.customer.name,
-            "phone": rental.customer.phone,
-            "postal_code": rental.customer.postal_code
-        }
-        rentals.append(rental_dict)
-
+@customer_bp.route("/<id>/rentals", methods=["GET"])
+def read_rentals_by_item(id):
+    model = g.model
+    item = model.get_by_id(id)
+    rentals = item.get_rentals()
     return jsonify(rentals), 200
