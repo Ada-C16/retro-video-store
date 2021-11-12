@@ -7,9 +7,7 @@ class Video(db.Model):
     release_date = db.Column(db.Date)
     total_inventory = db.Column(db.Integer, nullable=True)
     customers = db.relationship("Customer", secondary="rental", back_populates="videos")
-    # customer_id = db.Column(db.Integer, db.ForeignKey(
-    #     "customer.customer_id"), nullable=True)
-
+   
     def to_dict(self):
         """converts task data to dictionary"""
         result = {"id": self.video_id,
@@ -17,9 +15,6 @@ class Video(db.Model):
                   "release_date": self.release_date,
                   "total_inventory": self.total_inventory
                   }
-
-        # if self.customer_id:
-        #     result["customer_id"] = self.customer_id
         return result
 
   

@@ -16,7 +16,6 @@ class Customer(db.Model):
             "postal_code" : self.postal_code,
             "register_at" : self.register_at
         }
-    
-
+        
     def __str__(self) -> str:
         return "Customer"

@@ -10,7 +10,6 @@ import os
 from datetime import date, timedelta, datetime
 
 
-
 load_dotenv()
 rental_bp = Blueprint("rental", __name__,url_prefix="/rentals")
 
@@ -20,7 +19,6 @@ def valid_int(number):
         return int(number)     
     except:
         abort(make_response({"error": f"{number} must be an int"}, 400))
-
    
 #Helper function
 def get_object_from_id(obj, id):
@@ -30,19 +28,25 @@ def get_object_from_id(obj, id):
         return obj1
     else:       
         abort(make_response(jsonify({"message": f"{obj.__str__(obj)} {id} was not found"}), 404))
+#Helper function
+def response_dict(obj,  available_inventory):  
+    return {
+        "customer_id": obj.customer_id,
+        "video_id": obj.video_id,
+        "videos_checked_out_count": obj.videos_checked_out_count,
+        "available_inventory":available_inventory
+        }
 
 @rental_bp.route("/check-out", methods=["POST"])
 def create_customer_video():
     request_body = request.get_json()
 
     if "customer_id" not in request_body or "video_id" not in request_body:
-    
-        return make_response({"message" : "bad request"}, 400)
-    
+        return make_response({"message" : "bad request"}, 400)   
     else:
         customer_id = request_body["customer_id"]
         video_id = request_body["video_id"]
-        customer_checking_out = get_object_from_id(Customer, customer_id)
+        get_object_from_id(Customer, customer_id)
         video_to_be_checked_out = get_object_from_id(Video, video_id)
     
         if "videos_checked_out_count" not in request_body:
@@ -59,14 +63,9 @@ def create_customer_video():
         
         db.session.add(new_rental)
         db.session.commit()
+        
+        return response_dict(new_rental, available_inventory)
 
-        return make_response({
-        "customer_id": new_rental.customer_id,
-        "video_id": new_rental.video_id,
-        "due_date": due_date,
-        "videos_checked_out_count": videos_checked_out_count,
-        "available_inventory":available_inventory
-        })
 
 @rental_bp.route("/check-in", methods=["POST"])
 def checkin_video():
@@ -75,15 +74,12 @@ def checkin_video():
 
     if "customer_id" not in request_body or "video_id" not in request_body:
         return make_response({"message" : "bad request"}, 400)
-    
-  
     customer_id = request_body["customer_id"]
     video_id = request_body["video_id"]
-    checking_customer = get_object_from_id(Customer, customer_id)
-    incoming_video = get_object_from_id(Video, video_id)
+    get_object_from_id(Customer, customer_id)
+    get_object_from_id(Video, video_id)
     
     rental_record = db.session.query(Rental).filter(Rental.customer_id==customer_id,Rental.video_id== Rental.video_id).first()
-
     if not rental_record:
             return make_response({"message": "No outstanding rentals for customer 1 and video 1"}, 400)
     else:
@@ -91,25 +87,18 @@ def checkin_video():
             videos_checked_out_count = 1  #this is incoming count from customer
         checked_out_now = rental_record.videos_checked_out_count - videos_checked_out_count  # previously\
         # recorded count minus the count customer returned
-        
+        rental_record.videos_checked_out_count = checked_out_now
         this_video = Video.query.get(video_id)
         total_inventory = this_video.total_inventory
-        available_inventory = total_inventory + videos_checked_out_count
-        
+        available_inventory = total_inventory + videos_checked_out_count      
         this_video.total_inventory = available_inventory
-        
-        
-        response_dict = {
-        "customer_id": rental_record.customer_id,
-        "video_id": rental_record.video_id,
-        "videos_checked_out_count": checked_out_now,
-        "available_inventory":available_inventory
-        }
+
+        response = response_dict(rental_record, available_inventory)
 
         db.session.delete(rental_record)
         db.session.commit()
 
-        return make_response(response_dict)
+        return make_response(response)
 
 
 @customer_bp.route("/<customer_id>/rentals", methods=["GET"])
