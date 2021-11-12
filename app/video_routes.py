@@ -7,8 +7,9 @@ videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
 
 @videos_bp.route("", methods=["POST"])
-def create_video():  # Do the same thing has routes with video and customer, make class methods and combine routes
+def create_video():
     request_body = request.get_json()
+
     try:
         new_video = Video(
             title=request_body["title"],

@@ -1,8 +1,6 @@
 from flask import Blueprint, request, abort, make_response
 from app import db
 from app.models.rental import Rental
-from app.models.customer import Customer
-from app.models.video import Video
 from app.validate import Validate
 
 

@@ -7,9 +7,7 @@ from app.models.video import Video
 class Rental(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"))
-    customer = db.relationship(
-        "Customer", backref="rentals", lazy="subquery"
-    )  # Remember to look this up
+    customer = db.relationship("Customer", backref="rentals", lazy="subquery")
     video_id = db.Column(db.Integer, db.ForeignKey("video.id"))
     video = db.relationship("Video", backref="rentals", lazy="subquery")
     due_date = db.Column(db.DateTime, default=date.today() + timedelta(days=7))
