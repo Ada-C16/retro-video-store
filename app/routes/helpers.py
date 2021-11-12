@@ -5,11 +5,11 @@ from flask import request
 # helper methods for validation 
 def id_is_valid(id, object_type):
     '''
-    returns two values: an object and an error message; 
-    if no error is present, the error message is None
+    returns two values: an object and None (if no error is present),
+    or an "invalid" string and an error (if error is present) 
     '''
     if not id.isnumeric(): # /rentals/
-        return "invalid", ("", 400) # tuple - "invalid string" + error message
+        return "invalid", ("", 400) 
     
     if object_type == "customer":
         object = Customer.query.get(id) 
@@ -19,12 +19,13 @@ def id_is_valid(id, object_type):
     name = object_type.capitalize()
     if not object:
         return object, ({"message": f"{name} {id} was not found"}, 404)  
-    return object, None # tuple - object itself, None 
+    return object, None 
 
 def request_has_all_required_categories(object_type):
     '''
-    returns two values: request data in json format and an error message;
-    if no error is present, the error message is None 
+    returns two values: request data in json format and None 
+    (if no error is present), or the request data and an error message 
+    (if error is present)
     '''
     request_data = request.get_json()
 
