@@ -3,7 +3,7 @@ from app import db
 from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 
 customer_bp = Blueprint('customers', __name__, url_prefix='/customers')
@@ -102,25 +102,45 @@ def handle_customers():
     elif request.method == 'POST':
         pass
 
-# # RENTAL ENDPOINTS
+# RENTAL ENDPOINTS
 @rental_bp.route('/check-out', methods=['POST'])
 def handle_checkout():
+    # For calculating due date
+    today = datetime.now()
+    seven_days = timedelta(days=+7)
+
     request_body = request.get_json()
+
     if 'customer_id' not in request_body.keys() :
             return make_response({"details": "Request body must include customer."}, 404)
     elif 'video_id' not in request_body.keys():
             return make_response({"details":"Request body must include video."}, 404)
-    elif Rental.calculate_available_inventory() == 0:
+    # Does checking for available inventory belong here or inside the else block?
+    elif request_body['available_inventory'] == 0:
             return make_response({"details": "All videos currently checked out."}, 400)
     else:
+        # Do I need these? I'm using these to access the specific video and customer objects that match video_id and customer_id
+        # I'm using these bc the rental instance hasn't been created yet.
+        customer = Customer.query.get(request_body['customer_id'])
+        video = Video.query.get(request_body['video_id'])
+
         new_checkout = Rental(customer_id=request_body['customer_id'],
                                 video_id=request_body['video_id'],
-                                due_date=request_body['due_date'],
-                                videos_checked_out_count=request_body['videos_checked_out_count'],
-                                # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
-                                    # Used a class method to calculate available_inventory
-                                available_inventory=Rental.calculate_available_inventory())
+                                due_date=today+seven_days
 
+                                # Need to figure out how to calculate videos_checked_out_count
+                                    # Can I use a class method?
+                                # videos_checked_out_count= Use get_videos_checked_out_count()
+                                    # I need to add 1 to videos_checked_out_count
+
+                                # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
+                                    # Can I use a class method?
+                                # available_inventory= Use calculate_available_inventory()
+                                    # I need to subtract all copies currently checked out by all customers from total_inventory
+                                        # all copies currently checked out = all videos_checked_out_count added up from all customers
+                                            # Do I need to Rental.query.all() --> filter all videos_checked_out_count values and add them?
+                                            # OR can also do Rental.query.all() --> filter by video_id and add instances of rentals that have the same video_id
+                                )
         db.session.add(new_checkout)
         db.session.commit()
 
@@ -129,8 +149,42 @@ def handle_checkout():
                                 "due_date": new_checkout.due_date,
                                 "videos_checked_out_count": new_checkout.videos_checked_out_count,
                                 "available_inventory": new_checkout.available_inventory})
-    
+
 
 @rental_bp.route('/check-in', methods=['POST'])
 def handle_checkin():
-    pass
+    request_body = request.get_json()
+    rental_to_delete = Rental.query.get(request_body['video_id'])
+
+    if 'customer_id' not in request_body.keys() :
+            return make_response({"details": "Request body must include customer."}, 404)
+    elif 'video_id' not in request_body.keys():
+            return make_response({"details":"Request body must include video."}, 404)
+    # Does checking for available inventory belong here or inside the else block?
+    elif request_body['video_id'] not in request_body.values() and request_body['customer_id'] not in request_body.values():
+            return make_response({"details": "The video and customer information do not match the current rental"}, 400)
+
+    rental_deleted_confirmation =  Rental(customer_id=request_body['customer_id'],
+                                video_id=request_body['video_id'],
+                                due_date=request_body['due_date'] # What value do I put here? Do I use None?
+
+                                # Need to figure out how to calculate videos_checked_out_count
+                                    # Can I use a class method?
+                                # videos_checked_out_count= Use get_videos_checked_out_count()
+                                    # I need to subtract 1 from videos_checked_out_count
+
+                                # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
+                                    # Can I use a class method?
+                                # available_inventory= Use calculate_available_inventory()
+                                    # I need to add one to available_inventory 
+                                )
+
+    # Delete the rental - am I deleting a rental instance currently that already exists due to the video being rented?
+    db.session.delete(rental_to_delete)
+    db.session.commit()
+
+    # Make a response
+    return make_response({"customer_id": rental_deleted_confirmation.customer_id,
+                            "video_id": rental_deleted_confirmation.video_id,
+                            "videos_checked_out_count": rental_deleted_confirmation.videos_checked_out_count,
+                            "available_inventory": rental_deleted_confirmation.available_inventory})

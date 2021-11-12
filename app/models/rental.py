@@ -1,5 +1,7 @@
 from app import db
 
+
+
 class Rental(db.Model):
     __tablename__ = 'rentals'
     id = db.Column(db.Integer, primary_key=True)
@@ -10,5 +12,14 @@ class Rental(db.Model):
     available_inventory = db.Column(db.Integer)
 
     @classmethod
-    def calculate_available_inventory(cls, available_inventory, videos_checked_out_count):
-        return available_inventory - videos_checked_out_count
+    def calculate_available_inventory(cls):
+        from models.video import Video 
+        # How do I access information from videos table using foreign key?
+        # Video.total_inventory
+        # Rental.video_id.total_inventory 
+    @classmethod
+    def get_videos_checked_out_count(cl):
+        from models.customer import Customer
+        pass
+        # Do I need to access customer_id?
+        # return videos_checked_out_count += 1
