@@ -1,7 +1,7 @@
 from flask import Blueprint, request, make_response, abort, jsonify
 from app.models.rental import Rental
 from app.models.video import Video
-from app.routes.video_routes import validate_id, get_video_from_id
+from app.routes.video_routes import get_video_from_id
 from app.routes.customer_routes import get_customer_data_with_id
 from app.models.customer import Customer
 from app import db
