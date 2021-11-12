@@ -26,7 +26,7 @@ def rentals_checkout():
     if video is None:
         return jsonify(), 404
     
-    # # revisit later
+    # # revisit later - Zandra's solution for test_checkout_video_no_inventory 
     # if video.total_inventory == 0:
     #     return jsonify({"message": "Could not perform checkout"}), 400
 
@@ -47,13 +47,11 @@ def rentals_checkout():
         "customer_id": new_rental.customer_id,
         "videos_checked_out_count": len(customer.videos),
         "available_inventory": video.total_inventory - len(video.customers)
-    }), 200
+    })
 
 @rentals_bp.route("/check-in", methods=["POST"])
 def rentals_checkin():
     request_body = request.get_json()
-    ## revisit later
-    # if video and customer do not match a current rental, return 400
 
     # checks that the required request body parameters are in request 
     if "customer_id" not in request_body or "video_id" not in request_body:
@@ -91,7 +89,7 @@ def rentals_checkin():
         "customer_id": checked_in.customer_id,
         "videos_checked_out_count": len(customer.videos),
         "available_inventory": video.total_inventory - len(video.customers)
-    }), 200
+    })
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def customer_read(customer_id):
@@ -103,14 +101,12 @@ def customer_read(customer_id):
     if customer is None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
     
-    # sets up empty list to store a customer's checked out videos
-    #  iterates through customer.videos to retreive all videos a customer has
+    # sets up empty list to store a customer's checked out videos & iterates through customer.videos to retreive all videos a customer currently has
     checked_out = []
     for video in customer.videos:
         checked_out.append(video)
 
     # gets rental instance for each video a customer has
-
     rentals = Rental.query.all()
     customer_rentals = []
     for video in checked_out:
@@ -118,6 +114,7 @@ def customer_read(customer_id):
             if video.video_id == rental.video_id and customer.customer_id == rental.customer_id:
                 customer_rentals.append(rental)
 
+    # create response body 
     response_body = []
     for rental in customer_rentals:
         response_body.append({
@@ -130,7 +127,37 @@ def customer_read(customer_id):
 @video_bp.route("/<video_id>/rentals", methods=["GET"])
 def video_read(video_id):
     """ List the customers who currently have the video checked out """
+    request_body = request.get_json()
+    
+    # checks to see if video exists. If not, returns 404
+    video = Video.query.get(video_id)
+    if video is None:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
+
+    # sets up empty list to store the video's current customers & iterates through video.customers to retreive all customers that currently have the video
+    current_customers = []
+    for customer in video.customers:
+        current_customers.append(customer)
+
+    # gets rental instance for each customer a video has
+    rentals = Rental.query.all()
+    video_rentals = []
+    for customer in current_customers:
+        for rental in rentals:
+            if video.video_id == rental.video_id and customer.customer_id == rental.customer_id:
+                video_rentals.append(rental)
+    
+    # create response body 
+    response_body = []
+    for rental in video_rentals:
+        response_body.append({
+            "due_date": rental.due_date,
+            "name": customer.name,
+            "phone": customer.phone,
+            "postal_code": customer.postal_code
+        })
+    return jsonify(response_body)
+    
     # videos_list = []
     # for video in self.videos:
     #     videos_list(video.rental_id)
-    pass
