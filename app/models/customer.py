@@ -24,9 +24,9 @@ class Customer(db.Model):
 
     def update_customer(self):
         return {
-            "name": f"{self.name}", 
-            "phone": f"{self.phone}",
-            "postal_code": f"{self.postal_code}"
+            "name": self.name, 
+            "phone": self.phone,
+            "postal_code": self.postal_code
         }
 
 def find_customer(id):
