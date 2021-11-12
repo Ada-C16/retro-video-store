@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 
 from app.models.video import Video
+from app.models.rental import Rental
 
 
 # Blueprints
@@ -271,7 +272,36 @@ def post_rentals_check_out(customer_id, video_id):
 
 # POST /rentals/check-in
 @videos_bp.route("/rentals/check-in", methods = ["POST"])
-def post_rentals_check_in():
+def post_rentals_check_in(customer_id, video_id):
     request_body = request.get_json()
+    
+    # check for valid input
+    if "customer_id" not in request_body:
+        response_body = {"details": "Request body must include customer_id."}
+        return jsonify(response_body), 400
+    elif "video_id" not in request_body:
+        response_body = {"details": "Request body must include video_id."}
+        return jsonify(response_body), 400
+
+    # check if customer exists
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        return customer_not_found(customer_id), 404
+
+    # check if video exists
+    video = Video.query.get(video_id)
+    if not video:
+        response_body = {"message" : f"Video {video_id} was not found"}
+        return jsonify(response_body), 404
+
+    # access the rental being checked in (deleted)
+    rental = Rental.query.get(pass)
+
+    # create a response body
     response_body = {}
+
+    # delete the rental record
+    db.session.delete(rental)
+    db.session.commit()
+
     return jsonify(response_body), 201
