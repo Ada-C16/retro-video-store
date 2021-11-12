@@ -30,7 +30,6 @@ def check_out_rental():
     new_rental = Rental(
         customer = customer.id,
         video = video.id,
-        due_date = dt.datetime.now() + dt.timedelta(days = 7),
         videos_checked_out_count = len(query_customers_videos(customer.id)) + 1,
         available_inventory = count_a_videos_inventory(video.id, video.total_inventory) - 1,
         checked_in = False
