@@ -266,7 +266,10 @@ def check_in_one_rental():
     if video and customer:
         # rental query is one specific object that matches the given parameters 'video_id' and 'customer_id'
         rental_query = Rental.query.filter_by(video_id=request_body["video_id"], customer_id=request_body["customer_id"],checked_in= False).first()
-        print(rental_query)
+        if rental_query == None:
+            return jsonify({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}), 400
+
+
         rental_query.checked_in = True
         rental_query.due_date = None
 
