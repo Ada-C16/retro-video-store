@@ -12,3 +12,9 @@ class Video(db.Model):
             "title": self.title,
             "total_inventory": self.total_inventory
         }
+
+    def to_dict_using_rentals(self):
+        return {
+            "title": self.title,
+            "release_date": self.release_date
+        }
