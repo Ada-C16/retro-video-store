@@ -25,10 +25,8 @@ customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 # ----------- CUSTOMERS ENDPOINTS --------
 # ----------------------------------------
 
-# GET /customers Lists all existing customers and details about each customer
-# Successful response status: 200
-# If no customers, return empty array and 200 status
-# Return list of dictionaries of customer data.
+# GET /customers Lists all existing customers and details about each customer.
+# Return list of dictionaries of customer data. Return empty array if no customers.
 @customers_bp.route("", methods = ["GET"])
 def get_customers():
 
@@ -36,20 +34,12 @@ def get_customers():
 
     return list_of_customers(customers), 200
 
-
 # POST /customers Creates a new customer with given params:
 #   name (str), postal_code(str), phone(str)
-# Successful response status: 201:Created
-# Error status: 400: Bad request. Provide details of error if invalid input.
 # Return dictionary with customer data. "id" is the minimum required field tested for.
 @customers_bp.route("", methods = ["POST"])
-def add_new_customer():
-
-    request_body = request.get_json()
-    
-    ### Opportunity to use the invalid input decorator here if we figure out how to create one! ###
-    if is_invalid(request_body):
-        return is_invalid(request_body)
+@require_valid_request_body
+def add_new_customer(request_body):
 
     new_customer = Customer(name=request_body["name"], postal_code=request_body["postal_code"], phone=request_body["phone"])
     db.session.add(new_customer)
@@ -61,30 +51,22 @@ def add_new_customer():
     
 
 # GET /customers/<id> Gives back details about specific customer.
-# Successful response status: 200
-# Error status: 404: Not found. Provide details of error if customer does not exist.
 # Return one dictionary of customer's data.
 @customers_bp.route("/<id>", methods = ["GET"])
 @require_valid_id
 def get_one_customer(customer):
 
-    return customer_details(customer), 200
+    response_body = customer_details(customer), 200
+    return response_body
 
 # PUT /customers/<id> Updates and returns details about specific customer
 # Required request body params:
 #   name(str), postal_code(str), phone(str)
-# Successful response status: 200
-# Error status: 404: Not found. Provide details of error if customer does not exist.
-# Error status: 400: Bad request. Provide details of error if invalid input.
 # Return dictionary of customer's updated data.
 @customers_bp.route("<id>", methods = ["PUT"])
 @require_valid_id
-def update_customer(customer):
-    request_body = request.get_json()
-
-    ### Opportunity to use the invalid input decorator here if we figure out how to create one! ###
-    if is_invalid(request_body):
-        return is_invalid(request_body)
+@require_valid_request_body
+def update_customer(customer, request_body):
 
     customer.name =request_body["name"]
     customer.postal_code=request_body["postal_code"]
@@ -95,8 +77,6 @@ def update_customer(customer):
     return request_body, 200
 
 # DELETE /customer/<id> Deletes a specific customer.
-# Successful response status: 200
-# Error status: 404: Not found. Provide details of error if customer does not exist.
 # Return dictionary with customer data. "id" is the minimum required field tested for.
 @customers_bp.route("<id>", methods = ["DELETE"])
 @require_valid_id

@@ -1,6 +1,6 @@
 from functools import wraps
 from .models.customer import Customer
-from flask import jsonify
+from flask import jsonify, request
 
 # decorator to check if id is valid
 
@@ -20,6 +20,21 @@ def require_valid_id(endpoint):
             return {"message": f"Customer {id} was not found"}, 404
 
         return endpoint(*args, customer=customer, **kwargs)
+    return fn
+
+def require_valid_request_body(endpoint):
+    @wraps(endpoint)
+    def fn(*args, **kwargs):
+        request_body = request.get_json()
+
+        if "name" not in request_body:
+            return {"details": "Request body must include name."}, 400
+        elif "postal_code" not in request_body:
+            return {"details": "Request body must include postal_code."}, 400
+        elif "phone" not in request_body:
+            return {"details": "Request body must include phone."}, 400
+        else:
+            return endpoint(*args, request_body=request_body, **kwargs)
     return fn
 
 def customer_details(customer):
