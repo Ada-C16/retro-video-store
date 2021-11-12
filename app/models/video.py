@@ -9,7 +9,7 @@ class Video(db.Model):
     total_inventory=db.Column(db.Integer)
 
     renters=db.relationship("Customer", secondary="rental", backref="videos")
-    rentals=db.relationship("Rental")
+    rentals=db.relationship("Rental", backref="video")
 
     def to_dict(self):
         video_dict = {

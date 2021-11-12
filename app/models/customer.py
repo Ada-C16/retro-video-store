@@ -9,7 +9,7 @@ class Customer(db.Model):
     registered_at = db.Column(db.DateTime)
 
     videos_rented = db.relationship("Video", secondary="rental", backref="customer")
-    rentals=db.relationship("Rental")
+    rentals=db.relationship("Rental", backref="customer")
     
 
 

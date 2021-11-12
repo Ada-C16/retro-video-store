@@ -311,30 +311,6 @@ def check_in():
     return jsonify({"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}), 400
 
 # lists the videos a customer currently has checked out
-# @customers_bp.route("/<customer_id>/rentals", methods=["GET"], strict_slashes=False)
-# def videos_checked_out_by_customer(customer_id):
-#     customer = Customer.query.get(customer_id)
-
-#     if customer is None:
-#         return make_response(
-#             {"message": f"Customer {customer_id} was not found"}, 404)
-
-#     videos_checked_out = []
-
-#     rentals = db.session.query(Rental).filter(Rental.customer_id==customer_id).all()   # every rental with the matching customer_id
-#     for rental in rentals:
-#         video = Video.query.get(rental.video_id)
-#         videos_checked_out.append(
-#             {
-#                 "title": video.title,
-#                 "release_date": video.release_date,
-#                 "due_date": rental.due_date
-#             }
-#         )
-
-#     return jsonify(videos_checked_out), 200
-
-# lists the videos a customer currently has checked out
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"], strict_slashes=False)
 def videos_checked_out_by_customer(customer_id):
     customer = Customer.query.get(customer_id)
@@ -345,36 +321,14 @@ def videos_checked_out_by_customer(customer_id):
 
     videos_checked_out = []
 
-    rentals = customer.videos_rented   # every rental with the matching customer_id
+    rentals = customer.rentals
     for rental in rentals:
-        video = Rental.query.get(rental.id)
         videos_checked_out.append(
             {
-                "title": video.title,
-                "release_date": video.release_date,
+                "title": rental.video.title,
+                "release_date": rental.video.release_date,
                 "due_date": rental.due_date
             }
         )
 
     return jsonify(videos_checked_out), 200
-
-@video_bp.route("<video_id>/rentals", methods=["GET"])
-def get_all_videos_rented(video_id):
-
-    videos_rented=Video.renters
-    for video in videos_rented:
-        
-    request_data=request.get_json()
-    check_out_videos=[]
-    rentals_of_video=Rental.query.filter_by(video_id)
-    for video_id in rentals_of_video:
-        check_out_videos.append(rentals_of_video)
-    for one_video in check_out_videos:
-        return jsonify({
-            "due_date": one_video.due_date, 
-            "customers":[one_video.customer_id.put_request_dict() for one_video in one_video.customer_rentals]}), 200
-
-
-    return jsonify({"id": goal.goal_id, "title":goal.title, "tasks":[task.to_dict() for task in goal.tasks]}), 200
-
-    
