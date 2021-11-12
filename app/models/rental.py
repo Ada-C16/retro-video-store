@@ -21,10 +21,10 @@ class Rental(db.Model):
         due_date = now + rental_window
         return due_date
     
-    def get_available_inventory(self,video_id):
-        video = Video.get.query(video_id)
-        count = Rental.query.filter_by(video_id).count()
-        return video.total_inventory() - count
+    # def get_available_inventory(self,video_id):
+    #     video = Video.get.query(video_id)
+    #     count = Rental.query.filter_by(video_id).count()
+    #     return video.total_inventory() - count
 
     def to_dict(self):
         return {

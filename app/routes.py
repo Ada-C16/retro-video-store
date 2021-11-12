@@ -77,16 +77,23 @@ def create_customer():
 @rental_bp.route("/check-out",methods=["POST"])
 def new_rental():
     request_body = request.get_json()
+    if "video_id" not in request_body or "customer_id" not in request_body:
+        return make_response(jsonify({"details" : "Request body must include video_id and customer_id."}), 400)
+
+    validate_video_id(request_body["video_id"])
+    validate_customer_id(request_body["customer_id"])
+
     customer = Customer.query.get(request_body["customer_id"])
     video = Video.query.get(request_body["video_id"])
     due_date = Rental.generate_due_date()
 
     new_rental = Rental(
         customer=customer,
-        #video_id=video.id,
         video= video,
         due_date = due_date,
     )
+    if video.remaining_videos() < 0:
+        return make_response(jsonify({"message" : "Could not perform checkout"}), 400)
     
     db.session.add(new_rental)
     db.session.commit()
