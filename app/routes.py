@@ -174,7 +174,7 @@ def get_rentals_for_customer(customer_id):
     if customer is None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
     elif request.method == "GET":
-        videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id) # only video rented by specific renter
+        videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id, checked_out = True).count # only video rented by specific renter
         list_of_videos = []
         for rental in videos_customer_rented:
             video = Video.query.get(rental.video_id)
@@ -196,7 +196,8 @@ def get_videos_for_rental(video_id):
     if video is None:
         return jsonify ({"message": f"Video {video_id} was not found"}), 404
     elif request.method == 'GET':
-        rented_out_videos = Rental.query.filter(Rental.video_id == video_id)
+        rented_out_videos = Rental.query.filter(Rental.video_id == video_id, checked_out = True).count
+        #available_inventory = video.total_inventory - rented_out_videos
         list_of_customers = []
         for rental in rented_out_videos:
             customer = Customer.query.get(rental.customer_id)
@@ -212,6 +213,11 @@ def get_videos_for_rental(video_id):
 
 
 @rentals_bp.route("/check-out", methods = ["POST"])
+def checked_out_rental():
+    request_body = request.get_json()
+    if "customer" not in  request_body or "video" not in request_body or "available_inventory" not in request_body:
+        return jsonify(None),404
+        
 
 @rentals_bp.route("/check-in", methods = ["POST"])
 def get_rental(rental_id):

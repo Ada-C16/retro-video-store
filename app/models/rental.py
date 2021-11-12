@@ -6,9 +6,10 @@ class Rental(db.Model):
     # describe model specifically so using Python to interact with the SQL database for us so we don't have to do it manually
     # different classes of data to work in the model, doesn't care about specific details of the customer, need to min amount of data to reference to get the data 
     id = db.Column(db.Integer, primary_key = True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable = True, primary_key = True)
-    video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable = True, primary_key = True)
-    # due_date = db.Column(db.DateTime)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+    video_id = db.Column(db.Integer, db.ForeignKey('video.id'))
+    due_date = db.Column(db.DateTime)
+    checked_out = db.Column(db.Boolean, default=False)
 #     >>> import datetime
 # >>> datetime.datetime.now() + datetime.timedelta(days=7) - this would be omre on the back end 
 # defining what the model looks like, but where the checkout api, create new rental in the database, video rental is associated with, set due date
