@@ -102,13 +102,6 @@ def handle_video_id(video_id):
 
         return jsonify({"id": video.id}), 200
 
-
-@videos_bp.route("/<video_id>/rentals", methods = ["GET"])
-
-
-@rentals_bp.route("/check-out", methods = ["POST"])
-
-@rentals_bp.route("/check-in", methods = ["POST"])
 @customers_bp.route("", methods=["GET","POST"])
 def active_customers():
     if request.method == 'GET':
@@ -173,3 +166,53 @@ def retrieve_customer(customer_id):
         db.session.delete(customer)
         db.session.commit()
         return jsonify({"id": customer.id}), 200
+######
+
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"])
+def get_rentals_for_customer(customer_id):
+    customer = Customer.query.get(customer_id)
+    if customer is None:
+        return jsonify({"message": f"Customer {customer_id} was not found"}), 404
+    elif request.method == "GET":
+        videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id) # only video rented by specific renter
+        list_of_videos = []
+        for rental in videos_customer_rented:
+            video = Video.query.get(rental.video_id)
+            response_body = {
+                "release_date": video.release_date,
+                "title": video.title,
+                "due_date": rental.due_date,
+            }
+            list_of_videos.append(response_body)
+
+        return jsonify(list_of_videos), 200
+ #joins rental & video Rental.join(Video,Video.id == Rental.video_id) 
+
+
+
+@videos_bp.route("/<video_id>/rentals", methods = ["GET"])
+def get_videos_for_rental(video_id):
+    video = Video.query.get(video_id)
+    if video is None:
+        return jsonify ({"message": f"Video {video_id} was not found"}), 404
+    elif request.method == 'GET':
+        rented_out_videos = Rental.query.filter(Rental.video_id == video_id)
+        list_of_customers = []
+        for rental in rented_out_videos:
+            customer = Customer.query.get(rental.customer_id)
+            response_body = {
+                "due_date": rental.due_date,
+                "name": customer.name,
+                "phone": customer.phone,
+                "postal_code": customer.postal_code
+            }
+            list_of_customers.append(response_body)
+
+        return jsonify(list_of_customers), 200
+
+
+@rentals_bp.route("/check-out", methods = ["POST"])
+
+@rentals_bp.route("/check-in", methods = ["POST"])
+def get_rental(rental_id):
+    pass
