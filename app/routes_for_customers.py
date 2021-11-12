@@ -104,16 +104,17 @@ def handle_customer_by_id(customer_id):
         return make_response(response_value, 200)
 
 
-# @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
-# def customers_current_rentals(customer_id):
-#     customer = Customer.query.get_or_404(customer_id)
-#     if not customer: 
-#         return make_response ("Customer not found", 404)
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"])
+def customers_current_rentals(customer_id):
+    customer = Customer.query.get(customer_id)
+    if not customer: 
+        return_message = {"message": f"Customer {customer_id} was not found"}
+        return make_response(return_message, 404)
 
-    # videos_checked_out = []
-    #     for video in customer.rentals: 
-    #         videos_checked_out.append({
-    #             "release_date":,
-    #             "title": ,
-    #             "due_date": ,})
-    #     return jsonify(), 200
+    videos_checked_out = []
+    for video in customer.video: 
+        videos_checked_out.append({
+            "release_date": video.release_date,
+            "title": video.title,
+            "due_date": datetime.now() + timedelta(days=7)})
+    return jsonify(videos_checked_out), 200
