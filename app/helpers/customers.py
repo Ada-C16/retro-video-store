@@ -1,5 +1,5 @@
 from functools import wraps
-from .models.customer import Customer
+from app.models.customer import Customer
 from flask import jsonify, request
 
 
