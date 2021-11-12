@@ -13,12 +13,13 @@ def check_out_movie():
     if 'customer_id' not in request_body or 'video_id' not in request_body:
         abort(make_response({'error': 'customer_id and video_id are required'}, 400))
     video = get_video_from_id(request_body['video_id'])
-    # check if inventory is non-zero
+    # check if video is available
     total_inventory = int(video.total_inventory)
     total_checked_out = len(Rental.query.filter_by(video_id=video.id, checked_in=False).all())
     available_inv = total_inventory - total_checked_out
     if available_inv < 1:
         abort(make_response({'message': 'Could not perform checkout'}, 400))
+    # create new rental
     get_customer_data_with_id(request_body['customer_id'])
     new_rental = Rental(
         customer_id = request_body['customer_id'],
@@ -26,18 +27,17 @@ def check_out_movie():
         )
     db.session.add(new_rental)
     db.session.commit()
-    # maybe I can send args to 'to_dict' to customize what I need?
-    # so we don't have code performing things in the model?
     return make_response(new_rental.to_dict(), 200)
 
-# WHAT IF CUSTOMER HAS MULTIPLE OF THE SAME VIDEO CHECKED OUT
 @rentals_bp.route('/check-in', methods=['POST'], strict_slashes=False)
 def check_in_movie():
     request_body = request.get_json()
     if 'customer_id' not in request_body or 'video_id' not in request_body:
         abort(make_response({'error': 'customer_id and video_id are required'}, 400))
-    video = get_video_from_id(request_body['video_id'])
+    # check if video and customer IDs are valid
+    get_video_from_id(request_body['video_id'])
     get_customer_data_with_id(request_body['customer_id'])
+    # find rental record
     rental_record = Rental.query.filter_by(
             customer_id=request_body['customer_id'], 
             video_id=request_body['video_id'], 
@@ -54,11 +54,9 @@ def check_in_movie():
 
 # OPTIONAL ROUTES
 
-# THIS ROUTE NEEDS TESTS
-# GET /rentals/overdue
 @rentals_bp.route('/overdue', methods=['GET'], strict_slashes=True)
 def get_overdue_videos():
-    overdue_movie_records = Rental.query.filter(Rental.checked_in==False and Rental.due_date<datetime.now()).all()
+    overdue_movie_records = Rental.query.filter(Rental.checked_in==False, Rental.due_date<datetime.now()).all()
     response = []
     for record in overdue_movie_records:
         video = get_video_from_id(record.video_id)
