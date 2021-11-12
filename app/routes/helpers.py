@@ -32,6 +32,8 @@ def request_has_all_required_categories(object_type):
         required_categories = ["name", "phone", "postal_code"]
     elif object_type == "video":
         required_categories = ["total_inventory", "release_date", "title"]
+    elif object_type == "rental":
+        required_categories = ["customer_id", "video_id"]
 
     for category in required_categories:
         if category not in request_data: 
