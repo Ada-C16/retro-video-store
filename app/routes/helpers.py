@@ -8,8 +8,8 @@ def id_is_valid(id, object_type):
     returns two values: an object and an error message; 
     if no error is present, the error message is None
     '''
-    if not id.isnumeric(): 
-        return "invalid", ("", 400)
+    if not id.isnumeric(): # /rentals/
+        return "invalid", ("", 400) # tuple - "invalid string" + error message
     
     if object_type == "customer":
         object = Customer.query.get(id) 
@@ -19,7 +19,7 @@ def id_is_valid(id, object_type):
     name = object_type.capitalize()
     if not object:
         return object, ({"message": f"{name} {id} was not found"}, 404)  
-    return object, None 
+    return object, None # tuple - object itself, None 
 
 def request_has_all_required_categories(object_type):
     '''

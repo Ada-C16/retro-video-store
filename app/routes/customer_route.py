@@ -73,12 +73,7 @@ def customer_rentals(customer_id):
     if error_msg is not None:
         return error_msg  
         
-    all_rentals = Rental.query.all()
-
-    rentals = []
-    for rental in all_rentals:
-        if rental.customer_id == int(customer_id):
-            rentals.append(rental)
+    rentals = Rental.query.filter_by(customer_id=int(customer_id))
 
     video_details_response = []
     for rental_object in rentals:

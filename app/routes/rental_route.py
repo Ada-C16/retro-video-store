@@ -53,17 +53,17 @@ def check_in_video():
     if error_msg is not None:
         return error_msg 
 
-    find_rental = "video_not_checked_out"
-    rentals = Rental.query.all() # figure out something like filter_by(video_id=video_id)
-    for rental in rentals:
+    video_to_check_in = "video_that_is_not_checked_out"
+    for rental in Rental.query.all():
         if rental.video_id == video_id and rental.customer_id == customer_id: 
-            find_rental = rental 
+            video_to_check_in = rental 
 
-    if find_rental == "video_not_checked_out":
+    # guard against trying to check in a video that isn't checked out 
+    if video_to_check_in == "video_that_is_not_checked_out":
         msg = f"No outstanding rentals for customer {customer_id} and video {video_id}"
         return {"message": msg}, 400
 
-    db.session.delete(find_rental)
+    db.session.delete(video_to_check_in)
     db.session.commit()
 
-    return find_rental.to_json(), 200 
+    return video_to_check_in.to_json(), 200 
