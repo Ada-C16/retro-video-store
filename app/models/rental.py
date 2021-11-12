@@ -1,4 +1,5 @@
 from app import db
+from datetime import datetime
 
 class Rental(db.Model):
     # goal of the model is to store classes effectively in the database, describes what the piece of data looks like
@@ -23,3 +24,7 @@ class Rental(db.Model):
 # what are things user would want to do when using your app***********
 # HERE THINGS YOU CAN DO WITH MY APP
 # waze can build into their application and call into the app
+    due_date = db.Column(db.DateTime)
+    
+    
+# >>> datetime.datetime.now() + datetime.timedelta(days=7)
