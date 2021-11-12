@@ -43,12 +43,11 @@ def post_customer():
             "details": "Request body must include phone."}
         return jsonify(response_body), 400
 
-    request_body = request.get_json()
-
-    new_customer = Customer(name=request_body["name"],
-                    postal_code=request_body["postal_code"],
-                    phone=request_body["phone"]
-                )
+    new_customer = Customer(
+        name=request_body["name"],
+        postal_code=request_body["postal_code"],
+        phone=request_body["phone"]
+    )
     db.session.add(new_customer)
     db.session.commit()
     response_body = new_customer.customer_dict()
@@ -90,3 +89,19 @@ def delete_customer(customer_id):
 
     response_body = customer.customer_dict()
     return jsonify(response_body), 200
+
+
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"])
+def rentals_by_id(customer_id):
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        response_body = {"message": f"Customer {customer_id} was not found"}
+        return jsonify(response_body), 404
+
+    rental_response = [rental.id for rental in customer.rentals]
+    if not rental_response:
+        return jsonify([]), 200
+
+    response_body = [Video.query.get(video).create_dict() for video in rental_response]
+    return jsonify(response_body), 200
+
