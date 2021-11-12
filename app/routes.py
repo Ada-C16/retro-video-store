@@ -8,9 +8,7 @@ from .models.rental import Rental
 from app import db
 from sqlalchemy import exc
 from sqlalchemy.exc import DataError
-# from sqlalchemy.sql.operators import custom_op
-# import re
-# from flask.blueprints import Blueprint
+from .models.query_params import *
 
 videos_bp = Blueprint("videos", __name__, url_prefix ="/videos")
 customer_bp = Blueprint("customers", __name__, url_prefix="/customers")
@@ -18,7 +16,11 @@ rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 @videos_bp.route("", methods=["GET"])
 def get_all_videos():
-    videos = Video.query.all()
+
+    if request.args:
+        videos = handle_query_params(Video, request)
+    else:            
+        videos = Video.query.all()
     return jsonify([video.to_dict() for video in videos])
 
 @videos_bp.route("/<video_id>", methods=["GET"])
@@ -88,7 +90,7 @@ def handle_customers():
     pass
 
     if request.method == "POST":
-        
+
         request_body = request.get_json()
 
         input_error = Customer.check_input_fields(request_body)
@@ -105,7 +107,10 @@ def handle_customers():
         
     elif request.method == "GET":
 
-        customers = Customer.query.all()
+        if request.args:
+            customers = handle_query_params(Customer, request)
+        else:            
+            customers = Customer.query.all()
 
         return jsonify([customer.to_dict() for customer in customers]), 200
 
@@ -155,21 +160,21 @@ def handle_rental_checkout():
 
     request_body = request.get_json()
 
-    # check request body fields
-    if "customer_id" not in request_body or "video_id" not in request_body:
-        return { "message" : "missing information "}, 400
-
     # validate customer id
-    customer_id = request_body["customer_id"]
-    customer_id_error = Customer.validate_id(customer_id)
-    if customer_id_error:
-        return customer_id_error
+    try: 
+        customer_id = request_body["customer_id"]
+        customer_id_error = Customer.validate_id(customer_id)
+        if customer_id_error:
+            return customer_id_error
 
-    # validate video id
-    video_id = request_body["video_id"]
-    video_id_error = Video.validate_id(video_id)
-    if video_id_error:
-        return video_id_error
+        # validate video id
+        video_id = request_body["video_id"]
+        video_id_error = Video.validate_id(video_id)
+        if video_id_error:
+            return video_id_error
+
+    except KeyError:
+        return { "message" : "missing information "}, 400
 
     available_inventory = Rental.get_available_video_inventory(video_id)
 
@@ -240,7 +245,6 @@ def gets_customers_by_rental(id):
     if video_id_error:
         return video_id_error
 
-    #gets/filters to get all videos 
     rentals = Rental.query.filter_by(video_id = id).all()
     rental_list = []
 
@@ -253,13 +257,17 @@ def gets_customers_by_rental(id):
             "phone": customer.phone,
             "postal_code": customer.postal_code
         })
-   
+
     return jsonify(rental_list), 200
 
 
 @rentals_bp.route("", methods=["GET"])
 def get_all_rentals():
     #gets all rentals in the database
-    rentals = Rental.query.all()
-    return jsonify([rental.to_dict_customer_rentals() for rental in rentals]), 200
+    if request.args:
+        rentals = handle_query_params(Rental, request)
+    else:            
+        rentals = Rental.query.all()
+
+    return jsonify([rental.to_dict() for rental in rentals]), 200
 

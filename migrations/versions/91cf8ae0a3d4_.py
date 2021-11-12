@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 25c3b62ada40
+Revision ID: 91cf8ae0a3d4
 Revises: 
-Create Date: 2021-11-09 23:07:48.231698
+Create Date: 2021-11-10 15:07:55.712542
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '25c3b62ada40'
+revision = '91cf8ae0a3d4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(length=200), nullable=True),
     sa.Column('postal_code', sa.String(length=50), nullable=True),
-    sa.Column('registered_at', sa.DateTime(), nullable=True),
+    sa.Column('registered_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('phone', sa.String(length=50), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
@@ -37,7 +37,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('customer_id', sa.Integer(), nullable=False),
     sa.Column('video_id', sa.Integer(), nullable=False),
-    sa.Column('due_date', sa.DateTime(), nullable=True),
+    sa.Column('due_date', sa.DateTime(timezone=True), nullable=True),
     sa.Column('checked_out', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['customer_id'], ['customers.id'], ),
     sa.ForeignKeyConstraint(['video_id'], ['videos.video_id'], ),

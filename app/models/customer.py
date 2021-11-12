@@ -1,11 +1,15 @@
 from app import db
 from datetime import datetime
 
+
 class Customer(db.Model):
+
+    sort_fields = ["name", "registered_at", "postal_code"]
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(200))
     postal_code = db.Column(db.String(50))
-    registered_at = db.Column(db.DateTime)
+    registered_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     phone = db.Column(db.String(50))
     videos = db.relationship("Video", back_populates="customers", secondary="rentals")
     __tablename__ = "customers"
@@ -16,7 +20,7 @@ class Customer(db.Model):
             "name": self.name,
             "phone": self.phone,
             "postal_code": self.postal_code,
-            "registered_at": self.registered_at.strftime("%a, %d %b %Y %H:%M:%S") if self.registered_at else None
+            "registered_at": self.registered_at
         }
 
     @classmethod
@@ -25,8 +29,7 @@ class Customer(db.Model):
         return cls(
             name = str(request_body["name"]),
             postal_code = str(request_body["postal_code"]),
-            phone = str(request_body["phone"]),
-            registered_at = datetime.now()
+            phone = str(request_body["phone"])
         )
 
     @classmethod
