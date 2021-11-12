@@ -3,9 +3,24 @@ from app import db
 from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
-from flask import Blueprint, jsonify, make_response, request
+from flask import Blueprint, jsonify, make_response, request, abort
 
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
+
+
+#issue with abort
+#STILL NEED TO CHECK DATATYPES
+
+def check_for_input(request_body, list_of_attributes):
+   
+    for attribute in list_of_attributes:
+        if attribute not in request_body:
+            error_message = jsonify({"details": f"Request body must include {attribute}."})
+
+            abort(400, error_message)
+            
+     
+ 
 
 
 @videos_bp.route("", methods=["GET", "POST"])
@@ -33,7 +48,16 @@ def handle_videos():
 
     elif request.method == "POST":
         request_body = request.get_json()
+        
+        list_of_attributes = ["title", "total_inventory", "release_date"]
 
+        # for attribute in list_of_attributes:
+        #     if attribute not in request_body:
+        #         error_message = jsonify({"details": f"Request body must include {attribute}."})
+
+        #         return error_message, 400
+
+        check_for_input(request_body,list_of_attributes)
         #NEED TO ADD
         # check for correct type of input
         # (type("name") is not str)
@@ -43,12 +67,13 @@ def handle_videos():
         #refactor to make one return statement
             # return jsonify({"details": "Request body must include release_date."}), 400
         # 
-        if "title" not in request_body:
-            return jsonify({"details": "Request body must include title."}), 400
-        elif "release_date" not in request_body:
-            return jsonify({"details": "Request body must include release_date."}), 400
-        elif "total_inventory" not in request_body:
-            return jsonify({"details": "Request body must include total_inventory."}), 400
+
+        # if "title" not in request_body:
+        #     return jsonify({"details": "Request body must include title."}), 400
+        # elif "release_date" not in request_body:
+        #     return jsonify({"details": "Request body must include release_date."}), 400
+        # elif "total_inventory" not in request_body:
+        #     return jsonify({"details": "Request body must include total_inventory."}), 400
 
         new_video = Video(title=request_body["title"], total_inventory=request_body["total_inventory"],
         release_date=request_body["release_date"])
@@ -72,17 +97,16 @@ def handle_video(video_id):
 
     if request.method == "GET":
 
-        return jsonify({
-            
-                "id": video.id,
-                "title": video.title,
-                "release_date": video.release_date,
-                "total_inventory": video.total_inventory   
-                
-            }), 200
+        video_dict = video.to_dict()
+
+        return jsonify(video_dict), 200
     
     elif request.method == "PUT":
         request_body = request.get_json()
+
+        list_of_attributes = ["title", "total_inventory", "release_date"]
+
+        check_for_input(request_body, list_of_attributes)
 
         #NEED TO ADD
         # check for correct type of input
@@ -90,12 +114,12 @@ def handle_video(video_id):
         # (type("postal_code") is not str)
         # (type("phone") is not str)
 
-        if "title" not in request_body:
-            return jsonify({"details": "Request body must include title."}), 400
-        elif "release_date" not in request_body:
-            return jsonify({"details": "Request body must include release_date."}), 400
-        elif "total_inventory" not in request_body:
-            return jsonify({"details": "Request body must include total_inventory."}), 400
+        # if "title" not in request_body:
+        #     return jsonify({"details": "Request body must include title."}), 400
+        # elif "release_date" not in request_body:
+        #     return jsonify({"details": "Request body must include release_date."}), 400
+        # elif "total_inventory" not in request_body:
+        #     return jsonify({"details": "Request body must include total_inventory."}), 400
 
         video.title = request_body["title"]
         video.release_date = request_body["release_date"]
@@ -103,14 +127,9 @@ def handle_video(video_id):
 
         db.session.commit()
 
-        return jsonify({
-        
-            "id": video.id,
-            "title": video.title,
-            "release_date": video.release_date,
-            "total_inventory": video.total_inventory  
-            
-        })
+        video_dict = video.to_dict()
+
+        return jsonify(video_dict), 200
 
     elif request.method == "DELETE":
         db.session.delete(video)
