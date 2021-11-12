@@ -2,23 +2,38 @@ from app import db
 from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, abort
 from datetime import datetime, timedelta
+from app.routes.video_routes import check_for_input
 
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
+
+def validate_input(request_body):
+
+    for key, value in request_body.items():
+        if type(value) is not int:
+            error_message = jsonify({"Invalid Input": f"The {key} value must be an integer."})
+
+            return abort(400, error_message)
 
 @rentals_bp.route("/check-out", methods=["POST"])
 def rental_check_out():
     
     request_body = request.get_json()
 
+    list_of_attributes = ["customer_id", "video_id"]
+
+    check_for_input(request_body, list_of_attributes)
+
+    validate_input(request_body)
+
     #CHECK FOR VALID INPUT TYPE HERE
     #need to ensure that each data type is correct
 
-    if "customer_id" not in request_body:
-        return jsonify({"details": "Request body must include customer_id."}), 400
-    elif "video_id" not in request_body:
-        return jsonify({"details": "Request body must include video_id."}), 400
+    # if "customer_id" not in request_body:
+    #     return jsonify({"details": "Request body must include customer_id."}), 400
+    # elif "video_id" not in request_body:
+    #     return jsonify({"details": "Request body must include video_id."}), 400
 
     customer_id = request_body["customer_id"]
     video_id = request_body["video_id"]
@@ -77,10 +92,16 @@ def rental_check_in():
     # else:
     #     return jsonify(None), 400
 
-    if "customer_id" not in request_body:
-        return jsonify({"details": "Request body must include customer_id."}), 400
-    elif "video_id" not in request_body:
-        return jsonify({"details": "Request body must include video_id."}), 400
+    # if "customer_id" not in request_body:
+    #     return jsonify({"details": "Request body must include customer_id."}), 400
+    # elif "video_id" not in request_body:
+    #     return jsonify({"details": "Request body must include video_id."}), 400
+
+    list_of_attributes = ["customer_id", "video_id"]
+
+    check_for_input(request_body, list_of_attributes)
+
+    validate_input(request_body)
 
     customer_id = request_body["customer_id"]
     video_id = request_body["video_id"]
@@ -88,7 +109,7 @@ def rental_check_in():
     video = Video.query.get(video_id)
     customer = Customer.query.get(customer_id)
 
-    #check to make sure customer and video exist
+    
     if video is None or customer is None:
         return jsonify(None), 404
 
@@ -102,9 +123,8 @@ def rental_check_in():
 
     db.session.commit()
 
-    #removed helper function bc you can sort by multiple variables, no need for looping
     
-    num_videos_checked_out =  Rental.query.filter_by(video_id=video.id, checked_in=False).count() #.count() returns length
+    num_videos_checked_out =  Rental.query.filter_by(video_id=video.id, checked_in=False).count() 
     available_inventory = video.total_inventory - num_videos_checked_out
 
     videos_checked_out_count = Rental.query.filter_by(customer_id=customer.id, checked_in=False).count()

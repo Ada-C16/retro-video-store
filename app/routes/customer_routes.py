@@ -9,16 +9,13 @@ from app.routes.video_routes import check_for_input
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
 
-
-#assuming have already have acces to check_for_input function
-
 def validate_input(request_body):
 
     for key, value in request_body.items():
         if type(value) is not str:
             error_message = jsonify({"Invalid Input": f"The {key} value must be a string."})
 
-            abort(400, error_message)
+            return abort(400, error_message)
 
 @customers_bp.route("", methods=["GET"])
 def get_customers():
@@ -80,11 +77,7 @@ def post_new_customer():
 
     list_of_attributes = ["name", "postal_code", "phone"]
 
-    #NEED TO ADD
-    # check for correct type of input
-    # (type("name") is not str)
-    # (type("postal_code") is not str)
-    # (type("phone") is not str)
+
     check_for_input(request_body, list_of_attributes)
 
     validate_input(request_body)
@@ -117,11 +110,6 @@ def update_customer(customer_id):
 
     request_body = request.get_json()
     
-    #NEED TO ADD
-    # check for correct type of input
-    # (type("name") is not str)
-    # (type("postal_code") is not str)
-    # (type("phone") is not str)
 
     # if "name" not in request_body:
     #     return jsonify({"details": "Request body must include name."}), 400

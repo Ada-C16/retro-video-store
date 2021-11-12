@@ -9,7 +9,6 @@ videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
 
 #issue with abort
-#STILL NEED TO CHECK DATATYPES
 
 def check_for_input(request_body, list_of_attributes):
    
@@ -17,10 +16,24 @@ def check_for_input(request_body, list_of_attributes):
         if attribute not in request_body:
             error_message = jsonify({"details": f"Request body must include {attribute}."})
 
-            abort(400, error_message)
+            # return error_message, 400
+            return abort(400, error_message)
             
-     
- 
+
+def validate_video_input(request_body):
+    for key, value in request_body.items():
+
+        if key == "title":
+            if type(value) != str:
+                return jsonify({"Invalid Input": f"The {key} value must be a string."}), 400
+        elif key == "total_inventory": 
+            if type(value) != int:
+                return jsonify({"Invalid Input": f"The {key} value must be an integer."}), 400
+        elif key == "release_date":
+            if type(value) != str:
+                return jsonify({"Invalid Input": f"The {key} value must be a string."}), 400
+        
+        #return abort???????
 
 
 @videos_bp.route("", methods=["GET", "POST"])
@@ -58,6 +71,11 @@ def handle_videos():
         #         return error_message, 400
 
         check_for_input(request_body,list_of_attributes)
+        validate_video_input(request_body)
+
+        # if test != None:
+        #    abort() 
+
         #NEED TO ADD
         # check for correct type of input
         # (type("name") is not str)
@@ -107,12 +125,7 @@ def handle_video(video_id):
         list_of_attributes = ["title", "total_inventory", "release_date"]
 
         check_for_input(request_body, list_of_attributes)
-
-        #NEED TO ADD
-        # check for correct type of input
-        # (type("name") is not str)
-        # (type("postal_code") is not str)
-        # (type("phone") is not str)
+        validate_video_input(request_body)
 
         # if "title" not in request_body:
         #     return jsonify({"details": "Request body must include title."}), 400
