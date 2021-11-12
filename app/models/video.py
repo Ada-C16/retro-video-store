@@ -9,8 +9,8 @@ class Video(db.Model):
     release_date = db.Column(db.DateTime())
     due_date = db.Column(db.DateTime())
     total_inventory = db.Column(db.Integer)
-    customers = db.relationship("Customer", secondary="Rentals", backref="videos")
-
+    customers = db.relationship("Rental", backref="video")
+    # ^ this line is not 100% necessary but is helpful in understanding the relationship, especially for someone looking at the code for the first time.
 
     def to_dict(self):
         return {

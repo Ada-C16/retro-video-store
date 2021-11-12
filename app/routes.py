@@ -233,3 +233,45 @@ def delete_video(video_id):
         db.session.commit()
 
         return jsonify(response_body), 200
+
+# *****************************
+# *** POST custom endpoints ***
+# *****************************
+
+# POST /rentals/check-out
+# *** QUESTION: DO WE NEED TO MAKE A NEW BLUEPRINT FOR RENTALS? ***
+@videos_bp.route("/rentals/check-out", methods = ["POST"])
+def post_rentals_check_out(customer_id, video_id):
+    request_body = request.get_json()
+    
+    # check for valid input
+    if "customer_id" not in request_body:
+        response_body = {"details": "Request body must include customer_id."}
+        return jsonify(response_body), 400
+    elif "video_id" not in request_body:
+        response_body = {"details": "Request body must include video_id."}
+        return jsonify(response_body), 400
+
+    # check if customer exists
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        return customer_not_found(customer_id), 404
+
+    #check if video exists
+    video = Video.query.get(video_id)
+    if not video:
+        response_body = {"message" : f"Video {video_id} was not found"}
+        return jsonify(response_body), 404
+
+    # create a response body
+    response_body = {}
+
+    return jsonify(response_body), 201
+
+
+# POST /rentals/check-in
+@videos_bp.route("/rentals/check-in", methods = ["POST"])
+def post_rentals_check_in():
+    request_body = request.get_json()
+    response_body = {}
+    return jsonify(response_body), 201
