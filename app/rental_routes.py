@@ -54,11 +54,13 @@ def rentals_checkin():
     pass
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
-def customer_read():
+def customer_read(customer_id):
+    """ List the videos a customer currently has checked out """
     pass
 
 @video_bp.route("/<video_id>/rentals", methods=["GET"])
-def video_read():
+def video_read(video_id):
+    """ List the customers who currently have the video checked out """
     # videos_list = []
     # for video in self.videos:
     #     videos_list(video.rental_id)
