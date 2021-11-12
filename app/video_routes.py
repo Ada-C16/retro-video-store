@@ -1,6 +1,6 @@
 from app import db
 from app.models.video import Video
-# from app.models.customer import Customer
+from app.models.customer import Customer
 from flask import request, Blueprint, jsonify
 
 
@@ -47,9 +47,6 @@ def handle_video(video_id):
 
     if video:
         if request.method == "GET":
-            # if video.goal_id:
-            #     return jsonify(video=video.to_json_task()), 200
-            # else:
             return jsonify(video.to_json()), 200
     
     
@@ -62,7 +59,6 @@ def handle_video(video_id):
                 return jsonify(""), 400
             elif "total_inventory" not in request_body:
                 return jsonify(""), 400
-            # elif not request_body["total_inventory"].isnumeric():
             elif type(request_body["total_inventory"]) != int:   
                 return jsonify(""), 400
 
@@ -77,5 +73,23 @@ def handle_video(video_id):
             db.session.delete(video)
             db.session.commit()
             return jsonify(id=video.id), 200
+    else:
+        return jsonify(message=f"Video {video_id} was not found"), 404
+
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def handle_video_rentals(video_id):
+    if type(video_id) != int:
+        return jsonify("Video id must be an integer"), 400
+
+    video = Video.query.get(video_id)
+
+    if video:
+        customers = video.customers
+        # 
+        customers.pop("id")
+        customers.pop("registered_at")
+
+        customers_response = [customer.to_json(customer) for customer in customers]
+        return jsonify(customers_response), 200
     else:
         return jsonify(message=f"Video {video_id} was not found"), 404
