@@ -11,7 +11,7 @@ class Customer(db.Model):
     registered_at = db.Column(db.DateTime)
     
     videos_checked_out_count = db.Column(db.Integer)
-# backref is creating 2 new attributes as well as establishing the relationship here
-# backref is creating Customer.videos as well as Video.customers    
+    # backref is creating 2 new attributes as well as establishing the relationship here
+    # backref is creating Customer.videos as well as Video.customers    
 
     videos = db.relationship("Video", secondary="rental", backref="customers")

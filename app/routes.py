@@ -13,11 +13,11 @@ videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 # beginning CRUD routes/ endpoints for videos
 @videos_bp.route("", methods=["POST"])
 def post_one_video():
-# request_body will be the user's input, converted to json. it will be a new record 
-# for the db, with all fields (a dict)
+    # request_body will be the user's input, converted to json. it will be a new record 
+    # for the db, with all fields (a dict)
     request_body = request.get_json()
-# this guard clause will give an error if user tries to submit request body that does
-# not have all fields present
+    # this guard clause will give an error if user tries to submit request body that does
+    # not have all fields present
     if 'title' not in request_body:
         return make_response({"details": "Request body must include title."}, 400)
     elif 'release_date' not in request_body:
@@ -25,14 +25,14 @@ def post_one_video():
     elif 'total_inventory' not in request_body:
         return make_response({"details": "Request body must include total_inventory."}, 400)
     else:
-# taking info fr request_body and converting it to new Video object    
+        # taking info fr request_body and converting it to new Video object    
         new_video = Video(title=request_body["title"],
                         release_date=request_body["release_date"],
                         total_inventory=request_body["total_inventory"])
-# committing changes to db
+        # committing changes to db
         db.session.add(new_video)
         db.session.commit()
-# return formatted response body
+        # return formatted response body
         return make_response({ "id": new_video.id,
                                         "title": new_video.title,
                                         "release_date": new_video.release_date,
@@ -40,8 +40,8 @@ def post_one_video():
 
 @videos_bp.route("", methods=["GET"])
 def get_all_videos():
-# querying db for all videos and ordering them by title, then storing that list of 
-# objects in local videos variable    
+    # querying db for all videos and ordering them by title, then storing that list of 
+    # objects in local videos variable    
     videos = Video.query.order_by(Video.title).all()
     videos_response = []
     # looping through eachvideo, converting to requested format (dict) and adding to
@@ -58,7 +58,7 @@ def get_all_videos():
 
 @videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE", "PATCH"])
 def CRUD_one_video(video_id):
-# this is a guard clause to make sure a video_id is an int, or can be converted to an int    
+    # this is a guard clause to make sure a video_id is an int, or can be converted to an int    
     try:
         int(video_id)
     except ValueError:
@@ -66,17 +66,17 @@ def CRUD_one_video(video_id):
     video = Video.query.get(video_id) #either get Video back or None, video here is an object
     if video is None:
         return make_response({"message": f"Video {video_id} was not found"}, 404)
-# returning the object's info in the desired data structure format    
+    # returning the object's info in the desired data structure format    
     if request.method == "GET":        
         return make_response({"id": video.id,
                         "title": video.title,
                         "release_date": video.release_date,
                         "total_inventory": video.total_inventory}, 200)
-# PUT will replace the entire record with an entire new record, all fields
+    # PUT will replace the entire record with an entire new record, all fields
     elif request.method == "PUT":
     # form data is a local variable to hold the body of the HTTP request
         form_data = request.get_json()
-# checking that form_data has all required fields
+    # checking that form_data has all required fields
         if "title" not in form_data or "release_date" not in form_data \
         or "total_inventory" not in form_data:
             return make_response({"details": "all fields must be present"}, 400)
@@ -93,8 +93,8 @@ def CRUD_one_video(video_id):
                         "title": video.title,
                         "release_date": video.release_date,
                         "total_inventory": video.total_inventory}, 200)
-# PATCH will change just one part of the record, not the whole record
-# not required but adding a patch for total_inventory on 11.9.21
+    # PATCH will change just one part of the record, not the whole record
+    # not required but adding a patch for total_inventory on 11.9.21
     elif request.method == "PATCH":
         form_data = request.get_json()
         if "total_inventory" in form_data:
