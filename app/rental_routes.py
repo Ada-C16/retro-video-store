@@ -37,8 +37,8 @@ def check_out():
     )
 
     db.session.add(new_rental)
-    db.session.commit()
     customer.videos_checked_out = len(customer.rentals)
+    db.session.commit()
     response_body = new_rental.rental_dict()
     return jsonify(response_body), 200
 
@@ -58,7 +58,11 @@ def check_in():
     customer_id = request_body["customer_id"]
     customer = Customer.query.get(customer_id)
 
-    if not (video and customer) or customer.videos_checked_out == 0:
+    if not (video and customer):
+        response_body = {"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}
+        return jsonify(response_body), 404
+
+    if customer.videos_checked_out == 0:
         response_body = {"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}
         return jsonify(response_body), 400
 
