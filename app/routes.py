@@ -78,7 +78,6 @@ def delete_customer(customer_id):
     if not customer:
         return {'message': f'Customer {customer_id} was not found'}, 404
     else:
-
         rental_ids = Rental.query.with_entities(Rental.rental_id).filter(Rental.customer_id == int(customer_id))
         for rental_id in rental_ids:
             db.session.delete(Rental.query.get(rental_id)) # look into backref cascade? to make the tables do this automatically
