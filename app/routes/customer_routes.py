@@ -1,6 +1,7 @@
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
+from app.routes.video_routes import validate_id
 from app.models.rental import Rental
 from flask import Blueprint, jsonify, make_response, request, abort
 
@@ -9,14 +10,8 @@ customers_bp = Blueprint("customers_bp", __name__, url_prefix = "/customers")
 
 
 # HELPER FUNCTIONS
-def validate_int(customer_id, param_type):
-    try:
-        number = int(customer_id)
-    except:
-        abort(make_response({"message": f"{param_type} needs to be an integer."}, 400))
-
 def get_customer_data_with_id(customer_id):
-    validate_int(customer_id, "id")
+    validate_id(customer_id, "id")
     customer = Customer.query.get(customer_id)
 
     if customer is None:

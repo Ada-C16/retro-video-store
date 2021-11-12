@@ -1,32 +1,34 @@
 from flask import Blueprint, request, make_response, abort, jsonify
 from app.models.rental import Rental
 from app.models.video import Video
+from app.routes.video_routes import validate_id, get_video_from_id
+from app.routes.customer_routes import get_customer_data_with_id
 from app.models.customer import Customer
 from app import db
 from datetime import datetime, timedelta
 
 #helper functions
-def validate_id(id, id_type):
-    try:
-        int(id)
-    except:
-        abort(make_response({"error": f"{id_type} must be an int"}, 400))
+# def validate_id(id, id_type):
+#     try:
+#         int(id)
+#     except:
+#         abort(make_response({"error": f"{id_type} must be an int"}, 400))
 
-def get_video_from_id(id):
-    validate_id(id, 'video id')
-    selected_video = Video.query.get(id)
-    if not selected_video:
-        abort(make_response({'message': f'Video {id} was not found'}, 404))
-    return selected_video
+# def get_video_from_id(id):
+#     validate_id(id, 'video id')
+#     selected_video = Video.query.get(id)
+#     if not selected_video:
+#         abort(make_response({'message': f'Video {id} was not found'}, 404))
+#     return selected_video
 
-def get_customer_data_with_id(customer_id):
-    validate_id(customer_id, "id")
-    customer = Customer.query.get(customer_id)
+# def get_customer_data_with_id(customer_id):
+#     validate_id(customer_id, "id")
+#     customer = Customer.query.get(customer_id)
 
-    if customer is None:
-        abort(make_response({"message": f"Customer {customer_id} was not found"}, 404))
+#     if customer is None:
+#         abort(make_response({"message": f"Customer {customer_id} was not found"}, 404))
 
-    return customer
+#     return customer
 
 # Blueprint
 rentals_bp = Blueprint('rentals', __name__, url_prefix='/rentals')
