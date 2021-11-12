@@ -360,21 +360,22 @@ def videos_checked_out_by_customer(customer_id):
 
 @video_bp.route("<video_id>/rentals", methods=["GET"])
 def get_all_videos_rented(video_id):
-
-    videos_rented=Video.renters
-    for video in videos_rented:
-        
-    request_data=request.get_json()
-    check_out_videos=[]
-    rentals_of_video=Rental.query.filter_by(video_id)
-    for video_id in rentals_of_video:
-        check_out_videos.append(rentals_of_video)
-    for one_video in check_out_videos:
-        return jsonify({
-            "due_date": one_video.due_date, 
-            "customers":[one_video.customer_id.put_request_dict() for one_video in one_video.customer_rentals]}), 200
-
-
-    return jsonify({"id": goal.goal_id, "title":goal.title, "tasks":[task.to_dict() for task in goal.tasks]}), 200
+    target_video_id=int(video_id)
+    video_rented = Video.query.get(target_video_id)
+    if not video_rented:
+        return make_response({"message": f"Video {video_id} was not found"}, 404)
+    videos=video_rented.rentals
+    customer_list=[]
+    for cust in videos:
+        customer_list.append({
+            "due_date": cust.due_date,
+            "name":cust.customer.name,
+            "phone": cust.customer.phone,
+            "postal_code": cust.customer.postal_code
+            })
+    return jsonify(customer_list), 200        
+    
+    
+  
 
     
