@@ -197,7 +197,7 @@ rentals_bp = Blueprint("rentals_bp", __name__, url_prefix="/rentals")
 @rentals_bp.route("/check-out", methods=["POST"])
 def check_out_one_rental():
     # request_body will be the user's input, converted to json. it will be a new record 
-    # for the db, with all fields (a dict)    
+    # for the db, with 2 fields (a dict)    
     request_body = request.get_json()
     # return 400 if video_id or customer_id is missing
     if "video_id" not in request_body or "customer_id" not in request_body:
