@@ -3,7 +3,7 @@ from app.models.rental import Rental
 from app.models.customer import Customer
 from app.models.video import Video
 from flask import Blueprint, request, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
@@ -13,17 +13,22 @@ rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 def check_out_video():
     request_body = request.get_json()
 
-    customer = Customer.query.get(request_body["customer_id"])
-    video = Video.query.get(request_body["video_id"])
+    try:
+        customer = Customer.query.get_or_404(request_body["customer_id"])
+        video = Video.query.get_or_404(request_body["video_id"])
+    except KeyError:
+        return jsonify(None), 400
 
-    # add video to customer's video list
-
+    if video.total_inventory - len(video.customers) == 0:
+        return {"message": "Could not perform checkout"}, 400
 
     new_rental = Rental(
         customer_id = customer.id,
         video_id = video.id,
-        due_date = datetime.datetime.now() + datetime.timedelta(days=7),
-        # videos_checked_out_count = len(customer.videos),
-        # videos_checked_out_count = len(video.customers),
-        available_inventory = video.total_inventory - len(customer.videos)
+        due_date = datetime.now() + timedelta(days=7)
     )
+
+    db.session.add(new_rental)
+    db.session.commit()
+
+    return jsonify(new_rental.to_dict())
