@@ -17,18 +17,23 @@ def rentals_checkout():
 
     if "customer_id" not in request_body or "video_id" not in request_body:
         return jsonify(), 400
-
+        
     customer = Customer.query.get(request_body["customer_id"])
     if customer is None:
         return jsonify(), 404
-
+    
+    #instance of a video
     video = Video.query.get(request_body["video_id"])
     if video is None:
         return jsonify(), 404
     
-    # # revisit later - Zandra's solution for test_checkout_video_no_inventory 
-    # if video.total_inventory == 0:
-    #     return jsonify({"message": "Could not perform checkout"}), 400
+    rentals = Rental.query.filter_by(video_id=video.video_id, checked_out = True).count()
+    
+    #accessing number of inventory
+    available_inventory = video.total_inventory - rentals
+
+    if available_inventory == 0:
+        return jsonify({"message": "Could not perform checkout"}), 400
 
     # Instantiate a new instance for rental
     new_rental = Rental(
@@ -38,16 +43,30 @@ def rentals_checkout():
     
     # add rental instance to database
     db.session.add(new_rental)
+
+    new_rental.checked_out = True
+    
     # commit to database
     db.session.commit()
+    
+    # iterate through all videos instances to find video with matching video id
+    # filter keyword is filtering all columns will filter_by is filtering for specific columns
+    # count()- tells how many rentals are currently checked out
+    #This is for video Table
+    rentals = Rental.query.filter_by(video_id=video.video_id, checked_out = True).count()
+    
+    #accessing number of inventory
+    available_inventory = video.total_inventory - rentals
+    
+    videos_check_out = Rental.query.filter_by(customer_id=customer.customer_id, checked_out = True).count()
     
     # return the response body and status code
     return jsonify({
         "video_id": new_rental.video_id,
         "customer_id": new_rental.customer_id,
-        "videos_checked_out_count": len(customer.videos),
-        "available_inventory": video.total_inventory - len(video.customers)
-    })
+        "videos_checked_out_count": videos_check_out,
+        "available_inventory": available_inventory
+    }), 200
 
 @rentals_bp.route("/check-in", methods=["POST"])
 def rentals_checkin():
@@ -66,29 +85,44 @@ def rentals_checkin():
     video = Video.query.get(request_body["video_id"])
     if video is None:
         return jsonify(), 404
-    
+    #*******information getting an incorrect response body
     # iterate through all rentals instances to find rental with matching customer and video ids
-    rentals = Rental.query.all()
-    checked_in = None
-    for rental in rentals:
-        if rental.customer_id == request_body["customer_id"] and rental.video_id == request_body["video_id"]:
-            checked_in = rental
+    rental = Rental.query.filter_by(customer_id=customer.customer_id, video_id=video.video_id, checked_out=True)
+    
+    # is None is 50% faster than  ==. "=="" is comparing values. "is" compares location in memory
+    if rental is None:
+        return jsonify({"message": "No outstanding rentals for customer 1 and video 1"}), 400
+
+    rental.checked_out = False
+
+    # rentals = Rental.query.all()
+    # checked_in = None
+    # for rental in rentals:
+    #     if rental.customer_id == request_body["customer_id"] and rental.video_id == request_body["video_id"]:
+    #         checked_in = rental
     
     # if there is no matching rental for the given customer and video ids, return 400
-    if checked_in is None:
-        return jsonify({"message": "No outstanding rentals for customer 1 and video 1"}), 400
+    # if checked_in is None:
+    #     return jsonify({"message": "No outstanding rentals for customer 1 and video 1"}), 400
     
     # delete rental that is being checked in
-    db.session.delete(checked_in)
+    # db.session.delete(checked_in)
     # commit to database
     db.session.commit()
 
+    #need to count this after database
+    rentals = Rental.query.filter_by(video_id=video.video_id, checked_out = True).count()
+    
+    #accessing number of inventory
+    available_inventory = video.total_inventory - rentals
     # return response body
+    videos_check_out = Rental.query.filter_by(customer_id=customer.customer_id, checked_out = True).count()
+    
     return jsonify({
-        "video_id": checked_in.video_id,
-        "customer_id": checked_in.customer_id,
-        "videos_checked_out_count": len(customer.videos),
-        "available_inventory": video.total_inventory - len(video.customers)
+        "video_id": video.video_id,
+        "customer_id": customer.customer_id,
+        "videos_checked_out_count": videos_check_out,
+        "available_inventory": available_inventory
     })
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
@@ -158,6 +192,3 @@ def video_read(video_id):
         })
     return jsonify(response_body)
     
-    # videos_list = []
-    # for video in self.videos:
-    #     videos_list(video.rental_id)
