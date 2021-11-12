@@ -10,7 +10,7 @@ customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 @customers_bp.route("", methods=["GET"])
 def get_customers():
     customers = Customer.query.all()
-    customers_response = [customer.to_json(customer) for customer in customers]
+    customers_response = [customer.to_json() for customer in customers]
     return jsonify(customers_response), 200
 
 @customers_bp.route("", methods=["POST"])
@@ -35,8 +35,7 @@ def get_customer(customer_id):
         customer = Customer.query.get(customer_id)
         if customer is None:
             return ({"message": f"Customer {customer_id} was not found"}, 404)
-        # 
-        response_body = customer.to_json(customer)
+        response_body = customer.to_json()
         return (response_body, 200)
     except:
         return ("Customer id must be an integer", 400)
@@ -74,9 +73,6 @@ def put_customer(customer_id):
         customer.name = request_body["name"]
         customer.postal_code = request_body["postal_code"]
         customer.phone = request_body["phone"]
-        db.session.commit()
-        customer = Customer.query.get(customer_id)
-        return customer.to_json(customer), 200
     except:
         if "name" not in request_body:
             return {"details": "Request body must include name."}, 400 
@@ -84,6 +80,9 @@ def put_customer(customer_id):
             return {"details": "Request body must include postal_code."}, 400
         elif "phone" not in request_body:
             return {"details": "Request body must include phone."}, 400 
+    db.session.commit()
+    customer = Customer.query.get(customer_id)
+    return customer.to_json(), 200
 
 @customers_bp.route("/<customer_id>", methods=["DELETE"])
 def delete_customer(customer_id):
