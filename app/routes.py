@@ -196,32 +196,56 @@ rentals_bp = Blueprint("rentals_bp", __name__, url_prefix="/rentals")
 
 @rentals_bp.route("/check-out", methods=["POST"])
 def check_out_one_rental():
-# request_body will be the user's input, converted to json. it will be a new record 
-# for the db, with all fields (a dict)    
+    # request_body will be the user's input, converted to json. it will be a new record 
+    # for the db, with all fields (a dict)    
     request_body = request.get_json()
+    # return 400 if video_id or customer_id is missing
+    if "video_id" not in request_body or "customer_id" not in request_body:
+            return {"details": "Invalid data"}, 400
+
     timestamp = datetime.now()
     due_date = timestamp + timedelta(weeks=1)
-# getting the specific video object to access its attributes
+    # getting the specific video object to access its attributes
     video = Video.query.get(request_body["video_id"])
-    if video:
+
+    if video == None:
+        return jsonify(""), 404
+
+    # create available inventory count before rented_vids updates it
+    # if no movies are available, return 400
+    available_vids = video.available_inventory() 
+    if available_vids == 0:
+        return jsonify({"message": "Could not perform checkout"}), 400
+
+    #checking for valid customer id
+    customer = Customer.query.get(request_body["customer_id"])
+
+    # checks for validity of video id and customer id
+    if video and customer:
     
-# customer_id and video_id both come fr request_body, due_date is calculated with timedelta  
-# checked_in starts as False bc the first time this record is created is when vid is checked out
+        # customer_id and video_id both come fr request_body, due_date is calculated with timedelta  
+        # checked_in starts as False bc the first time this record is created is when vid is checked out
         new_rental = Rental(customer_id = request_body["customer_id"], 
                             video_id = request_body["video_id"],
                             checked_in = False,
                             due_date = due_date)
+
         db.session.add(new_rental)
         db.session.commit()
-    # begin checked_out calculations after db commit to include most recent rental    
-    #rented_vids is list of objects matching request_body["video_id"] AND not marked as checked_in
+        # begin checked_out calculations after db commit to include most recent rental    
+        #rented_vids is list of objects matching request_body["video_id"] AND not marked as checked_in
         rented_vids = Rental.query.filter_by(video_id = request_body["video_id"], checked_in= False).all()
-        #videos_checked_out_count =video.total_inventory - len(rented_vids)
         available_inventory = video.total_inventory - len(rented_vids)
+
         return make_response({"customer_id": new_rental.customer_id,
                                             "video_id": new_rental.video_id,
                                             "due_date": new_rental.due_date,
                                             "videos_checked_out_count": len(rented_vids),
                                             "available_inventory": available_inventory}, 200)
-    else:
-        abort(404)
+
+    else: 
+        return jsonify(""), 404
+                                
+    
+
+

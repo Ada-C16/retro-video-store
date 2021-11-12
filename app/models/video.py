@@ -1,4 +1,5 @@
 from app import db
+from app.models.rental import Rental
 
 class Video(db.Model):
 # building the database table with columns, data type, column names
@@ -8,4 +9,12 @@ class Video(db.Model):
     total_inventory = db.Column(db.Integer)
     available_inventory = db.Column(db.Integer, nullable = True)
     
+
+    def video_checked_out_count(self):
+        rental_query = Rental.query.filter_by(video_id=self.id)
+        return rental_query.count()
+    
+    def available_inventory(self):
+        available_inv = self.total_inventory - self.video_checked_out_count()
+        return available_inv
 
