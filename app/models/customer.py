@@ -1,4 +1,5 @@
 from flask import current_app
+from sqlalchemy.orm import backref
 from app import db
 
 class Customer(db.Model):

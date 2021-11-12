@@ -1,4 +1,5 @@
 from flask import current_app
+from sqlalchemy.orm import backref
 from app import db
 from marshmallow import Schema, fields
 
@@ -8,7 +9,7 @@ class Video(db.Model):
     release_date=db.Column(db.DateTime)
     total_inventory=db.Column(db.Integer)
 
-    renters=db.relationship("Customer", secondary="rental", backref="videos")
+    renters=db.relationship("Customer", secondary="rental", backref="video")
     rentals=db.relationship("Rental", backref="video")
 
     def to_dict(self):

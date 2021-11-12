@@ -332,3 +332,25 @@ def videos_checked_out_by_customer(customer_id):
         )
 
     return jsonify(videos_checked_out), 200
+
+@video_bp.route("<video_id>/rentals", methods=["GET"])
+def get_all_videos_rented(video_id):
+    target_video_id=int(video_id)
+    video_rented = Video.query.get(target_video_id)
+    if not video_rented:
+        return make_response({"message": f"Video {video_id} was not found"}, 404)
+    videos=video_rented.rentals
+    customer_list=[]
+    for cust in videos:
+        customer_list.append({
+            "due_date": cust.due_date,
+            "name":cust.customer.name,
+            "phone": cust.customer.phone,
+            "postal_code": cust.customer.postal_code
+            })
+    return jsonify(customer_list), 200        
+    
+    
+  
+
+    
