@@ -48,18 +48,22 @@ def db_delete(instance):
     db.session.commit()
     
 def handle_query_params(query_sort, query_page, query_limit, class_type, class_attribute):
-    """Defined helper function build and execute the query by chaining the appropriate commands"""
+    """Defined helper function to build and execute the query by chaining the appropriate commands"""
     list = class_type.query
+
     if query_sort == "desc":
         list = list.order_by(class_attribute.desc())
     elif query_sort == "asc":
         list = list.order_by(class_attribute)
+
     if query_limit:
         list = list.limit(query_limit)
+
     if query_page:
         list = list.offset(int(query_limit)*int(query_page))
     else:
         list = list.all()
+
     return list
 
 #Videos Routes
