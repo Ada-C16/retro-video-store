@@ -1,5 +1,5 @@
 from app import db
-from flask import Blueprint, jsonify, request, abort, make_response
+from flask import Blueprint, jsonify, request, make_response
 from app.models.video import Video
 from app.models.rental import Rental
 from app.models.customer import Customer
@@ -39,6 +39,7 @@ def get_all_videos():
         video_list =  [video.to_dict() for video in videos]
         return make_response(jsonify(video_list), 200)
 
+    # Former route without query param handling
     # videos = Video.query.all()
     # video_list =  [video.to_dict() for video in videos]
     # return make_response(jsonify(video_list), 200)
