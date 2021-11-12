@@ -30,6 +30,19 @@ def validate_customer_id(id):
         abort(400, {"message": f"Customer {id} was not found"})
     return Customer.query.get_or_404(id)
 
+# def validate_rental(request_body):
+#     if "video_id" not in request_body or "customer_id" not in request_body:
+#         return make_response(jsonify({"details" : "Request body must include video_id and customer_id."}), 400)
+#     validate_video_id(request_body["video_id"])
+#     validate_customer_id(request_body["customer_id"])
+#     customer = Customer.query.get(request_body["customer_id"])
+#     video = Video.query.get(request_body["video_id"])
+#     due_date = Rental.generate_due_date()
+    
+#     response_objects = [customer,video,due_date]
+#     return jsonify(response_objects)
+####Possible helper function - TypeError: 'Response' object is not subscriptable
+
 #----------- CREATE ---------------------
 @video_bp.route("", methods=["POST"])
 def create_video():
@@ -77,6 +90,7 @@ def create_customer():
 @rental_bp.route("/check-out",methods=["POST"])
 def new_rental():
     request_body = request.get_json()
+
     if "video_id" not in request_body or "customer_id" not in request_body:
         return make_response(jsonify({"details" : "Request body must include video_id and customer_id."}), 400)
 
@@ -87,10 +101,12 @@ def new_rental():
     video = Video.query.get(request_body["video_id"])
     due_date = Rental.generate_due_date()
 
+    #rental_objects = validate_rental(request_body)
+
     new_rental = Rental(
-        customer=customer,
+        customer= customer,
         video= video,
-        due_date = due_date,
+        due_date= due_date,
     )
     if video.remaining_videos() < 0:
         return make_response(jsonify({"message" : "Could not perform checkout"}), 400)
@@ -99,6 +115,32 @@ def new_rental():
     db.session.commit()
 
     return new_rental.to_dict()
+
+@rental_bp.route("/check-in",methods=["POST"])
+def rental_check_in():
+    request_body = request.get_json()
+
+    if "video_id" not in request_body or "customer_id" not in request_body:
+        return make_response(jsonify({"details" : "Request body must include video_id and customer_id."}), 400)
+
+    validate_video_id(request_body["video_id"])
+    validate_customer_id(request_body["customer_id"])
+
+    customer = Customer.query.get(request_body["customer_id"])
+    video = Video.query.get(request_body["video_id"])
+    due_date = Rental.generate_due_date()
+    
+    #rental = Rental.query.get(Rental).filter(Rental.video_id,Rental.customer_id)
+    rental = Rental.query.filter(video_id = Rental.video.id, customer_id = Rental.customer.id)
+
+    # query = meta.Session.query(User).filter(
+    # User.firstname.like(search_var1),
+    # User.lastname.like(search_var2)
+    # )
+    db.session.delete(rental)
+    db.session.commit
+
+    return make_response(f"Message: Video {video.id} succesfully deleted",200)
 
 #----------- GET ---------------------
 @video_bp.route("", methods=["GET"])
