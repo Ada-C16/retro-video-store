@@ -86,8 +86,7 @@ def checkout_rental():
 
     video = Video.get_by_id(req["video_id"])
 
-    checked_out_videos = len(Rental.query.filter(
-        Rental.video_id == video.id).all())
+    checked_out_videos = len(video.get_rentals())
 
     available_videos = video.total_inventory - checked_out_videos
 
@@ -130,8 +129,7 @@ def checkin_rental():
     db.session.delete(rental)
     db.session.commit()
 
-    checked_out_videos = len(Rental.query.filter(
-        Rental.video_id == video.id).all())
+    checked_out_videos = len(video.get_rentals())
 
     available_videos = video.total_inventory - checked_out_videos
     return jsonify({
@@ -140,37 +138,6 @@ def checkin_rental():
         "videos_checked_out_count": checked_out_videos,
         "available_inventory": available_videos
     }), 200
-
-
-# @customer_bp.route("/<id>/rentals", methods=["GET"])
-# def read_rentals_by_customer(id):
-#     customer = Customer.get_by_id(id)
-#     rentals = []
-#     for rental in customer.videos:
-#         rental_dict = {
-#             "release_date": rental.video.release_date,
-#             "title": rental.video.title,
-#             "due_date": rental.due_date
-#         }
-#         rentals.append(rental_dict)
-
-#     return jsonify(rentals), 200
-
-
-# @video_bp.route("/<id>/rentals", methods=["GET"])
-# def read_rentals_by_video(id):
-#     video = Video.get_by_id(id)
-#     rentals = []
-#     for rental in video.customers:
-#         rental_dict = {
-#             "due_date": rental.due_date,
-#             "name": rental.customer.name,
-#             "phone": rental.customer.phone,
-#             "postal_code": rental.customer.postal_code
-#         }
-#         rentals.append(rental_dict)
-
-#     return jsonify(rentals), 200
 
 
 @video_bp.route("/<id>/rentals", methods=["GET"])
