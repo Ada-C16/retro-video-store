@@ -45,6 +45,7 @@ def check_out():
 
 @rentals_bp.route("/check-in", methods=["POST"])
 def check_in():
+    # TODO: make a helper function(s) to make this check and query. Repeating logic from checkout endpoint. 
     request_body = request.get_json()
     if "customer_id" not in request_body:
         response_body = {"details": "Request body must include customer_id."}
@@ -58,6 +59,7 @@ def check_in():
     customer_id = request_body["customer_id"]
     customer = Customer.query.get(customer_id)
 
+    # Separate checks beacuse they return different status codes. 
     if not (video and customer):
         response_body = {"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}
         return jsonify(response_body), 404
@@ -66,8 +68,11 @@ def check_in():
         response_body = {"message": f"No outstanding rentals for customer {customer_id} and video {video_id}"}
         return jsonify(response_body), 400
 
+    # finding rental associated with specfic the custoemr_id and video_id and deleting their rental record.
     Rental.query.filter_by(customer_id=customer_id, video_id=video_id).delete()
 
+    # creating checkin dictionary for the response body of a successful request.
+    # Updates the videos_checked_out_count and available inventory. 
     customer.videos_checked_out = len(customer.rentals)
     response_body = Rental.checkin_dict(customer, video)
     return jsonify(response_body), 200
