@@ -22,4 +22,4 @@ class Rental(db.Model):
 # sign in end point, spotify - to return data to continue
 # what are things user would want to do when using your app***********
 # HERE THINGS YOU CAN DO WITH MY APP
-# waze can build into their application and call into the app 
+# waze can build into their application and call into the app
