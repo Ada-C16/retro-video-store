@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 from app import db 
 from app.models.customer import Customer 
+from app.models.rental import Rental
 from datetime import datetime
 from .helpers import id_is_valid, request_has_all_required_categories
 
@@ -65,3 +66,22 @@ def delete_customer(customer_id):
     db.session.commit()
 
     return jsonify({ "id": int(customer_id) }), 200 
+
+@customers_bp.route("<customer_id>/rentals", methods=["GET"])
+def customer_rentals(customer_id):
+    _, error_msg = id_is_valid(customer_id, "customer")
+    if error_msg is not None:
+        return error_msg  
+        
+    all_rentals = Rental.query.all()
+
+    rentals = []
+    for rental in all_rentals:
+        if rental.customer_id == int(customer_id):
+            rentals.append(rental)
+
+    video_details_response = []
+    for rental_object in rentals:
+        video_details_response.append(rental_object.video_details())
+
+    return jsonify(video_details_response), 200
