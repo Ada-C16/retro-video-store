@@ -279,6 +279,8 @@ def check_in_one_rental():
                         "video_id": rental_query.video_id,
                         "videos_checked_out_count": num_customer_videos,
                         "available_inventory": available_inventory}), 200
+    else:
+        return jsonify(""), 404
 
                                            
  
