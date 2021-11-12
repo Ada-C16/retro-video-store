@@ -11,5 +11,5 @@ class Video(db.Model):
         return {
             "title": self.title,
             "release_date": self.release_date,
-            "inventory": self.inventory
+            "total_inventory": self.total_inventory
         }

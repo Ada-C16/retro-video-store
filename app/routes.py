@@ -2,7 +2,7 @@ import os
 import requests
 from sqlalchemy.orm import query
 from app import db
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from app.models.rental import Rental
 from app.models.video import Video
@@ -212,7 +212,29 @@ def get_videos_for_rental(video_id):
 
 
 @rentals_bp.route("/check-out", methods = ["POST"])
+def get_rental_check_out():
+    request_body = request.get_json()
+
+    video = Video.query.get_or_404(request_body["video_id"])
+    customer = Customer.query.get_or_404(request_body["customer_id"])
+    # rental = Rental.query.get_or_404(request_body["rental_id"])
+
+    available_inventory = video.total_inventory - video.rentals
+
+    return jsonify({
+        "customer_id": customer.id,
+        "video_id": video.id,
+        "due_date": datetime.now() + timedelta(day=7),
+        "videos_checked_out_count": video.total_inventory,
+        "available_inventory": available_inventory
+})
+
+
 
 @rentals_bp.route("/check-in", methods = ["POST"])
-def get_rental(rental_id):
-    pass
+def get_rental_check_in(rental_id):
+    request_body = request.get_json()
+
+    video = Video.query.get_or_404(request_body["video_id"])
+    customer = Customer.query.get_or_404(request_body["customer_id"])
+    # rental = Rental.query.get_or_404(request_body["rental_id"])
