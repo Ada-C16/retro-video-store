@@ -256,29 +256,40 @@ def check_in_one_rental():
     # getting the specific video object to access its attributes
     video = Video.query.get(request_body["video_id"])
 
+    # if there aren't any videos that match the query, return 404
     if video == None:
         return jsonify(""), 404
 
-    #
+    #gets the customer object to access its attributes
     customer = Customer.query.get(request_body["customer_id"])
 
     # checks for validity of video id and customer id
     if video and customer:
         # rental query is one specific object that matches the given parameters 'video_id' and 'customer_id'
+        # in order to access the object from the query and perform pythonic methods on it, etc., you need to add the .first() function 
         rental_query = Rental.query.filter_by(video_id=request_body["video_id"], customer_id=request_body["customer_id"],checked_in= False).first()
+        # if there isn't a rental matching the given parameters, return 400
+        if rental_query == None:
+            return jsonify({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}), 400
 
+        # changed "checked_in" to True and "due_date" to None/null
         rental_query.checked_in = True
         rental_query.due_date = None
 
         db.session.commit()
 
+        # calls helper function in Customer to access the num of videos the customers has checked out
         num_customer_videos = customer.customers_checked_out_videos()
+        # calls helper function in Video to get the inventory of the specific movie
         available_inventory = video.available_inventory()
 
         return jsonify({"customer_id": rental_query.customer_id,
                         "video_id": rental_query.video_id,
                         "videos_checked_out_count": num_customer_videos,
                         "available_inventory": available_inventory}), 200
+    else:
+        # if video or customer don't exist, return 404
+        return jsonify(""), 404
 
                                            
  
