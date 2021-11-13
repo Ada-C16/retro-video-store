@@ -63,6 +63,7 @@ def handle_video_by_id(video_id):
         return_message = {"message": f"Video {video_id} was not found"}
         return make_response(return_message, 404)
 
+
     if request.method == "PUT":
         form_data = request.get_json()
         try:
@@ -84,6 +85,7 @@ def handle_video_by_id(video_id):
             "total_inventory": video.total_inventory
         }
         return make_response(response_value, 200)
+
 
     if request.method == "GET":
         response_body = {"id": video.id,

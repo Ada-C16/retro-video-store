@@ -6,5 +6,6 @@ class Customer(db.Model):
     registered_at = db.Column(db.DateTime)
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
-    rentals = db.relationship("Rental", backref="customers")
-    video = db.relationship("Video", secondary = "rental", backref="customers")
+    
+    rental = db.relationship("Rental",passive_deletes=True, backref="customers")
+    video = db.relationship("Video", passive_deletes=True, secondary = "rental", backref="customers")

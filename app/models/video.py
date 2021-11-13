@@ -6,5 +6,6 @@ class Video(db.Model):
     title = db.Column(db.String)
     release_date = db.Column(db.DateTime)
     total_inventory = db.Column(db.Integer)
-    
-    customer = db.relationship("Customer", secondary = "rental", backref="videos")
+
+    customer = db.relationship("Customer", passive_deletes=True, secondary = "rental", backref="videos")
+    rental = db.relationship("Rental",passive_deletes=True, backref="videos")
