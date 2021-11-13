@@ -12,6 +12,7 @@ class Rental(db.Model):
     video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=False)
     video = db.relationship('Video', backref=db.backref('rentals', lazy=True))
     due_date = db.Column(db.DateTime, nullable=False, default=week_later)
+    checked_out = db.Column(db.Boolean)
 
 # Because the remaining two columns are dynamic, it would be easier to maintain in routes.py
 # We could add them as methods in the video model.

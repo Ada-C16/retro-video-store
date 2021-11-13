@@ -26,7 +26,7 @@ class Video(db.Model):
         we have the information about the inventory and with the back ref
         we have access to the rental information.
         """ 
-        rental_query = Rental.query.filter_by(video_id=self.id) 
+        rental_query = Rental.query.filter(Rental.video_id == self.id, Rental.checked_out == True) 
         return rental_query.count() # Here we created a query that we were able to take a count of.
 
 # Don't forget that we only want to count active rentals. 
