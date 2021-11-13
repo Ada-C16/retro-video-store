@@ -9,3 +9,10 @@ class Rental(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.customer_id'), nullable=False)
     video_id = db.Column(db.Integer, db.ForeignKey('videos.video_id'), nullable=False)
     
+    def to_dict(self):
+        return {
+            'rental_id': self.rental_id,
+            'due_date': self.due_date,
+            'customer_id': self.customer_id,
+            'video_id': self.video_id
+        }

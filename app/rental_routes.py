@@ -7,7 +7,7 @@ from app.models.video import Video
 
 rentals_bp = Blueprint("rentals",__name__, url_prefix="/rentals")
 
-@rentals_bp.route("/<register>",methods=["GET","POST"])
+@rentals_bp.route("/<register>",methods=["POST"])
 def handle_rental(register):
     request_body = request.get_json()
     cust_id, vid_id = validates_request_body(request_body)
@@ -39,6 +39,30 @@ def handle_rental(register):
             
         db.session.commit()
         return make_response(jsonify(create_checkout_dict(video, customer)), 200) 
+
+@rentals_bp.route("", methods=["GET"])
+def get_all_rentals():
+    rental_list = []
+    rentals = db.session.query(Rental).all()
+    
+    for rental in rentals:
+        rental_list.append(rental.to_dict())
+
+    return make_response(jsonify(rental_list)), 200
+
+@rentals_bp.route("/<id>", methods=["GET"])
+def get_rentals_by_id(id):
+    if request.args.get("sort") == "customer":
+        rentals = db.session.query(Rental).filter(Rental.customer_id == id).all()
+    elif request.args.get("sort") == "video":
+        rentals = db.session.query(Rental).filter(Rental.video_id == id).all()
+    else:
+        return make_response({"message": "Please specify a sort parameter"}, 400)
+
+    rental_list = []
+    for rental in rentals:
+        rental_list.append(rental.to_dict())
+    return make_response(jsonify(rental_list)), 200
 
 def create_checkout_dict(video, customer):
     result = {"video_id" : video.video_id,
