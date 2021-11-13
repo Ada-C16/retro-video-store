@@ -41,13 +41,13 @@ def customer(customer_id):
 
 @customers_bp.route("/<customer_id>", methods=["PUT"])
 def update_customer(customer_id):
-    customer, error_msg = id_is_valid(customer_id, "customer")
-    if error_msg is not None:
-        return error_msg 
-
     request_data, error_msg = request_has_all_required_categories("customer")
     if error_msg is not None:
         return error_msg
+        
+    customer, error_msg = id_is_valid(customer_id, "customer")
+    if error_msg is not None:
+        return error_msg 
 
     customer.name = request_data["name"]
     customer.phone = request_data["phone"]

@@ -40,3 +40,25 @@ def request_has_all_required_categories(object_type):
             return "invalid", (
                 {"details" : f"Request body must include {category}."}, 400)
     return request_data, None 
+
+def check_rental_errors():
+    '''
+    returns three values: a null value, a video_id and a customer_id 
+    (if no error is present), or an error message and two null values 
+    (if error is present)
+    '''
+    request_data, error_msg = request_has_all_required_categories("rental")
+    if error_msg is not None:
+        return error_msg, None, None   
+
+    video_id = request_data["video_id"]
+    _, error_msg = id_is_valid(str(video_id), "video")
+    if error_msg is not None:
+        return error_msg, None, None   
+    
+    customer_id = request_data["customer_id"]
+    _, error_msg = id_is_valid(str(customer_id), "customer")
+    if error_msg is not None:
+        return error_msg, None, None  
+    
+    return None, video_id, customer_id 
