@@ -124,7 +124,53 @@ def handle_customers():
                                                 }, 201)
 
 
-        
+@customer_bp.route('/<customer_id>', methods=['GET','PUT', 'DELETE'])
+def handle_one_customer(customer_id):       
+
+    try:
+        id = int(customer_id)
+    except ValueError:
+        return jsonify({"details": "Invalid data"}), 400
+
+    customer = Customer.query.get(customer_id)
+
+    if customer is None:
+        return jsonify({"message": f"Customer {customer_id} was not found"}), 404
+    
+    one_customer = {"name": customer.name,
+                    "postal_code": customer.postal_code,
+                    "phone": customer.phone}
+
+    if request.method == 'GET': 
+        return one_customer   
+    elif request.method == 'PUT':
+        updates = request.get_json()
+        if 'name' not in updates.keys() or 'postal_code' not in updates.keys() \
+                                         or 'phone' not in updates.keys():
+            return make_response({"details": "Invalid data"}, 400)
+        else:
+            customer.name = updates['name']
+            customer.postal_code = updates['postal_code']
+            customer.phone = updates['phone']
+
+            db.session.commit()
+            return make_response({"id": customer.id,
+                                    "name": customer.name,
+                                    "postal_code": customer.postal_code,
+                                    "phone":customer.phone}) 
+    elif request.method == 'DELETE':
+        db.session.delete(customer)
+        db.session.commit()
+
+        return make_response({"id": customer.id})
+                    
+                    
+                    
+                    
+
+
+
+    
 
 
 
