@@ -318,17 +318,17 @@ def update_rentals():
     # rental_response = []
     if not rentals.first():
         return make_response({"message": "No outstanding rentals for customer 1 and video 1"}, 400)
-    for rental in rentals:
+    # for rental in rentals:
     
     #     rental_response.append({"customer_id":rental.customer_id, "video_id": rental.video_id})
-        db.session.delete(rental)
-        db.session.commit()
+    db.session.delete(rentals.first())
+    db.session.commit()
         
     videos_in_rental = Rental.query.filter_by(customer_id=request_body["customer_id"])    
     videos_checked_out_count = videos_in_rental.count()
     # rental_response[0]["videos_checked_out_count"] = videos_checked_out_count
 
-    video = Video.query.get(request_body["video_id"])
+    # video = Video.query.get(request_body["video_id"])
     video_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
 
 
@@ -348,7 +348,18 @@ def update_rentals():
 
 
 
+# @customers_bp.route("/<customer_id>/rentals", method=["GET"])
+# def list_videos_by_customer(customer_id):
+#     customer = Customer.query.get(customer_id)
+#     if not customer:
+#         return make_response({"message": "Customer not found"}, 404)
 
+#     videos = Rental.query.with_entities(Rental.video_id)
+
+
+
+
+    
 
 
 
