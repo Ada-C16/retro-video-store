@@ -21,7 +21,7 @@ class Rental(db.Model):
     def get_customer(self):
         customer = Customer.query.get(self.customer_id)
         return {
-            "due_date": self.date_due,
+            "due_date": self.due_date,
             "name": customer.name,
             "phone":customer.phone,
             "postal_code": customer.postal_code
@@ -30,7 +30,7 @@ class Rental(db.Model):
     def get_video(self):
         video = Video.query.get(self.video_id)
         return {
-            "due_date": self.date_due,
+            "due_date": self.due_date,
             "title": video.title,
             "release_date": video.release_date
         }
