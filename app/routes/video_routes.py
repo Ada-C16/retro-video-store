@@ -7,33 +7,55 @@ from flask import Blueprint, jsonify, make_response, request, abort
 
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
+# @rentals_bp.route("/check-out", methods=["POST"])
+# def check_out_video():
+#     request_data, error_msg = request_has_all_required_categories("rental")
+#     if error_msg is not None:
+#         return error_msg 
+
+#     video_id = request_data["video_id"]
+#     _, error_msg = id_is_valid(str(video_id), "video") # invalid, error message 
+#     if error_msg is not None: 
+#         return error_msg 
+    
+#     customer_id = request_data["customer_id"]
+#     _, error_msg = id_is_valid(str(customer_id), "customer")
+#     if error_msg is not None:
+#         return error_msg 
+    
+#     # guard against trying to rent out something with no inventory 
+#     if Rental().get_available_inventory(video_id) <= 0:
+#         return { "message" : "Could not perform checkout" }, 400
+
+#     new_rental = Rental(video_id=video_id, customer_id=customer_id)
+#     db.session.add(new_rental)
+#     db.session.commit()
+
+#     return new_rental.to_json(), 200
+
+
 
 #issue with abort
 
-def check_for_input(request_body, list_of_attributes):
-   
+def check_for_valid_input(request_body, list_of_attributes):
     for attribute in list_of_attributes:
         if attribute not in request_body:
-            error_message = jsonify({"details": f"Request body must include {attribute}."})
-
-            # return error_message, 400
-            return abort(400, error_message)
+            abort(make_response({"details": f"Request body must include {attribute}."}, 400))
+    return None
             
 
 def validate_video_input(request_body):
     for key, value in request_body.items():
-
         if key == "title":
             if type(value) != str:
-                return jsonify({"Invalid Input": f"The {key} value must be a string."}), 400
+                abort(make_response({"Invalid Input": f"The {key} value must be a string."}, 400))
         elif key == "total_inventory": 
             if type(value) != int:
-                return jsonify({"Invalid Input": f"The {key} value must be an integer."}), 400
+                abort(make_response({"Invalid Input": f"The {key} value must be an integer."}, 400))
         elif key == "release_date":
             if type(value) != str:
-                return jsonify({"Invalid Input": f"The {key} value must be a string."}), 400
-        
-        #return abort???????
+                abort(make_response({"Invalid Input": f"The {key} value must be a string."}, 400))
+    return None
 
 
 @videos_bp.route("", methods=["GET", "POST"])
@@ -70,9 +92,8 @@ def handle_videos():
 
         #         return error_message, 400
 
-        check_for_input(request_body,list_of_attributes)
+        check_for_valid_input(request_body,list_of_attributes)
         validate_video_input(request_body)
-
         # if test != None:
         #    abort() 
 
@@ -124,7 +145,7 @@ def handle_video(video_id):
 
         list_of_attributes = ["title", "total_inventory", "release_date"]
 
-        check_for_input(request_body, list_of_attributes)
+        check_for_valid_input(request_body, list_of_attributes)
         validate_video_input(request_body)
 
         # if "title" not in request_body:

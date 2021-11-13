@@ -2,20 +2,17 @@ from app import db
 from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
-from flask import Blueprint, jsonify, request, abort
+from flask import Blueprint, jsonify, request, abort, make_response
 
-from app.routes.video_routes import check_for_input
+from app.routes.video_routes import check_for_valid_input
 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
-
-def validate_input(request_body):
-
+def validate_customer_input(request_body):
     for key, value in request_body.items():
         if type(value) is not str:
-            error_message = jsonify({"Invalid Input": f"The {key} value must be a string."})
-
-            return abort(400, error_message)
+            abort(make_response({"Invalid Input": f"The {key} value must be a string."}, 400))
+    return None
 
 @customers_bp.route("", methods=["GET"])
 def get_customers():
@@ -54,7 +51,6 @@ def get_customer_rentals(customer_id):
     if customer is None:
         return jsonify({'message': f'Customer {customer_id} was not found'}), 404
 
-
     rentals = Rental.query.filter_by(customer_id=customer_id, checked_in=False)
     
     response_body = []
@@ -78,16 +74,9 @@ def post_new_customer():
     list_of_attributes = ["name", "postal_code", "phone"]
 
 
-    check_for_input(request_body, list_of_attributes)
+    check_for_valid_input(request_body, list_of_attributes)
+    validate_customer_input(request_body)
 
-    validate_input(request_body)
-
-    # if "name" not in request_body:
-    #     return jsonify({"details": "Request body must include name."}), 400
-    # elif "postal_code" not in request_body:
-    #     return jsonify({"details": "Request body must include postal_code."}), 400
-    # elif "phone" not in request_body:
-    #     return jsonify({"details": "Request body must include phone."}), 400
 
     new_customer = Customer(name=request_body["name"],
     postal_code=request_body["postal_code"],
@@ -109,20 +98,12 @@ def update_customer(customer_id):
         return jsonify({'message': f'Customer {customer_id} was not found'}), 404
 
     request_body = request.get_json()
-    
 
-    # if "name" not in request_body:
-    #     return jsonify({"details": "Request body must include name."}), 400
-    # elif "postal_code" not in request_body:
-    #     return jsonify({"details": "Request body must include postal_code."}), 400
-    # elif "phone" not in request_body:
-    #     return jsonify({"details": "Request body must include phone."}), 400
-    
     list_of_attributes = ["name", "postal_code", "phone"]
     
-    check_for_input(request_body, list_of_attributes)
+    check_for_valid_input(request_body, list_of_attributes)
 
-    validate_input(request_body)
+    validate_customer_input(request_body)
 
     customer.name = request_body["name"]
     customer.postal_code = request_body["postal_code"]

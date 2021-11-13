@@ -4,7 +4,7 @@ from app.models.video import Video
 from app.models.rental import Rental
 from flask import Blueprint, jsonify, request, abort
 from datetime import datetime, timedelta
-from app.routes.video_routes import check_for_input
+from app.routes.video_routes import check_for_valid_input
 
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
@@ -23,17 +23,9 @@ def rental_check_out():
 
     list_of_attributes = ["customer_id", "video_id"]
 
-    check_for_input(request_body, list_of_attributes)
+    check_for_valid_input(request_body, list_of_attributes)
 
     validate_input(request_body)
-
-    #CHECK FOR VALID INPUT TYPE HERE
-    #need to ensure that each data type is correct
-
-    # if "customer_id" not in request_body:
-    #     return jsonify({"details": "Request body must include customer_id."}), 400
-    # elif "video_id" not in request_body:
-    #     return jsonify({"details": "Request body must include video_id."}), 400
 
     customer_id = request_body["customer_id"]
     video_id = request_body["video_id"]
@@ -51,18 +43,12 @@ def rental_check_out():
         return jsonify({ 
                 "message": "Could not perform checkout"
                 }), 400
-    #name variables for clarity later in code
-    
-    #check to make sure customer and video exist
-    
 
     new_rental = Rental(customer_id=customer.id,\
     video_id=video.id, due_date=(datetime.now() + timedelta(12)))
 
     db.session.add(new_rental)
     db.session.commit()
-
-    #removed helper function bc you can sort by multiple variables, no need for looping
     
     num_videos_checked_out =  Rental.query.filter_by(video_id=video.id, checked_in=False).count() #.count() returns length
     available_inventory = video.total_inventory - num_videos_checked_out
@@ -78,28 +64,14 @@ def rental_check_out():
         }
     return response_body, 200
 
-
 @rentals_bp.route("/check-in", methods=["POST"])
 def rental_check_in():
     
     request_body = request.get_json()
 
-    #isdigit() evaluates to True if string is actually numbers, so this line checks to make sure 
-    #both ids are actually numbers and if not it returns 400
-
-    # if request_body["customer_id"].isdigit() and request_body["customer_id"].isdigit():
-    #     pass
-    # else:
-    #     return jsonify(None), 400
-
-    # if "customer_id" not in request_body:
-    #     return jsonify({"details": "Request body must include customer_id."}), 400
-    # elif "video_id" not in request_body:
-    #     return jsonify({"details": "Request body must include video_id."}), 400
-
     list_of_attributes = ["customer_id", "video_id"]
 
-    check_for_input(request_body, list_of_attributes)
+    check_for_valid_input(request_body, list_of_attributes)
 
     validate_input(request_body)
 
@@ -109,7 +81,6 @@ def rental_check_in():
     video = Video.query.get(video_id)
     customer = Customer.query.get(customer_id)
 
-    
     if video is None or customer is None:
         return jsonify(None), 404
 
@@ -122,7 +93,6 @@ def rental_check_in():
     rental.checked_in = True
 
     db.session.commit()
-
     
     num_videos_checked_out =  Rental.query.filter_by(video_id=video.id, checked_in=False).count() 
     available_inventory = video.total_inventory - num_videos_checked_out
