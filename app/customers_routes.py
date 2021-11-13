@@ -133,3 +133,4 @@ def update_customer(customer_id):
     db.session.commit()
     
     return customer.to_dict(), 200
+
