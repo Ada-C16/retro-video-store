@@ -13,14 +13,10 @@ def handle_videos():
         request_body, error_msg = request_has_all_required_categories("video")
         if error_msg is not None:
             return error_msg
-        new_video = Video(
-            title=request_body["title"],
-            release_date=request_body["release_date"],
-            total_inventory=request_body["total_inventory"]
-            )
-        db.session.add(new_video)
+        video = Video().new_video(request_body)
+        db.session.add(video)
         db.session.commit()
-        return jsonify(new_video.to_json()), 201
+        return jsonify(video.to_json()), 201
 
     elif request.method=="GET":
         videos = Video.query.all()

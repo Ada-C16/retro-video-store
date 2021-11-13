@@ -2,7 +2,6 @@ from flask import Blueprint, jsonify
 from app import db 
 from app.models.customer import Customer 
 from app.models.rental import Rental
-from datetime import datetime
 from .helpers import id_is_valid, request_has_all_required_categories
 
 customers_bp = Blueprint("customer", __name__, url_prefix="/customers")
@@ -19,17 +18,11 @@ def add_customer():
     if error_msg is not None:
         return error_msg
     
-    new_customer = Customer(
-        name=request_data["name"], 
-        postal_code=request_data["postal_code"],
-        phone=request_data["phone"],
-        register_at = datetime.now()
-    )
-    
-    db.session.add(new_customer)
+    customer = Customer().new_customer(request_data)
+    db.session.add(customer)
     db.session.commit()
     
-    return jsonify(new_customer.to_json()), 201
+    return jsonify(customer.to_json()), 201
 
 @customers_bp.route("/<customer_id>", methods=["GET"])
 def customer(customer_id):

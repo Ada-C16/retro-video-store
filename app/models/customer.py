@@ -1,4 +1,5 @@
 from app import db
+from datetime import datetime 
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -17,3 +18,10 @@ class Customer(db.Model):
             "register_at" : self.register_at
         }
 
+    def new_customer(self, request_data):
+        return Customer(
+                name=request_data["name"], 
+                postal_code=request_data["postal_code"],
+                phone=request_data["phone"],
+                register_at = datetime.now()
+            )

@@ -14,3 +14,10 @@ class Video(db.Model):
             "release_date" : self.release_date,
             "total_inventory" : self.total_inventory
         }
+
+    def new_video(self, request_data):
+        return Video(
+                title=request_data["title"],
+                release_date=request_data["release_date"],
+                total_inventory=request_data["total_inventory"]
+            )
