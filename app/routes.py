@@ -5,6 +5,10 @@ from app import db
 from flask_sqlalchemy import model
 from sqlalchemy import func
 import requests
+from datetime import timedelta
+
+from tests.test_wave_02 import CUSTOMER_NAME
+
 
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
@@ -91,3 +95,31 @@ def handle_video_by_id(video_id):
         db.session.delete(video)
         db.session.commit()
         return make_response({"id":int(video_id)}, 200)
+
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def handle_rental_by_video_id(video_id):
+    try:
+        int(video_id)
+    except:
+        return_message = {"message": f"Video {video_id} was not found"}
+        return make_response(return_message, 404)
+    video= Video.query.get(video_id)
+    if not video:
+        return_message = {"message": f"Video {video_id} was not found"}
+        return make_response(jsonify(return_message), 404)
+
+    from app.models.rental import Rental
+    video_rentals = Rental.query.filter_by(video_id = video.id).all()
+    rentals_output_list = []
+    for rental in video_rentals:
+        customer = Customer.query.filter_by(id = rental.customer_id).first()
+        customer_name = customer.name
+        rentals_output_list.append({
+                    "rental_id":rental.rental_id,
+                    "customer_id":rental.customer_id,
+                    "name": customer.name,
+                    "video_id":rental.video_id,
+                    "due_date":(rental.due_date + timedelta(days=7))
+        })
+
+    return make_response(jsonify(rentals_output_list), 200)
