@@ -176,39 +176,36 @@ def due_date():
     
 
 @rentals_bp.route("/check-out", methods=["POST"])
-def handle_rental():
+def handle_checkout():
+    request_body = request.get_json()
 
-        request_body = request.get_json()
-        if "customer_id" not in request_body:
-            return {"details": "Request body must include customer_id."}, 400
-        if "video_id" not in request_body:
-            return {"details": "Request body must include video_id."}, 400
-        video_id = request_body["video_id"]
-        video = Video.query.get(video_id)
-        if video is None:
-            return {"message": f"Video {video_id} was not found"}, 404
+    if "customer_id" not in request_body:
+        return {"details": "Request body must include customer_id."}, 400
+    if "video_id" not in request_body:
+        return {"details": "Request body must include video_id."}, 400
+    video_id = request_body["video_id"]
+    video = Video.query.get(video_id)
+    if video is None:
+        return {"message": f"Video {video_id} was not found"}, 404
         
-        customer_id = request_body["customer_id"]
-        customer = Customer.query.get(customer_id)
-        if customer is None:
-            return {"message": f"Customer {customer_id} was not found"}, 404
+    customer_id = request_body["customer_id"]
+    customer = Customer.query.get(customer_id)
+    if customer is None:
+        return {"message": f"Customer {customer_id} was not found"}, 404
+    movie_due = due_date()
+    if video.total_inventory - Rental.query.filter_by(video_id=video_id).count() == 0:
+        return {"message": "Could not perform checkout"}, 400
+    rental= Rental(
+        customer_id = request_body["customer_id"],
+        video_id = request_body["video_id"],
+        due_date = movie_due)
 
-        movie_due = due_date()
+    db.session.add(rental)
+    db.session.commit()
+    rentals = Rental.query.filter_by(video_id=video_id).count()
+    customers_rentals = customer.video
 
-        rental= Rental(
-            customer_id = customer.id,
-            video_id = video.id,
-            due_date = movie_due)
-        
-        db.session.add(rental)
-
-        db.session.commit()
-        rentals = Rental.query.filter_by(video_id=video_id).count()
-        customers_rentals = video.customer
-
-        print(customers_rentals)
-        
-        checked_out = {
+    checked_out = {
                     "video_id": rental.video_id,
                     "customer_id" : rental.customer_id,
                     "due_date": movie_due,
@@ -218,11 +215,9 @@ def handle_rental():
 
     
         
-        if checked_out["available_inventory"] < 0:
-                return jsonify({"message":"Could not perform checkout"}), 400
                 
         
-        return jsonify (checked_out), 200
+    return jsonify (checked_out), 200
 
 
         
@@ -233,10 +228,17 @@ def handle_rental():
 def handle_checkin_rental():
 
     request_body = request.get_json()
+    if "customer_id" not in request_body:
+        return {"details": "Request body must include customer_id."}, 400
+    if "video_id" not in request_body:
+        return {"details": "Request body must include video_id."}, 400
+
     customer_id = request_body["customer_id"]
     customer = Customer.query.get(customer_id)
     video_id = request_body["video_id"]
     video = Video.query.get(video_id)
+    if customer_id == False:
+        return 404
     movie_due = due_date()
 
     
@@ -263,3 +265,5 @@ def handle_checkin_rental():
                     "videos_checked_out_count": (customers_rentals - rentals)}
 
     return jsonify(checked_in), 200
+
+    
