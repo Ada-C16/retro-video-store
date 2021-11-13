@@ -245,6 +245,7 @@ def create_rental():
     request_body = request.get_json()
     # Check if request_body is invalid/missing data
     invalid = validate_rental_request_body(request_body)
+
     if invalid:
         # Returns the invalid error message and status code
         return invalid
@@ -273,22 +274,28 @@ def create_rental():
     # Count all rentals where customer_id is current rental's customer_id
 
     rentals = Rental.query.filter_by(customer_id=request_body["customer_id"])
+    
     videos_checked_out_count = rentals.count()
     new_rental_response["videos_checked_out_count"] = videos_checked_out_count
 
-    video = Video.query.filter_by(id=request_body["video_id"])
+    video = Video.query.get(request_body["video_id"])
+    
     video_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
 
 
-    # available_inventory = video.count() - video_in_rentals.count()
-    # if available_inventory < 0:
-    #     return "Could not perform checkout", 400
-    # new_rental_response["available_inventory"] = available_inventory
+    available_inventory = video.total_inventory - video_in_rentals.count()
+    if available_inventory < 0:
+        return "Could not perform checkout", 400
+    new_rental_response["available_inventory"] = available_inventory
+
+    videos_in_rental = Rental.query.filter_by(customer_id=request_body["customer_id"])    
+    videos_checked_out_count = videos_in_rental.count()
+    new_rental_response["videos_checked_out_count"] = videos_checked_out_count
 
     # Count all rentals where video_id is current video_id
     # Then subract from total_inventory for video with this video_id
 
-    return jsonify(new_rental_response), 201
+    return jsonify(new_rental_response), 200
 
 
 @rentals_bp.route("/check-in", methods = ["POST"])
@@ -296,28 +303,50 @@ def update_rentals():
     request_body = request.get_json()
     if "video_id" not in request_body or "customer_id" not in request_body:
         return "Bad data", 400
+
+    video = Video.query.get(request_body["video_id"])
+    if not video:
+        return make_response({"message":"Could not perform checkin"}, 404)
+
+    customer = Customer.query.get(request_body["customer_id"])
+    if not customer:
+        return make_response({"message":"Could not perform checkin"}, 404)
+
+    
+    
     rentals = Rental.query.filter_by(customer_id=request_body["customer_id"], video_id=request_body["video_id"])
-    rental_response = []
-    if not rentals:
-        return "No records found", 404
+    # rental_response = []
+    if not rentals.first():
+        return make_response({"message": "No outstanding rentals for customer 1 and video 1"}, 400)
     for rental in rentals:
-        
-        # rental_response.append(rental.to_dict())
-        rental_response.append(rental.to_dict())
+    
+    #     rental_response.append({"customer_id":rental.customer_id, "video_id": rental.video_id})
         db.session.delete(rental)
         db.session.commit()
         
     videos_in_rental = Rental.query.filter_by(customer_id=request_body["customer_id"])    
     videos_checked_out_count = videos_in_rental.count()
-    rental_response[0]["videos_checked_out_count"] = videos_checked_out_count
+    # rental_response[0]["videos_checked_out_count"] = videos_checked_out_count
+
+    video = Video.query.get(request_body["video_id"])
+    video_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
+
+
+    available_inventory = video.total_inventory - video_in_rentals.count()
+    if available_inventory < 0:
+        return "Could not perform checkout", 400
+    # rental_response[0]["available_inventory"] = available_inventory
     
 
-    return jsonify(rental_response), 200
-    # except TypeError:
-    #     return make_response("Customer not found"),404
-    # if not rentals:
-    #     return make_response("Customer not found"), 404
-    
+    return {
+        "customer_id": request_body["customer_id"],
+        "video_id": request_body["video_id"],
+        "videos_checked_out_count": videos_checked_out_count,
+        "available_inventory": available_inventory
+
+    }, 200
+
+
 
 
 
