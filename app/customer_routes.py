@@ -41,7 +41,7 @@ def read_all_customers():
 
     if sort_query == "name":
         customers = Customer.query.order_by(Customer.name.asc())
-    if sort_query == "registrered_at":
+    if sort_query == "registered_at":
         customers = Customer.query.order_by(Customer.register_at)
     if sort_query == "postal_code":
         customers = Customer.query.order_by(Customer.postal_code)
