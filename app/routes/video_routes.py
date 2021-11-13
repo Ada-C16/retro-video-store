@@ -53,6 +53,22 @@ def read_single_video(video_id):
         response_body = {'message': f'Video {video_id} was not found'}
         return make_response(jsonify(response_body), 404)
 
+@video_bp.route("/<video_id>/rentals", methods=["GET"])
+def read_one_video_rentals(video_id):
+    try:
+        int(video_id)
+    except:
+        return {"message": "Invalid data"}, 400
+
+    video = Video.query.get(video_id)
+
+    if not video:
+        return {"message": f"Video {video_id} was not found"}, 404        
+
+    rentals = video.rentals
+    response_body  = [rental.get_customer() for rental in rentals]
+    return make_response(jsonify(response_body), 200)
+
 @video_bp.route('/<video_id>', methods=['PUT'])
 def update_single_video(video_id):
     if not video_id.isnumeric():

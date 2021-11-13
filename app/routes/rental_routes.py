@@ -4,7 +4,7 @@ from datetime import timedelta, datetime
 from app.models.rental import Rental
 from app.models.customer import Customer
 from app.models.video import Video
-from app.routes.video import read_single_video
+from app.routes.video_routes import read_single_video
 
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 

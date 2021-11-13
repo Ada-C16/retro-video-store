@@ -39,6 +39,22 @@ def read_one_customer(id):
 
     return customer.to_dict(), 200
 
+@customers_bp.route("/<id>/rentals", methods=["GET"])
+def read_one_customer_rentals(id):
+    try:
+        int(id)
+    except:
+        return {"message": "Invalid data"}, 400
+
+    customer = Customer.query.get(id)
+
+    if not customer:
+        return {"message": f"Customer {id} was not found"}, 404        
+
+    rentals = customer.rentals
+    response_body  = [rental.get_video() for rental in rentals]
+    return make_response(jsonify(response_body), 200)
+
 
 @customers_bp.route("", methods=["GET"])
 def get_all_cusotmers():
@@ -117,25 +133,3 @@ def update_customer(customer_id):
     db.session.commit()
     
     return customer.to_dict(), 200
-
-#rental routes
-rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
-
-@rentals_bp.route("/check-out", methods=["POST"])
-def create_rental():
-    request_body = request.get_json()
-
-    missing = ""
-    if "customer_id" not in request_body:
-        missing = "customer_id"
-    elif "video_id" not in request_body:
-        missing = "video_id"
-    if missing:
-        return {"details": f"Request body must include {missing}."}, 400
-
-    new_rental = Rental(
-        customer_id=request_body["customer_id"],
-        video_id=request_body["video_id"],
-        due_date=request_body["due_date"],
-      
-    )
