@@ -112,17 +112,15 @@ def handle_customers():
         else:
             new_customer = Customer(name=request_body["name"], 
                                 postal_code=request_body["postal_code"],
-                                phone=request_body["phone"],
-                                registered_at=request_body["registered_at"])
+                                phone=request_body["phone"])
 
             db.session.add(new_customer)
             db.session.commit()
 
             return make_response({"id": new_customer.id,
-                                    "name": new_customer.title,
+                                    "name": new_customer.name,
                                     "postal_code": new_customer.postal_code,
                                     "phone": new_customer.phone,
-                                    "registered_at": new_customer.registered_at
                                                 }, 201)
 
 
