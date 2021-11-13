@@ -1,7 +1,9 @@
 from flask import Blueprint, jsonify, make_response, request, abort
 from app.models.video import Video
+from app.models.customer import Customer
+from app.models.rental import Rental
 from app import db
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import requests
 import os
 
@@ -47,14 +49,14 @@ def create_video():
 def read_videos():
     videos = Video.query.all()
     response_body = []
-    # sort_query = request.args.get("sort")
+    sort_query = request.args.get("sort")
 
-    # if sort_query == "asc":
-    #     tasks = Video.query.order_by(Video.title.asc())
-    # elif sort_query == "desc":
-    #     tasks = Video.query.order_by(Video.title.desc())
-    # else:
-    #     tasks = Video.query.all()
+    if sort_query == "asc":
+        videos = Video.query.order_by(Video.title.asc())
+    elif sort_query == "desc":
+        videos  = Video.query.order_by(Video.title.desc())
+    else:
+        videos = Video.query.all()
 
     for video in videos:
         response_body.append(
@@ -88,8 +90,34 @@ def update_video(video_id):
 @videos_bp.route("/<video_id>", methods=["DELETE"])
 def delete_video(video_id):
     video = is_parameter_found(Video, video_id)
+    rental_entry = db.session.query(Rental).filter_by(video_id=video.id).first()
     response_str = {"id": video.id}
 
+    if rental_entry:
+        db.session.delete(rental_entry)
     db.session.delete(video)
+
+
     db.session.commit()
     return jsonify(response_str), 200
+
+# List the customers who currently have the video checked out
+@videos_bp.route("/<video_id>/rentals", methods =["GET"])
+def rental_customers(video_id):
+    video = is_parameter_found(Video, video_id)
+
+    rentals = video.rentals
+    
+    customers_list = []
+    for rental in rentals:
+        customer = Customer.query.get(rental.customer_id)
+        customers_list.append(
+            {
+        "due_date": str(rental.checkout_date + timedelta(days=7)),
+        "name": customer.name,
+        "phone": customer.phone,
+        "postal_code": customer.postal_code,
+            }
+            )
+
+    return jsonify(customers_list), 200

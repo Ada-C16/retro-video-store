@@ -3,7 +3,8 @@ from werkzeug.exceptions import RequestEntityTooLarge
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
-from datetime import timedelta
+from app.models.rental import Rental
+from datetime import datetime, timezone, timedelta
 
 customer_bp = Blueprint("customer", __name__, url_prefix="/customers")
 
@@ -87,10 +88,15 @@ def update_customer(customer_id):
 @customer_bp.route("/<customer_id>", methods =["DELETE"])
 def delete_customer(customer_id):
     customer = get_customer_from_id(customer_id)
+    rental_entry = db.session.query(Rental).filter_by(customer_id=customer.id).first()
+    
+    if rental_entry:
+        db.session.delete(rental_entry)
+    
     db.session.delete(customer)
     db.session.commit()
 
-    customer
+
     return {"id":customer.id}, 200
 
 # List the videos a customer currently has checked out
