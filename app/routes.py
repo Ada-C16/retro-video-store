@@ -3,10 +3,53 @@ from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
 from flask import Blueprint, jsonify, request
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 
-customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
+customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos_bp", __name__, url_prefix=("/videos"))
+rentals_bp = Blueprint("rentals_bp", __name__, url_prefix=("/rentals"))
+
+@rentals_bp.route("/check-out", methods=["POST"])
+def handle_rentals_out():
+    # if request.method == "POST":
+    request_body = request.get_json()
+    customer_id = request_body.get("customer_id")
+    video_id = request_body.get("video_id")
+    due_date = date.today() + timedelta(days=7)
+
+    customer = Customer.query.get(customer_id)
+    if customer is None:
+        return jsonify(None), 404
+
+    video = Video.query.get(video_id)
+    if video is None:
+        return jsonify(None), 404
+
+    video_checked_out_count = Rental.query.filter_by(video_id=video_id).count()
+    available_inventory = video.total_inventory - video_checked_out_count
+
+    if available_inventory == 0:
+        return jsonify(None), 400
+
+    new_rental = Rental(
+        customer_id=customer.id,
+        video_id=video.id,
+        due_date=due_date
+    )
+
+    db.session.add(new_rental)
+    db.session.commit()
+
+    return {
+        "customer_id": new_rental.customer_id,
+        "video_id": new_rental.video_id,
+        "due_date": new_rental.due_date,
+        "videos_checked_out_count": video_checked_out_count,
+        "available_inventory": available_inventory 
+        }, 200
+ 
+
+@rentals_bp.route("/check-in", methods=["POST"])
 
 
 @videos_bp.route("", methods=["GET", "POST"])
