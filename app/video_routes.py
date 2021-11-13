@@ -38,9 +38,12 @@ def read_all_videos():
 
     sort_query = request.args.get("sort")
 
-    videos = Video.query.order_by(Video.id.asc())
-
-    # videos.paginate(page=p, per_page=n, max_per_page=None)
+    if sort_query == "title":
+        videos = Video.query.order_by(Video.title)
+    elif sort_query == "release_date":
+        videos = Video.query.order_by(Video.release_date)
+    else:
+        videos = Video.query.order_by(Video.id)
 
     response_body = [video.to_dict() for video in videos.paginate(page=p, per_page=n, max_per_page=None).items]
     return jsonify(response_body)
