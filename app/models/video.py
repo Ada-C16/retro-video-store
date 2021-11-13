@@ -1,3 +1,4 @@
+from sqlalchemy.orm import backref
 from app import db
 
 class Video(db.Model):
@@ -5,6 +6,8 @@ class Video(db.Model):
     title = db.Column(db.String(30))
     release_date = db.Column(db.Date)
     total_inventory = db.Column(db.Integer)
+    # customers = db.relationship('Customer', secondary='rentals')
+
     
     def to_dict(self):
         return {
