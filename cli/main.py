@@ -41,7 +41,7 @@ def print_all_instances(class_type):
     filter_question = input ("Would you like to apply filters to your list y/n?: ")
 
     if filter_question == "y":
-        query_params = query_filter_options()
+        query_params = query_filter_options(class_type)
     else:
         query_params = {}
     
@@ -254,17 +254,27 @@ def print_object(object):
     for key, value in object.items():
         print(f"{key}: {value}")
 
-def query_filter_options():
+def query_filter_options(class_type):
     """Defines a helper function to request clients filter section and put in dictionary"""
 
     print_single_break_line()
 
     query_params = {}
     query_params["sort"] = input("Sort by name asc or desc?: ")
-    query_params["n"] = input("If you would like to limit the number of responses per page \nplease input number or None: ")
-    query_params["p"] = input("Please input the page number you would like to see if limiting responses, in no input None: ")
+    query_params["n"] = check_if_numeric(input("If you would like to limit the number of responses per page please input number or None: "), class_type)
+    query_params["p"] = check_if_numeric(input("Please input the page number you would like to see if limiting responses, in no input None: "), class_type)
 
     return query_params
+
+def check_if_numeric(thing_to_check, class_type):
+    """Defined helper function if value is numeric"""
+
+    if not thing_to_check.isnumeric():
+        print("\nmessage: Please use a number")
+        print_all_instances(class_type)
+
+    else:
+        return thing_to_check
 
 #Running the program
 def run_cli():
@@ -383,6 +393,9 @@ def ending_menu():
         quit()
     
     elif tertiary_choice =="redo":
+        return None
+    
+    else:
         return None
 
 def print_break_line():

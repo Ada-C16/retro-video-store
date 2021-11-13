@@ -80,11 +80,6 @@ def check_if_numeric(thing_to_check):
     else:
         return thing_to_check
 
-    # try:
-    #     int(thing_to_check)
-    # except:
-    #     abort(make_response(jsonify({"message": "Please use a number"})))
-
 #Videos Routes
 @videos_bp.route("", methods=["GET", "POST"])
 def handle_all_videos():
