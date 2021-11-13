@@ -1,3 +1,4 @@
+from operator import itemgetter
 from flask import Blueprint, jsonify, request, make_response, abort
 from app.models.customer import Customer
 from app.models.video import Video
@@ -55,16 +56,34 @@ def handle_query_params(query_sort, query_page, query_limit, class_type, class_a
         list = list.order_by(class_attribute.desc())
     elif query_sort == "asc":
         list = list.order_by(class_attribute)
+    else:
+        list = list.order_by(class_attribute)
 
     if query_limit:
+        check_if_numeric(query_limit)
         list = list.limit(query_limit)
 
     if query_page:
+        check_if_numeric(query_page)
         list = list.offset(int(query_limit)*int(query_page))
+        
     else:
         list = list.all()
 
     return list
+
+def check_if_numeric(thing_to_check):
+    """Defined helper function if value is numeric"""
+
+    if not thing_to_check.isnumeric():
+        abort(make_response(jsonify({"message": f"Please use a number"})))
+    else:
+        return thing_to_check
+
+    # try:
+    #     int(thing_to_check)
+    # except:
+    #     abort(make_response(jsonify({"message": "Please use a number"})))
 
 #Videos Routes
 @videos_bp.route("", methods=["GET", "POST"])
@@ -225,7 +244,7 @@ def rental_status(rental_status):
     
     elif rental_status == "check-in":
         if video.title not in customer.customer_rentals_titles():
-            return make_response(jsonify({"message": "No outstanding rentals for customer 1 and video 1"}), 400)
+            return make_response(jsonify({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}), 400)
         else:
             rental.rental_status(rental_status, video, customer)
             db.session.commit()
