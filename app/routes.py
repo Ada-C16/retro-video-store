@@ -100,10 +100,33 @@ def handle_customers():
                             "registered_at": customer.registered_at} for customer in customers]
         return jsonify(customers_list)
     elif request.method == 'POST':
-        pass
+        request_body = request.get_json()
+        if 'name' not in request_body.keys():
+            return make_response({"details": "Request body must include name." }, 400)
+        elif 'postal_code' not in request_body.keys():
+            return make_response({"details":"Request body must include postal_code."}, 400)
+        elif 'phone' not in request_body.keys():
+            return make_response({"details": "Request body must include phone."}, 400)
+        elif 'registered_at' not in request_body.keys():
+            return make_response({"details": "Request body must include registered_at."}, 400)
+        else:
+            new_customer = Customer(name=request_body["name"], 
+                                postal_code=request_body["postal_code"],
+                                phone=request_body["phone"],
+                                registered_at=request_body["registered_at"])
+
+            db.session.add(new_customer)
+            db.session.commit()
+
+            return make_response({"id": new_customer.id,
+                                    "name": new_customer.title,
+                                    "postal_code": new_customer.postal_code,
+                                    "phone": new_customer.phone,
+                                    "registered_at": new_customer.registered_at
+                                                }, 201)
 
 
-
+        
 
 
 
