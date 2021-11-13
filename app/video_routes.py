@@ -46,6 +46,7 @@ def read_all_videos():
         videos = Video.query.order_by(Video.id)
 
     response_body = [video.to_dict() for video in videos.paginate(page=p, per_page=n, max_per_page=None).items]
+
     return jsonify(response_body)
 
 @videos_bp.route("", methods=["POST"])
@@ -163,5 +164,7 @@ def read_all_customers_with_checkout_video(id):
             "checkout_date": rental.checkout_date,
             "due_date": rental.due_date
         }
+
+        customer_list.append(customer_data)
 
     return jsonify(customer_list),200

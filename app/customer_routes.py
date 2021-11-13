@@ -23,7 +23,7 @@ def get_customer_from_id(id):
 #CUSTOMER ROUTES
 #GET
 @customer_bp.route("/<id>", methods=["GET"])
-def get_customer(id):
+def read_customer(id):
     customer = get_customer_from_id(id)
     response_body = customer.to_dict()
 
@@ -31,14 +31,23 @@ def get_customer(id):
 
 
 @customer_bp.route("", methods = ["GET"])
-def get_customers():
-    customers= Customer.query.all()
-    customer_response=[]
+def read_all_customers():
+    n = request.args.get("n")
+    p = request.args.get("p")
 
-    for customer in customers:
-        customer_response.append(customer.to_dict())
+    sort_query= request.args.get('sort')
 
-    return jsonify(customer_response)
+    customers = Customer.query.order_by(Customer.id.asc())
+
+    if sort_query == "name":
+        customers = Customer.query.order_by(Customer.name.asc())
+    if sort_query == "registrered_at":
+        customers = Customer.query.order_by(Customer.register_at)
+    if sort_query == "postal_code":
+        customers = Customer.query.order_by(Customer.postal_code)
+
+    response_body = [customer.to_dict() for customer in customers.paginate(page=p, per_page=n, max_per_page=None).items]
+    return jsonify(response_body)
     
 
 #POST 
