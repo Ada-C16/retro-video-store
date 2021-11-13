@@ -10,14 +10,13 @@ videos_bp = Blueprint("videos_bp", __name__, url_prefix=("/videos"))
 
 
 @videos_bp.route("", methods=["GET", "POST"])
-
 def handle_videos():
     if request.method == "GET":
         videos = Video.query.all()
         videos_response = []
         for video in videos:
             videos_response.append({
-                "id": video.video_id,
+                "id": video.id,
                 "title": video.title,
                 "release_date": video.release_date,
                 "total_inventory": video.total_inventory
@@ -26,47 +25,91 @@ def handle_videos():
         return jsonify(videos_response), 200
 
     elif request.method == "POST":
-        request_body = request.get_json()`
-        if not (title and release_date and total_inventory):
+        request_body = request.get_json()
+        title = request_body.get("title")
+        release_date = request_body.get("release_date")
+        total_inventory = request_body.get("total_inventory")
+
+        if not title:
             return jsonify({
-                "details" : "Invalid data"
+                "details" : "Request body must include title."
+            }), 400
+        
+        if not release_date:
+            return jsonify({
+                "details" : "Request body must include release_date."
+            }), 400
+        
+        if not total_inventory:
+            return jsonify({
+                "details" : "Request body must include total_inventory."
             }), 400
         
         new_video = Video(
-            title= request_body["title"],
-            release_date= request_body["release_date"],
-            total_inventory= request_body["total_inventory"]
+            title=title,
+            release_date=release_date,
+            total_inventory=total_inventory
         )
         db.session.add(new_video)
         db.session.commit()
 
         return {
-            "video": {
-                "id": new_video.video_id,
-            }
+            "id": new_video.id,
+            "title" : new_video.title,
+            "total_inventory" : new_video.total_inventory
         }, 201
 
 
 @videos_bp.route("/<video_id>", methods= ["GET", "PUT", "DELETE"])
 def handle_video(video_id):
-    video = Video.query.get(video_id)
-    if request.method == "GET":
-        if video is None:
-            return jsonify(None), 404
-    
-    else:
-             return {
-                "video": {
-                    "id": video.video_id,
-                }
-            }
+    if not video_id.isnumeric():
+        return jsonify(None), 400
 
+    video = Video.query.get(video_id)
+
+    if video is None:
+        return jsonify({
+            "message" : f"Video {video_id} was not found"
+        }), 404
+
+    if request.method == "GET":
+        return jsonify({
+            "id" : video.id,
+            "title" : video.title,
+            "release_date" : video.release_date,
+            "total_inventory" : video.total_inventory
+        }), 200
+    
     elif request.method == "DELETE":
-    db.session.delete(video)
-    db.session.commit()
+        db.session.delete(video)
+        db.session.commit()
 
         return jsonify({
             "id" : video.id
+        }), 200
+
+    elif request.method == "PUT":
+        request_body = request.get_json()
+        title = request_body.get("title")
+        release_date = request_body.get("release_date")
+        total_inventory = request_body.get("total_inventory")
+
+        if not (title and release_date and total_inventory):
+            return jsonify({
+                "details" : "Invalid data"
+            }), 400
+        
+        video.title = title
+        video.release_date = release_date
+        video.total_inventory = total_inventory
+
+        db.session.commit()
+
+        return jsonify({
+            "id" : video.id,
+            "title" : video.title,
+            "release_date" : video.release_date,
+            "total_inventory" : video.total_inventory,
         }), 200
 
 @customers_bp.route("", methods=["GET", "POST"])
