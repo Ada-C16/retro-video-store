@@ -19,20 +19,12 @@ class Video(db.Model):
             "release_date": self.release_date,
             "total_inventory": self.total_inventory
         }
-        # if self.available_inventory is not None:
-        #     video_dict["available_inventory"] = self.available_inventory
         return video_dict
 
 class PutVideoInputSchema(Schema):
-    """ 
-
-    Parameters:
-     - title (str)
-     - total_inventory (int)
-     - release_date (date)
-    """
+    
     # the 'required' argument ensures the field exists
     title = fields.Str(required=True)
     total_inventory = fields.Int(required=True)
     release_date = fields.DateTime(required=True, auto_now_add=True, format='%m-%d-%Y')
-    # id=fields.Int(required=False)
+
