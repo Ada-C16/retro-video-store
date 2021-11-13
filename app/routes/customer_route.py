@@ -76,7 +76,7 @@ def customer_rentals(customer_id):
     rentals = Rental.query.filter_by(customer_id=int(customer_id))
 
     video_details_response = []
-    for rental_object in rentals:
-        video_details_response.append(rental_object.video_details())
+    for rental in rentals:
+        video_details_response.append(rental.video_details())
 
     return jsonify(video_details_response), 200

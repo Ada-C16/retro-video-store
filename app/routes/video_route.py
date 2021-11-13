@@ -60,17 +60,11 @@ def video_rentals(video_id):
     if error_msg is not None:
         return error_msg  
         
-    all_rentals = Rental.query.all()
-
-    rentals = []
-    for rental in all_rentals:
-        if rental.video_id == int(video_id):
-            rentals.append(rental)
-    # [rental object, rental object, rental, object]
+    rentals = Rental.query.filter_by(video_id=int(video_id))
 
     customer_details_response = []
-    for rental_object in rentals:
-        customer_details_response.append(rental_object.customer_details())
+    for rental in rentals:
+        customer_details_response.append(rental.customer_details())
 
     return jsonify(customer_details_response), 200
 

@@ -8,7 +8,7 @@ def id_is_valid(id, object_type):
     returns two values: an object and None (if no error is present),
     or an "invalid" string and an error (if error is present) 
     '''
-    if not id.isnumeric(): # /rentals/
+    if not id.isnumeric(): 
         return "invalid", ("", 400) 
     
     if object_type == "customer":
@@ -29,14 +29,13 @@ def request_has_all_required_categories(object_type):
     '''
     request_data = request.get_json()
 
-    if object_type == "customer":
-        required_categories = ["name", "phone", "postal_code"]
-    elif object_type == "video":
-        required_categories = ["total_inventory", "release_date", "title"]
-    elif object_type == "rental":
-        required_categories = ["customer_id", "video_id"]
+    required_categories = {
+        "customer" : ["name", "phone", "postal_code"],
+        "video" : ["total_inventory", "release_date", "title"],
+        "rental" : ["customer_id", "video_id"]
+    }
 
-    for category in required_categories:
+    for category in required_categories[object_type]:
         if category not in request_data: 
             return "invalid", (
                 {"details" : f"Request body must include {category}."}, 400)
