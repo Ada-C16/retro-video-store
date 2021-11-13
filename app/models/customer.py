@@ -19,7 +19,7 @@ class Customer(db.Model):
 
     # returns the number of videos that an individual customer has checked out
     def customers_checked_out_videos(self):
-        rental_query = Rental.query.filter_by(customer_id=self.id)
-        return rental_query.count()
+        rental_query = Rental.query.filter_by(customer_id=self.id).all()
+        return len(rental_query)
 
     
