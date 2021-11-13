@@ -29,7 +29,7 @@ def checkout_rental():
     new_rental = Rental(
         customer_id=customer.id,
         video_id=video.id,
-        checkout_date=datetime.now()
+        checkout_date=date.today()
     )
 
     db.session.add(new_rental)
@@ -39,7 +39,7 @@ def checkout_rental():
     videos_checked_out_count = len(customer.rentals)
     available_inventory = video.total_inventory - len(video.rentals)
 
-    # print(new_rental.to_dict(videos_checked_out_count, available_inventory))
+    print(new_rental.to_dict(videos_checked_out_count, available_inventory))
     return jsonify(new_rental.to_dict(videos_checked_out_count, available_inventory)), 200
 
 

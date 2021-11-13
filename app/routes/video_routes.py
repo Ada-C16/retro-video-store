@@ -90,11 +90,12 @@ def update_video(video_id):
 @videos_bp.route("/<video_id>", methods=["DELETE"])
 def delete_video(video_id):
     video = is_parameter_found(Video, video_id)
-    rental_entry = db.session.query(Rental).filter_by(video_id=video.id).first()
+    rental_entries = db.session.query(Rental).filter_by(video_id=video.id).all()
     response_str = {"id": video.id}
 
-    if rental_entry:
-        db.session.delete(rental_entry)
+    if rental_entries:
+        for rental in rental_entries:
+            db.session.delete(rental)
     db.session.delete(video)
 
 

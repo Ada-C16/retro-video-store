@@ -88,10 +88,11 @@ def update_customer(customer_id):
 @customer_bp.route("/<customer_id>", methods =["DELETE"])
 def delete_customer(customer_id):
     customer = get_customer_from_id(customer_id)
-    rental_entry = db.session.query(Rental).filter_by(customer_id=customer.id).first()
+    rental_entries = db.session.query(Rental).filter_by(customer_id=customer.id).all()
     
-    if rental_entry:
-        db.session.delete(rental_entry)
+    if rental_entries:
+        for rental in rental_entries:
+            db.session.delete(rental)
     
     db.session.delete(customer)
     db.session.commit()
