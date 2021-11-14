@@ -159,9 +159,9 @@ def test_rentals_by_customer(client, one_checked_out_video):
 
     response_body = response.get_json()
 
-    response.status_code == 200
-    len(response_body) == 1
-    response_body[0]["title"] == VIDEO_TITLE
+    assert response.status_code == 200
+    assert len(response_body) == 1
+    assert response_body[0]["title"] == VIDEO_TITLE
 
 def test_rentals_by_customer_not_found(client):
     response = client.get("/customers/1/rentals")
