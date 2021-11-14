@@ -197,7 +197,10 @@ def handle_customer_rentals(cust_id):
     if id_error:
         return id_error
 
-    rentals = Rental.query.filter_by(customer_id = cust_id)
+    if request.args:
+        rentals = handle_query_params(Rental, request, {"customer_id": cust_id})
+    else:
+        rentals = Rental.query.filter_by(customer_id = cust_id)
 
     return jsonify([rental.to_dict_customer_rentals() for rental in rentals]), 200
 
