@@ -107,8 +107,8 @@ def handle_customers():
             return make_response({"details":"Request body must include postal_code."}, 400)
         elif 'phone' not in request_body.keys():
             return make_response({"details": "Request body must include phone."}, 400)
-        elif 'registered_at' not in request_body.keys():
-            return make_response({"details": "Request body must include registered_at."}, 400)
+        # elif 'registered_at' not in request_body.keys():
+        #     return make_response({"details": "Request body must include registered_at."}, 400)
         else:
             new_customer = Customer(name=request_body["name"], 
                                 postal_code=request_body["postal_code"],
@@ -136,6 +136,7 @@ def handle_one_customer(customer_id):
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
     
     one_customer = {"name": customer.name,
+                    "id": customer.id,
                     "postal_code": customer.postal_code,
                     "phone": customer.phone}
 
