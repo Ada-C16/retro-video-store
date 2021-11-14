@@ -371,28 +371,24 @@ def update_rentals():
 
 
 @customers_bp.route("/<customer_id>/rentals", methods = ["GET"])
-def get_videos_for_customer(customer_id):
+def get_videos_by_customer(customer_id):
     customer_id = int(customer_id)
     customer=Customer.query.get(customer_id)
     if not customer:
         return make_response({"message": f"Customer {customer_id} was not found"}, 404)
     videos_in_rentals = Rental.query.filter_by(customer_id=customer_id)
-    response_test = []
-    for video in videos_in_rentals:
-        video1 = Video.query.get(video.video_id)
+    response_videos = []
+    for video_in_rental in videos_in_rentals:
+        video = Video.query.get(video_in_rental.video_id)
         
-
-
-        response_test.append({
-        "release_date": video1.release_date,
-        "title": video1.title,
-        "due_date": video.due_date
-
+        response_videos.append({
+        "release_date": video.release_date,
+        "title": video.title,
+        "due_date": video_in_rental.due_date
     })
 
-    return jsonify(response_test), 200
+    return jsonify(response_videos), 200
 
-    
 
 
 
