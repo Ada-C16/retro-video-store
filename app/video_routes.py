@@ -86,7 +86,7 @@ def rentals_by_id(video_id):
         return jsonify({"message": f"Video {video_id} was not found"}), 404
 
     customer_ids = [rental.id for rental in video.rentals]
-    if not Customer:
+    if not customer_ids:
         return jsonify([]), 200
 
     response_body = [Customer.query.get(
