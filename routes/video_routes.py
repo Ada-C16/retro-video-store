@@ -89,9 +89,9 @@ def get_rentals_by_video_id(video_id):
     """Retrieves all rentals associated with a specific video."""
     valid_int(video_id, "video_id")
     video = validate_video_existence(video_id)
+    response = []  
     results = db.session.query(Rental,Video, Customer ) \
-                        .select_from(Rental).join(Video).join(Customer).all()
-    response = []
+                        .select_from(Rental).join(Video).join(Customer).filter(Video.id==video_id).all()
     for rental,video, customer,  in results:
         response.append({
             "due_date":rental.calculate_due_date(),
