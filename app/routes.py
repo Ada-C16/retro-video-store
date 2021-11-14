@@ -219,7 +219,8 @@ def checked_out_rental():
     video = Video.query.get(request_body["video_id"])
     customer = Customer.query.get(request_body["customer_id"])
 
-    videos_checked_out = Rental.query.filter(Rental.customer_id == request_body["customer_id"],Rental.checked_out == True).count() 
+    # videos_checked_out = Rental.query.filter(Rental.customer_id == request_body["customer_id"],Rental.checked_out == True).count() 
+    videos_checked_out = Rental.query.filter(Rental.video_id == request_body["video_id"], Rental.checked_out == True).count()
     
     # Rental.checked_out == True).count()
     
