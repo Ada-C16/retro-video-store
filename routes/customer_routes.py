@@ -4,10 +4,10 @@ from datetime import date
 from flask import Blueprint, jsonify, request
 
 
-customer_bp = Blueprint("customers", __name__, url_prefix="/customers")
+customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
 
-@customer_bp.route("", methods = ["GET"])
+@customers_bp.route("", methods = ["GET"])
 def get_customers():
     """
     Retrieves all saved customer records.
@@ -17,7 +17,7 @@ def get_customers():
     return jsonify(customer_response), 200
 
 
-@customer_bp.route("", methods = ["POST"])
+@customers_bp.route("", methods = ["POST"])
 def create_customer():
     """
     Allows client to create new customer records,
@@ -43,7 +43,7 @@ def create_customer():
     return jsonify(new_customer.to_dict()), 201
 
 
-@customer_bp.route("/<customer_id>", methods=["GET"]) 
+@customers_bp.route("/<customer_id>", methods=["GET"]) 
 def get_single_customer(customer_id):
     """
     Allows client to retrieve customer data only after 
@@ -62,7 +62,7 @@ def get_single_customer(customer_id):
     return jsonify(customer.to_dict()), 200
 
 
-@customer_bp.route("/<customer_id>", methods=["PUT"]) 
+@customers_bp.route("/<customer_id>", methods=["PUT"]) 
 def edit_customer_data(customer_id):
     """
     Allows client to edit customer data only after ensuring 
@@ -93,7 +93,7 @@ def edit_customer_data(customer_id):
     return jsonify(customer.to_dict()), 200
 
 
-@customer_bp.route("/<customer_id>", methods=["DELETE"]) 
+@customers_bp.route("/<customer_id>", methods=["DELETE"]) 
 def delete_single_customer(customer_id):
     """
     Allows client to delete customer data only after ensuring 

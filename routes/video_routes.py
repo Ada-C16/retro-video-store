@@ -4,10 +4,10 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request
 
 
-video_bp = Blueprint("videos", __name__, url_prefix=("/videos"))
+videos_bp = Blueprint("videos", __name__, url_prefix=("/videos"))
 
 
-@video_bp.route("", methods=["GET"])
+@videos_bp.route("", methods=["GET"])
 def get_all_videos():
     """
     Retrieves all saved video records.
@@ -17,7 +17,7 @@ def get_all_videos():
     return jsonify(video_response), 200
 
 
-@video_bp.route("", methods=["POST"])
+@videos_bp.route("", methods=["POST"])
 def create_video():
     """
     Allows client to create a new video record,
@@ -48,13 +48,13 @@ def create_video():
     return jsonify(new_video.to_dict()), 201
 
 
-@video_bp.route("/<video_id>", methods=["GET"])
+@videos_bp.route("/<video_id>", methods=["GET"])
 def get_single_video(video_id):
     """
     Allows client to retrieve a single video record,
     only after ensuring that the video_id is an integer.
     """
-    
+
     try: 
         video_id = int(video_id)
     except:
@@ -68,7 +68,7 @@ def get_single_video(video_id):
     return jsonify(video.to_dict()), 200
 
 
-@video_bp.route("/<video_id>", methods=["PUT"])
+@videos_bp.route("/<video_id>", methods=["PUT"])
 def edit_video_data(video_id):
     """
     Allows client to edit a single video record,
@@ -99,7 +99,7 @@ def edit_video_data(video_id):
     return jsonify(video.to_dict()), 200
 
 
-@video_bp.route("/<video_id>", methods=["DELETE"])
+@videos_bp.route("/<video_id>", methods=["DELETE"])
 def delete_single_video(video_id):
     """
     Allows client to delete a single video record,
