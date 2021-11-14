@@ -40,5 +40,7 @@ def create_app(test_config=None):
     
     from app.routes.rental_routes import rentals_bp
     app.register_blueprint(rentals_bp)
-    
+
+    from app.routes.home_route import home_bp
+    app.register_blueprint(home_bp)
     return app
