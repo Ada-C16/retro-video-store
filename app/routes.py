@@ -70,7 +70,7 @@ def create_customer():
 def handle_customers():
     customers_response = []
     sort_by = request.args.get('sort')
-    # Poss. Refactor: Could make 70 - 75 into a helper function, passing in sort_by as parameter
+    # Poss. Refactor: Could make a helper function, passing in sort_by as parameter
     if sort_by == "asc":
         customers = Customer.query.order_by(Customer.name).all()
     elif sort_by == "desc":
@@ -239,7 +239,20 @@ def validate_rental_request_body(request_body):
         return jsonify({"details": "Request body must include video_id."}), 400
     return False
 
-# Check-out/Posts a rental
+def get_available_inventory(request_body):
+    videos = Video.query.get(request_body["video_id"])
+    
+    videos_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
+
+
+    available_inventory = videos.total_inventory - videos_in_rentals.count()
+    return available_inventory
+    # if available_inventory < 0:
+    #     return "Could not perform checkout", 400
+    # else:
+    #     return available_inventory
+
+# POST/Check-out a rental
 @rentals_bp.route("/check-out", methods = ["POST"])
 def create_rental():
     request_body = request.get_json()
@@ -249,19 +262,27 @@ def create_rental():
     if invalid:
         # Returns the invalid error message and status code
         return invalid
-
+    
     due = date.today() + timedelta(days=7)
+    new_rental_response = None
+    
+    validate_video_id = Video.query.get_or_404(request_body["video_id"])
+    validate_customer_id = Customer.query.get_or_404(request_body["customer_id"])
+    validate_inventory = get_available_inventory(request_body)
+    if validate_inventory <= 0:
+        return jsonify({"message": "Could not perform checkout"}), 400
 
-    new_rental = Rental(customer_id=request_body["customer_id"],
-                    video_id=request_body["video_id"],
-                    due_date=due
+    if validate_video_id and validate_customer_id and validate_inventory:
+        new_rental = Rental(customer_id=request_body["customer_id"],
+                        video_id=request_body["video_id"],
+                        due_date=due
 
-    )
+        )
 
-    db.session.add(new_rental)
-    db.session.commit()
+        db.session.add(new_rental)
+        db.session.commit()
 
-    new_rental_response = new_rental.to_dict()
+        new_rental_response = new_rental.to_dict()
 
     # Calculate, then add to new_rental_response
     # for customer_id in Rental
@@ -273,31 +294,33 @@ def create_rental():
     # Number of videos checked out by this customer_id
     # Count all rentals where customer_id is current rental's customer_id
 
-    rentals = Rental.query.filter_by(customer_id=request_body["customer_id"])
+        rentals = Rental.query.filter_by(customer_id=request_body["customer_id"])
     
-    videos_checked_out_count = rentals.count()
-    new_rental_response["videos_checked_out_count"] = videos_checked_out_count
+        videos_checked_out_count = rentals.count()
+        new_rental_response["videos_checked_out_count"] = videos_checked_out_count
 
-    video = Video.query.get(request_body["video_id"])
+    # video = Video.query.get(request_body["video_id"])
     
-    video_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
+    # video_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
 
 
-    available_inventory = video.total_inventory - video_in_rentals.count()
-    if available_inventory < 0:
-        return "Could not perform checkout", 400
-    new_rental_response["available_inventory"] = available_inventory
+    # available_inventory = video.total_inventory - video_in_rentals.count()
+    # if available_inventory < 0:
+    #     return "Could not perform checkout", 400
+        after_check_out_inventory = get_available_inventory(request_body)
+        
+        new_rental_response["available_inventory"] = after_check_out_inventory
 
-    videos_in_rental = Rental.query.filter_by(customer_id=request_body["customer_id"])    
-    videos_checked_out_count = videos_in_rental.count()
-    new_rental_response["videos_checked_out_count"] = videos_checked_out_count
-
+        videos_in_rental = Rental.query.filter_by(customer_id=request_body["customer_id"])    
+        videos_checked_out_count = videos_in_rental.count()
+        new_rental_response["videos_checked_out_count"] = videos_checked_out_count
+        return new_rental_response
     # Count all rentals where video_id is current video_id
     # Then subract from total_inventory for video with this video_id
 
     return jsonify(new_rental_response), 200
 
-
+# POST/Check-in a rental
 @rentals_bp.route("/check-in", methods = ["POST"])
 def update_rentals():
     request_body = request.get_json()
