@@ -147,7 +147,7 @@ def get_customer_rental_history(customer_id):
     validate_customer_instance(customer_id)
 
     rentals = db.session.query(Rental, Customer, Video) \
-                        .select_from(Rental).join(Customer).join(Video).all()
+                        .select_from(Rental).join(Customer).join(Video).filter(Customer.id==customer_id).all()
 
     response = []
     for rental, customer, video in rentals:
