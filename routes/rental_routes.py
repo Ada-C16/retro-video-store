@@ -38,8 +38,6 @@ def checkout_video():
     if rental:
         return jsonify({"message":"Could not perform checkout"}),400
         
-    # if video.available_inventory == 0:
-    #     return jsonify({"message":"Could not perform checkout"}),400
     new_rental= Rental(
         customer_id = request_body["customer_id"],
         video_id = request_body["video_id"],
