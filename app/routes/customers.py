@@ -91,9 +91,11 @@ def delete_customer(customer):
 
 @customers_bp.route("/<id>/rentals", methods = ["GET"])
 @require_valid_id
-def customer_rentals(customers):
-    customer = None
+def customer_rentals(customer):
+    
     # HOW DO I PASS IN THE CUSTOMER ID WHEN THE ENDPOINT IS RENTALS?
+    # ^^ I changed the parameter to this function to "customer" rather than "customers"
+    # I added "jsonify" to the return statement
     customer_rentals = Rental.query.filter(Rental.customer_id==customer.id)
 
     checked_out_videos = []
@@ -107,4 +109,4 @@ def customer_rentals(customers):
         }
         checked_out_videos.append(response_body)
     
-    return checked_out_videos, 200
+    return jsonify(checked_out_videos), 200
