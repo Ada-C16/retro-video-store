@@ -8,7 +8,7 @@ class Video(db.Model):
     total_inventory = db.Column(db.Integer)
 
 
-    def to_json(self):
+    def to_dict(self):
         return {
             "id": self.id,
             "title": self.title,

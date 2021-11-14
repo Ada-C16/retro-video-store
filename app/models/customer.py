@@ -10,7 +10,7 @@ class Customer(db.Model):
     registered_at = db.Column(db.DateTime, default=date.today())
     #videos = db.relationship("Video", secondary="rental", backref="customers")
 
-    def to_json(self):
+    def to_dict(self):
         return {
             "id": self.id,
             "name": self.name,

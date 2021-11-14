@@ -13,7 +13,7 @@ def get_customers():
     Retrieves all saved customer records.
     """
     customer = Customer.query.all()
-    customer_response = [customer.to_json() for customer in customer]
+    customer_response = [customer.to_dict() for customer in customer]
     return jsonify(customer_response), 200
 
 
@@ -40,12 +40,7 @@ def create_customer():
     db.session.add(new_customer)
     db.session.commit()
 
-    return{
-        "id": new_customer.id,
-        "name": new_customer.name,
-        "phone": new_customer.phone,
-        "postal_code": new_customer.postal_code,
-    }, 201
+    return jsonify(new_customer.to_dict()), 201
 
 
 @customer_bp.route("/<customer_id>", methods=["GET"]) 
@@ -64,13 +59,7 @@ def get_single_customer(customer_id):
     if customer == None:
         return jsonify(message=f"Customer {customer_id} was not found"), 404
 
-    elif request.method == "GET":
-        return {
-            "id": customer.id,
-            "name": customer.name,
-            "phone": customer.phone,
-            "postal_code": customer.postal_code,
-            }, 200
+    return jsonify(customer.to_dict()), 200
 
 
 @customer_bp.route("/<customer_id>", methods=["PUT"]) 
@@ -101,12 +90,7 @@ def edit_customer_data(customer_id):
 
     db.session.commit()
 
-    return {
-        "id": customer.id,
-        "name": customer.name,
-        "phone": customer.phone,
-        "postal_code": customer.postal_code
-    }, 200
+    return jsonify(customer.to_dict()), 200
 
 
 @customer_bp.route("/<customer_id>", methods=["DELETE"]) 
@@ -127,6 +111,5 @@ def delete_single_customer(customer_id):
     
     db.session.delete(customer)
     db.session.commit()
-    return {
-        "id": customer.id
-    }, 200
+    
+    return jsonify(id=customer.id), 200
