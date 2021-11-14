@@ -341,11 +341,11 @@ def delete_customer(rental_id):
         customer_id = rental_query.customer_id
         # find customer with id that matches
         customer = Customer.query.filter_by(id=customer_id).first()
+        
+        db.session.delete(customer)
+        db.session.commit()
+        return jsonify(""), 200
 
-        if customer:
-            db.session.delete(customer)
-            db.session.commit()
-            return jsonify(""), 200
     else: 
         return jsonify(""), 404
 
@@ -358,10 +358,10 @@ def delete_video(rental_id):
         # find video with id that matches
         video = Video.query.filter_by(id=video_id).first()
 
-        if video:
-            db.session.delete(video)
-            db.session.commit()
-            return jsonify(""), 200
+        db.session.delete(video)
+        db.session.commit()
+        return jsonify(""), 200
+        
     else: 
         return jsonify(""), 404
                                     
