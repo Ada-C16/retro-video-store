@@ -8,11 +8,6 @@ import os
 
 rental_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
-'''
-@rental_bp.route("", methods = ["GET"])
-def get_rentals():    
-    pass
-'''
 
 @rental_bp.route("/check-out", methods = ["POST"])
 def check_out_rental():
