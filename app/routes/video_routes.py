@@ -7,36 +7,6 @@ from flask import Blueprint, jsonify, make_response, request, abort
 
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
-# @rentals_bp.route("/check-out", methods=["POST"])
-# def check_out_video():
-#     request_data, error_msg = request_has_all_required_categories("rental")
-#     if error_msg is not None:
-#         return error_msg 
-
-#     video_id = request_data["video_id"]
-#     _, error_msg = id_is_valid(str(video_id), "video") # invalid, error message 
-#     if error_msg is not None: 
-#         return error_msg 
-    
-#     customer_id = request_data["customer_id"]
-#     _, error_msg = id_is_valid(str(customer_id), "customer")
-#     if error_msg is not None:
-#         return error_msg 
-    
-#     # guard against trying to rent out something with no inventory 
-#     if Rental().get_available_inventory(video_id) <= 0:
-#         return { "message" : "Could not perform checkout" }, 400
-
-#     new_rental = Rental(video_id=video_id, customer_id=customer_id)
-#     db.session.add(new_rental)
-#     db.session.commit()
-
-#     return new_rental.to_json(), 200
-
-
-
-#issue with abort
-
 def check_for_valid_input(request_body, list_of_attributes):
     for attribute in list_of_attributes:
         if attribute not in request_body:
@@ -86,33 +56,8 @@ def handle_videos():
         
         list_of_attributes = ["title", "total_inventory", "release_date"]
 
-        # for attribute in list_of_attributes:
-        #     if attribute not in request_body:
-        #         error_message = jsonify({"details": f"Request body must include {attribute}."})
-
-        #         return error_message, 400
-
         check_for_valid_input(request_body,list_of_attributes)
         validate_video_input(request_body)
-        # if test != None:
-        #    abort() 
-
-        #NEED TO ADD
-        # check for correct type of input
-        # (type("name") is not str)
-        # (type("postal_code") is not str)
-        # (type("phone") is not str)
-
-        #refactor to make one return statement
-            # return jsonify({"details": "Request body must include release_date."}), 400
-        # 
-
-        # if "title" not in request_body:
-        #     return jsonify({"details": "Request body must include title."}), 400
-        # elif "release_date" not in request_body:
-        #     return jsonify({"details": "Request body must include release_date."}), 400
-        # elif "total_inventory" not in request_body:
-        #     return jsonify({"details": "Request body must include total_inventory."}), 400
 
         new_video = Video(title=request_body["title"], total_inventory=request_body["total_inventory"],
         release_date=request_body["release_date"])
@@ -147,13 +92,6 @@ def handle_video(video_id):
 
         check_for_valid_input(request_body, list_of_attributes)
         validate_video_input(request_body)
-
-        # if "title" not in request_body:
-        #     return jsonify({"details": "Request body must include title."}), 400
-        # elif "release_date" not in request_body:
-        #     return jsonify({"details": "Request body must include release_date."}), 400
-        # elif "total_inventory" not in request_body:
-        #     return jsonify({"details": "Request body must include total_inventory."}), 400
 
         video.title = request_body["title"]
         video.release_date = request_body["release_date"]

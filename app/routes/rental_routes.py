@@ -45,7 +45,7 @@ def rental_check_out():
                 }), 400
 
     new_rental = Rental(customer_id=customer.id,\
-    video_id=video.id, due_date=(datetime.now() + timedelta(12)))
+    video_id=video.id, due_date=(datetime.now() + timedelta(days=7)))
 
     db.session.add(new_rental)
     db.session.commit()
@@ -87,7 +87,7 @@ def rental_check_in():
     rental = Rental.query.filter_by(customer_id=customer.id, video_id=video.id, checked_in=False).first()
     
     if rental is None:
-        response_body = {"message": "No outstanding rentals for customer 1 and video 1"} 
+        response_body = {"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"} 
         return jsonify(response_body), 400
 
     rental.checked_in = True
