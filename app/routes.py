@@ -237,7 +237,7 @@ def handle_checkin_rental():
     customer = Customer.query.get(customer_id)
     video_id = request_body["video_id"]
     video = Video.query.get(video_id)
-    if customer_id == False:
+    if video_id is None:
         return 404
     movie_due = due_date()
 
@@ -253,7 +253,7 @@ def handle_checkin_rental():
 
     rentals = Rental.query.filter_by(video_id=video_id).count()
     customers_rentals = video.customer
-    customers_rentals=Rental.query.filter_by(id=video_id).count()
+    customers_rentals= Rental.query.filter_by(id=video_id).count()
     
     
 
