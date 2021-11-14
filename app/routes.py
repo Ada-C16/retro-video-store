@@ -114,8 +114,59 @@ def handle_customers():
                             "registered_at": customer.registered_at} for customer in customers]
         return jsonify(customers_list)
     elif request.method == 'POST':
-        pass
+        request_body = request.get_json()
+        if 'name' not in request_body.keys():
+            return make_response({"details": "Request body must include name." }, 400)
+        elif 'postal_code' not in request_body.keys():
+            return make_response({"details":"Request body must include postal_code."}, 400)
+        elif 'phone' not in request_body.keys():
+            return make_response({"details": "Request body must include phone."}, 400)
+        # elif 'registered_at' not in request_body.keys():
+        #     return make_response({"details": "Request body must include registered_at."}, 400)
+        else:
+            new_customer = Customer(name=request_body["name"], 
+                                postal_code=request_body["postal_code"],
+                                phone=request_body["phone"])
 
+            db.session.add(new_customer)
+            db.session.commit()
+
+            return make_response({"id": new_customer.id,
+                                    "name": new_customer.name,
+                                    "postal_code": new_customer.postal_code,
+                                    "phone": new_customer.phone,
+                                                }, 201)
+
+@customer_bp.route('/<customer_id>', methods=['GET','PUT', 'DELETE'])
+def handle_one_customer(customer_id):       
+    try:
+        id = int(customer_id)
+    except ValueError:
+        return jsonify({"details": "Invalid data"}), 400
+
+    customer = Customer.query.get(customer_id)
+
+    if customer is None:
+        return jsonify({"message": f"Customer {customer_id} was not found"}), 404
+    
+    one_customer = {"name": customer.name,
+                    "id": customer.id,
+                    "postal_code": customer.postal_code,
+                    "phone": customer.phone}
+
+    if request.method == 'GET': 
+        return one_customer   
+    elif request.method == 'PUT':
+        updates = request.get_json()
+        if 'name' not in updates.keys() or 'postal_code' not in updates.keys() \
+                                         or 'phone' not in updates.keys():
+            return make_response({"details": "Invalid data"}, 400)
+        else:
+            customer.name = updates['name']
+            customer.postal_code = updates['postal_code']
+            customer.phone = updates['phone']
+
+<<<<<<< HEAD
 # RENTAL ENDPOINTS
 @rental_bp.route('/check-out', methods=['POST'])
 def handle_checkout():
@@ -202,3 +253,63 @@ def handle_checkin():
                             "video_id": rental_deleted_confirmation.video_id,
                             "videos_checked_out_count": rental_deleted_confirmation.videos_checked_out_count,
                             "available_inventory": rental_deleted_confirmation.available_inventory})
+=======
+            db.session.commit()
+            return make_response({"id": customer.id,
+                                    "name": customer.name,
+                                    "postal_code": customer.postal_code,
+                                    "phone":customer.phone}) 
+    elif request.method == 'DELETE':
+        db.session.delete(customer)
+        db.session.commit()
+
+        return make_response({"id": customer.id})
+                    
+                    
+                    
+                    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+# # RENTAL ENDPOINTS
+# @rental_bp.route('/check-out', methods=['POST'])
+# def handle_checkout():
+#     response_body = request.get_json()
+#     new_checkout = Rental(customer_id=response_body['customer_id'],
+#                             video_id=response_body['video_id'],
+#                             due_date=response_body['due_date'],
+#                             videos_checked_out_count=response_body['videos_checked_out_count'],
+#                             # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
+#                             available_inventory=response_body['available_inventory'])
+#     db.session.add(new_checkout)
+#     db.session.commit()
+
+#     return make_response({"customer_id": new_checkout.customer_id,
+#                             "video_id": new_checkout.video_id,
+#                             "due_date": new_checkout.due_date,
+#                             "videos_checked_out_count": new_checkout.videos_checked_out_count,
+#                             "available_inventory": new_checkout.available_inventory})
+    
+
+# @rental_bp.route('/check-in', methods=['POST'])
+# def handle_checkin():
+#     pass
+>>>>>>> master
