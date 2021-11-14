@@ -221,5 +221,25 @@ def handle_checkin():
         return {"details": "Request body must include customer_id."}, 400
     if "video_id" not in request_body:
         return {"details": "Request body must include video_id."}, 400
-    
-    
+
+    video_id = request_body["video_id"]
+    video = Video.query.get(video_id)
+    customer_id = request_body["customer_id"]
+    customer = Customer.query.get(customer_id)
+
+    rental= Rental(
+        customer_id = request_body["customer_id"],
+        video_id = request_body["video_id"])
+
+    video.remove(rental)
+    # db.session.add(rental)
+    db.session.commit()
+    rentals = Rental.query.filter_by(video_id=video_id).count()
+    customers_rentals = customer.video
+    checked_in = {
+                    "video_id": rental.video_id,
+                    "customer_id" : rental.customer_id,
+                    "available_inventory": video.total_inventory + rentals,
+                    "videos_checked_out_count": len(customers_rentals)
+                    }
+    return jsonify (checked_in), 200
