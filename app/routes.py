@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request
 from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
-import datetime
+from datetime import datetime
 import os
 
 
@@ -44,6 +44,16 @@ def handle_videos():
             videos = Video.query.filter(Video.title.contains(video_title_query))
         else:
             videos = Video.query.all()
+
+        #OPTIONAL ENHANCEMENT (Query Params)
+        # ---------------------------------
+        sort_query = request.args.get("sort")
+        if sort_query == "asc":
+            videos = Video.query.order_by(Video.id.asc())
+            videos = Video.query.order_by(Video.title.asc())
+        else:
+            videos = Video.query.all()
+
 
         video_response = []
         for video in videos:
@@ -156,6 +166,16 @@ def handle_customers():
             customers = Customer.query.filter(Customer.postal_code.contains(customer_postal_query))
         else:
             customers = Customer.query.all()
+
+        #OPTONAL ENHANCEMENTS (Query Params)
+        # ----------------------------------
+        sort_query = request.args.get("sort")
+        if sort_query == "asc":
+            customers = Customer.query.order_by(Customer.id.asc())
+            customers = Customer.query.order_by(Customer.name.asc())
+        else:
+            customers = Customer.query.all()
+
 
         customers_response = []
         for customer in customers:
