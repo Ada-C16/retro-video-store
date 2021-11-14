@@ -332,6 +332,38 @@ def all_customers_with_vid_checked_out(video_id):
         return jsonify(customers_response), 200
     else:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
+
+@customers_bp.route("/<rental_id>", methods=["DELETE"])
+def delete_customer(rental_id):
+    rental_query = Rental.query.get(rental_id)
+    if rental_query:
+        # get customer with rental
+        customer_id = rental_query.customer_id
+        # find customer with id that matches
+        customer = Customer.query.filter_by(id=customer_id).first()
+
+        if customer:
+            db.session.delete(customer)
+            db.session.commit()
+            return jsonify(""), 200
+    else: 
+        return jsonify(""), 404
+
+@videos_bp.route("/<rental_id>", methods=["DELETE"])
+def delete_video(rental_id):
+    rental_query = Rental.query.get(rental_id)
+    if rental_query:
+        # get video_id with rental
+        video_id = rental_query.video_id
+        # find video with id that matches
+        video = Video.query.filter_by(id=video_id).first()
+
+        if video:
+            db.session.delete(video)
+            db.session.commit()
+            return jsonify(""), 200
+    else: 
+        return jsonify(""), 404
                                     
 
 
