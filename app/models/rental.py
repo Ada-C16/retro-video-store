@@ -9,3 +9,5 @@ class Rental(db.Model):
     due_date = db.Column(db.DateTime, nullable=True)
 # this relationship establishes a new attribute for each rental object, which allows it to access the Video object
     video =db.relationship('Video', backref='rentals')
+# this relationship establishes a new attribute for each rental object, which allows it to access the Customer object
+    customer =db.relationship('Customer', backref='rentals')
