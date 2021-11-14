@@ -1,41 +1,25 @@
-
 import re
 from app import db
 from app.models.video import Video
 from app.models.customer import Customer
 from app.models.rental import Rental
 from flask import Blueprint, jsonify, make_response, request, abort
-
-from datetime import date, timedelta
-import datetime, requests, os
-
+import requests, os, datetime
+from datetime import timedelta
 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
 # creates a customer
 @customers_bp.route("", methods=["POST"], strict_slashes=False)
 def create_customer():
-    request_body = request.get_json()
+    request_data = request.get_json()
 
-    if "name" not in request_body:
-        return make_response(
-            {"details": f"Request body must include name."}, 400
-        )
-    
-    elif "postal_code" not in request_body:
-        return make_response(
-            {"details": f"Request body must include postal_code."}, 400
-        )
-
-    elif "phone" not in request_body:
-        return make_response(
-            {"details": f"Request body must include phone."}, 400
-        )
+    validate_input(request_data)
 
     new_customer = Customer(
-        name = request_body["name"],
-        postal_code = request_body["postal_code"],
-        phone = request_body["phone"]
+        name = request_data["name"],
+        postal_code = request_data["postal_code"],
+        phone = request_data["phone"]
     )
 
     new_customer.registered_at = datetime.datetime.now()
@@ -60,14 +44,7 @@ def get_customers():
 # gets details about a specific customer
 @customers_bp.route("/<customer_id>", methods=["GET"], strict_slashes=False)
 def get_customer(customer_id):
-    if not customer_id.isnumeric():
-        return { "error": f"{customer_id} must be numeric."}, 400
-        
-    customer = Customer.query.get(customer_id)
-
-    if customer is None:
-        return make_response(
-            {"message": f"Customer {customer_id} was not found"}, 404)
+    customer = validate_id(customer_id)
 
     return make_response(
         customer.to_dict(), 200
@@ -76,83 +53,41 @@ def get_customer(customer_id):
 # updates and return details about a specific customer
 @customers_bp.route("/<customer_id>", methods=["PUT"], strict_slashes=False)
 def update_customer(customer_id):
-    if not customer_id.isnumeric():
-        return { "error": f"{customer_id} must be numeric."}, 400
+    customer = validate_id(customer_id)
 
-    customer = Customer.query.get(customer_id)
-    request_body = request.get_json()
+    request_data = request.get_json()
 
-    if customer is None:
-        return make_response(
-            {"message": f"Customer {customer_id} was not found"}, 404)
+    validate_input(request_data)
 
-    if "name" not in request_body:
-        return make_response(
-            {"details": f"Request body must include name."}, 400
-        )
-    
-    elif "postal_code" not in request_body:
-        return make_response(
-            {"details": f"Request body must include postal_code."}, 400
-        )
-
-    elif "phone" not in request_body:
-        return make_response(
-            {"details": f"Request body must include phone."}, 400
-        )
-
-    customer.name = request_body["name"]
-    customer.postal_code = request_body["postal_code"]
-    customer.phone = request_body["phone"]
+    customer.name = request_data["name"]
+    customer.postal_code = request_data["postal_code"]
+    customer.phone = request_data["phone"]
 
     db.session.commit()
 
-    return jsonify({
-        "name": f"{customer.name}",
-        "phone": f"{customer.phone}",
-        "postal_code": f"{customer.postal_code}"
-        }        
+    return make_response(
+        customer.to_dict(), 200
     )
     
-
 # deletes a specific customer
 @customers_bp.route("/<customer_id>", methods=["DELETE"], strict_slashes=False)
 def delete_customer(customer_id):
-    if not customer_id.isnumeric():
-        return { "error": f"{customer_id} must be numeric."}, 400
-
-    customer = Customer.query.get(customer_id)
-
-    if customer is None:
-        return make_response(
-            {"message": f"Customer {customer_id} was not found"}, 404)
+    customer = validate_id(customer_id)
     
     if customer.rentals:
-        for cust_active in customer.rentals:
-            db.session.delete(cust_active)
+        for this_cust in customer.rentals:
+            db.session.delete(this_cust)
             db.session.commit()
         return make_response("",200)
     db.session.delete(customer)
     db.session.commit()
+
     return {"id": customer.id}, 200
-
-    # db.session.delete(customer)
-    # db.session.commit()
-
-    # return make_response(
-    #     {"id": customer.id}, 200
-    # )
-
-    # return {"id": customer.id}, 200
 
 # lists the videos a customer currently has checked out
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"], strict_slashes=False)
 def videos_checked_out_by_customer(customer_id):
-    customer = Customer.query.get(customer_id)
-
-    if customer is None:
-        return make_response(
-            {"message": f"Customer {customer_id} was not found"}, 404)
+    customer = validate_id(customer_id)
 
     videos_checked_out = []
 
@@ -168,23 +103,50 @@ def videos_checked_out_by_customer(customer_id):
 
     return jsonify(videos_checked_out), 200
 
-#*************************************************ENHANCEMENTS************************************************
-@customers_bp.route("/<customer_id>/history", methods=["GET"])
+# ************************************************* ENHANCEMENTS ************************************************
+
+# lists the videos a customer has checked out in the past
+@customers_bp.route("/<customer_id>/history", methods=["GET"], strict_slashes=False)
 def get_customer_history(customer_id):
-    id=int(customer_id)
-    customer = Customer.query.get(id)
-    if not customer:
-        return {"message":f"Customer {id} was not found"}, 404
+    customer = validate_id(customer_id)
+
     customer_history=[]
+
     for cust in customer.rentals:
-        customer_history.append({
-        "title": cust.video.title,
-        "checkout_date": cust.due_date-timedelta(days=7),
-        "due_date": cust.due_date })
+        customer_history.append(
+            {
+                "title": cust.video.title,
+                "checkout_date": cust.due_date-timedelta(days=7),
+                "due_date": cust.due_date
+            }
+        )
 
     return jsonify(customer_history), 200
 
+# ********************************************** HELPER FUNCTIONS ***********************************************
+def validate_id(id):
+    try:
+        id = int(id)
+    except:
+        abort(400, {"error": f"{id} must be numeric"})
 
-  
+    customer = Customer.query.get(id)
+    if not customer:
+        abort(make_response({"message":f"Customer {id} was not found"}, 404))
+    return customer
 
+def validate_input(input):
+    if "name" not in input:
+        abort(make_response(
+            {"details": f"Request body must include name."}, 400
+        ))
     
+    if "postal_code" not in input:
+        abort(make_response(
+            {"details": f"Request body must include postal_code."}, 400
+        ))
+
+    if "phone" not in input:
+        abort(make_response(
+            {"details": f"Request body must include phone."}, 400
+        ))

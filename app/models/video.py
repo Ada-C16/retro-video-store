@@ -5,12 +5,12 @@ from marshmallow import Schema, fields
 
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    title=db.Column(db.String)
-    release_date=db.Column(db.DateTime)
-    total_inventory=db.Column(db.Integer)
+    title = db.Column(db.String)
+    release_date = db.Column(db.DateTime)
+    total_inventory = db.Column(db.Integer)
 
-    renters=db.relationship("Customer", secondary="rental", backref="video")
-    rentals=db.relationship("Rental", backref="video")
+    renters = db.relationship("Customer", secondary="rental", backref="video")
+    rentals = db.relationship("Rental", backref="video")
 
     def to_dict(self):
         video_dict = {
@@ -26,5 +26,5 @@ class PutVideoInputSchema(Schema):
     # the 'required' argument ensures the field exists
     title = fields.Str(required=True)
     total_inventory = fields.Int(required=True)
-    release_date = fields.DateTime(required=True, auto_now_add=True, format='%m-%d-%Y')
+    release_date = fields.DateTime(required=True, format='%m-%d-%Y')
 
