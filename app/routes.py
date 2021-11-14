@@ -344,7 +344,7 @@ def delete_customer(rental_id):
         
         db.session.delete(customer)
         db.session.commit()
-        return jsonify(""), 200
+        return jsonify("Customer deleted"), 200
 
     else: 
         return jsonify(""), 404
@@ -360,8 +360,8 @@ def delete_video(rental_id):
 
         db.session.delete(video)
         db.session.commit()
-        return jsonify(""), 200
-        
+        return jsonify("Video deleted"), 200
+
     else: 
         return jsonify(""), 404
                                     
