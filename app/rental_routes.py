@@ -1,9 +1,7 @@
 from flask.wrappers import Response
 from app import db
 from app.models.video import Video
-from app.video_routes import get_video_from_id, valid_int
 from app.models.customer import Customer
-from app.customer_routes import get_customer_from_id, valid_int
 from app.models.rental import Rental
 from datetime import date
 from flask import Blueprint, jsonify, make_response, request, abort
@@ -17,8 +15,8 @@ def check_out_video_to_customer():
     request_body = request.get_json()
     if "video_id" not in request_body or "customer_id" not in request_body:
         return jsonify(""), 400
-    video = get_video_from_id(request_body["video_id"])
-    customer = get_customer_from_id(request_body["customer_id"])
+    video = Video.valid_int(request_body["video_id"])
+    customer = Customer.valid_int(request_body["customer_id"])
 
     available_inventory = video.total_inventory - Rental.query.filter_by(video_id=video.id,return_date=None).count()
     if available_inventory <= 0:
@@ -48,8 +46,8 @@ def check_in_video_to_customer():
     if "video_id" not in request_body or "customer_id" not in request_body:
         return jsonify(""), 400
     
-    video = get_video_from_id(request_body["video_id"])
-    customer = get_customer_from_id(request_body["customer_id"])
+    video = Video.valid_int(request_body["video_id"])
+    customer = Customer.valid_int(request_body["customer_id"])
 
     rental_record = Rental.query.filter_by(customer_id=customer.id, video_id=video.id, return_date=None).first()
 
