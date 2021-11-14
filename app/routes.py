@@ -3,8 +3,9 @@ from flask import Blueprint, jsonify, request
 from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
-from datetime import datetime
+import datetime
 import os
+
 
 videos_bp = Blueprint("videos_bp", __name__, url_prefix="/videos")
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
@@ -92,6 +93,31 @@ def handle_one_video_at_a_time(video_id):
         
         print("********", video_delete_response), 200
         return jsonify(video_delete_response), 200
+
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def customers_who_checked_out(video_id):
+    #return a list of customers who currently have the video checked out
+    if not video_id.isnumeric():
+        return jsonify(None), 400
+
+    video = Video.query.get(video_id)
+    if video is None:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
+
+    # Telling query to return both customer and rental
+    results = db.session.query(Customer, Rental).filter(Rental.video_id == video.id, Rental.checked_out == True).all()
+
+    customer_list = []
+    for customer, rental in results:
+        customer_list.append({
+            "due_date": rental.due_date,
+            "name": customer.name,
+            "phone": customer.phone,
+            "postal_code": customer.postal_code
+        })
+
+    return jsonify(customer_list), 200
+
 
 # CUSTOMER ROUTES
 @customers_bp.route("", methods=["GET", "POST"])
@@ -187,33 +213,114 @@ def handle_one_customer_at_a_time(customer_id):
 
             return jsonify(cust_delete_response), 200
 
-@rentals_bp.route("/check-out", methods=["GET", "POST"])
-def handle_rentals():
+
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"])
+def videos_checked_out(customer_id):
+    #return list of videos a customer currently has checked out
+    if not customer_id.isnumeric():
+        return jsonify(None), 400
+
+    customer = Customer.query.get(customer_id)
+    if customer is None:
+        return jsonify({"message": f"Customer {customer_id} was not found"}), 404
+
+    results = db.session.query(Video, Rental).filter(Rental.customer_id == customer.id, Rental.checked_out == True).all()
+
+    video_list = []
+    for video, rental in results:
+        video_list.append({
+            "release_date": video.release_date,
+            "title": video.title,
+            "due_date": rental.due_date,
+        })
+
+    if video_list == []:
+        return jsonify(video_list), 200
+
+    return jsonify(video_list), 200
+    
+
+#RENTAL ROUTES
+#CHECK-OUT ENDPOINT
+@rentals_bp.route("/check-out", methods=["POST"])
+def handle_rental_check_outs():
     rentals_request_body = request.get_json()
+    
     if "customer_id" not in rentals_request_body or "video_id" not in rentals_request_body:
         return jsonify(None), 400
 
-    if request.method == "POST":
-        rentals = Rental(
-            customer_id = rentals_request_body["customer_id"],
-            video_id = rentals_request_body["video_id"]
-        )
+    video = Video.query.get(rentals_request_body["video_id"])
+    customer = Customer.query.get(rentals_request_body["customer_id"])
 
-        db.session.add(rentals)
-        db.session.commit()
+    if video is None or customer is None:
+        return jsonify(None), 404
 
-        rental_receipt = {
-        "customer_id": rentals.customer_id,
-        "video_id": rentals.video_id,
-        "due_date": rentals.due_date,
-        "videos_checked_out_count": rentals.video_rental_count(),
-        "available_inventory": rentals.video_inventory()
+    videos_checked_out = Rental.query.filter(Rental.video_id == rentals_request_body["video_id"], Rental.checked_out == True).count()
+
+    if videos_checked_out == video.total_inventory:
+        return jsonify({"message": "Could not perform checkout"}), 400
+
+    new_rental = Rental(
+        customer_id = customer.id,
+        video_id = video.id,
+        checked_out = True
+    )
+
+    db.session.add(new_rental)
+    db.session.commit()
+
+    videos_checked_out = Rental.query.filter(Rental.video_id == rentals_request_body["video_id"], Rental.checked_out == True).count()
+
+    avail_inventory = video.total_inventory - videos_checked_out
+    
+    rental_receipt = {
+        "customer_id": new_rental.customer_id,
+        "video_id": new_rental.video_id,
+        "due_date": new_rental.due_date,
+        "videos_checked_out_count": videos_checked_out,
+        "available_inventory": avail_inventory
         }
-        
-        print("************")
-        print(rental_receipt)
 
-        return jsonify(rental_receipt), 200
+    return jsonify(rental_receipt), 200
 
-    elif request.method == "GET":
-        pass
+#CHECK-IN ENDPOINT
+@rentals_bp.route("/check-in", methods=["POST"])
+def handle_video_check_ins():
+    rentals_request_body = request.get_json()
+    
+    if "customer_id" not in rentals_request_body or "video_id" not in rentals_request_body:
+        return jsonify(None), 400
+
+    video = Video.query.get(rentals_request_body["video_id"])
+    customer = Customer.query.get(rentals_request_body["customer_id"])
+
+    if video is None or customer is None:
+        return jsonify(None), 404
+
+    rental = Rental.query.filter_by(video_id = video.id, customer_id = customer.id).first()
+
+    if not rental:
+        return jsonify({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}), 400
+
+    # Number of checked out videos
+    videos_checked_out = Rental.query.filter(Rental.video_id == rentals_request_body["video_id"], Rental.checked_out == True).count()
+
+    rental.customer_id = customer.id,
+    rental.video_id = video.id,
+    rental.checked_out = False
+
+    db.session.commit()
+
+    videos_checked_out = Rental.query.filter(Rental.video_id == rentals_request_body["video_id"], Rental.checked_out == True).count()
+
+    avail_inventory = video.total_inventory - videos_checked_out
+    
+    checkin_rental_receipt = {
+        "customer_id": rental.customer_id,
+        "video_id": rental.video_id,
+        "due_date": rental.due_date,
+        "videos_checked_out_count": videos_checked_out,
+        "available_inventory": avail_inventory
+        }
+
+    return jsonify(checkin_rental_receipt), 200

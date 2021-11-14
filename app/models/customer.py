@@ -7,7 +7,8 @@ class Customer(db.Model):
     postal_code = db.Column(db.String) #To account for 0s; all expected outputs had strings
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow())
-    rentals = db.relationship("Video", secondary="video_rentals", backref="customers", lazy=True)
+    videos = db.relationship("Video", secondary="rental", back_populates="customers", lazy=True)
+    
 
 
     def get_cust_dict(self):
@@ -18,5 +19,5 @@ class Customer(db.Model):
             "phone": self.phone,
             "registered_at": self.registered_at
         }
-
+    
 
