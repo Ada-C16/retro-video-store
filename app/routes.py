@@ -248,7 +248,10 @@ def gets_customers_by_rental(id):
     if video_id_error:
         return video_id_error
 
-    rentals = Rental.query.filter_by(video_id = id).all()
+    if request.args:
+        rentals = handle_query_params(Rental, request, {"video_id": id})
+    else:
+        rentals = Rental.query.filter_by(video_id = id).all()
     rental_list = []
 
     for rental in rentals:
