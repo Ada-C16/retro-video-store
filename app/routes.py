@@ -123,10 +123,8 @@ def handle_customers():
                                     "phone": new_customer.phone,
                                                 }, 201)
 
-
 @customer_bp.route('/<customer_id>', methods=['GET','PUT', 'DELETE'])
 def handle_one_customer(customer_id):       
-
     try:
         id = int(customer_id)
     except ValueError:
