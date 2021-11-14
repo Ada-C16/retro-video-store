@@ -288,7 +288,7 @@ def check_in_one_rental():
                         "videos_checked_out_count": num_customer_videos,
                         "available_inventory": available_inventory}), 200
     else:
-        # if video or customer don't exist, return 404
+        # if video or customer doesn't exist, return 404
         return jsonify(""), 404
 
                                            
