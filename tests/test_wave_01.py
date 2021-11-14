@@ -131,16 +131,32 @@ def test_create_video_must_contain_inventory(client):
     assert Video.query.all() == []
 
 # DELETE
+# def test_delete_video(client, one_video):
+#     # Act
+#     response = client.delete("/videos/1")
+#     response_body = response.get_json()
+#     print("********", response)
+
+#     # Assert
+#     assert response_body["id"] == 1
+#     assert response.status_code == 200
+#     assert Video.query.get(1) == None
 def test_delete_video(client, one_video):
     # Act
     response = client.delete("/videos/1")
     response_body = response.get_json()
-    print("********", response)
 
     # Assert
     assert response_body["id"] == 1
     assert response.status_code == 200
-    assert Video.query.get(1) == None
+    # assert Video.query.get(1) == None
+
+    # check that video is no longer returned (don't assume that delete means remove the row)
+    response = client.get("/videos/1")
+    response_body = response.get_json()
+
+    # Assert
+    assert response.status_code == 404
 
 def test_delete_video_not_found(client):
     # Act
@@ -314,6 +330,15 @@ def test_create_customer_must_contain_phone(client):
     assert Customer.query.all() == []
 
 # DELETE
+# def test_delete_customer(client, one_customer):
+#     # Act
+#     response = client.delete("/customers/1")
+#     response_body = response.get_json()
+
+#     # Assert
+#     assert response_body["id"] == 1
+#     assert response.status_code == 200
+#     assert Customer.query.get(1) == None
 def test_delete_customer(client, one_customer):
     # Act
     response = client.delete("/customers/1")
@@ -330,6 +355,7 @@ def test_delete_customer(client, one_customer):
 
     # Assert
     assert response.status_code == 404
+
 def test_delete_customer_not_found(client):
     # Act
     response = client.delete("/customers/1")
