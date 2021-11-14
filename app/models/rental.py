@@ -2,7 +2,6 @@ from sqlalchemy.orm import backref
 from app import db
 from app.models.video import Video
 from app.models.customer import Customer
-from datetime import datetime, timedelta
 
 class Rental(db.Model):
     __tablename__ = "rentals"

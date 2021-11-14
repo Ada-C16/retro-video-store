@@ -4,22 +4,14 @@ from app.models.rental import Rental
 from app.models.customer import Customer
 from app.models.video import Video
 from datetime import timedelta, datetime
+from app.models.helper import invalid_rental_data
 
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
-
-def invalid_data(request_body):
-    if "customer_id" not in request_body:
-        invalid = {"details": "Request body must include customer_id."}
-    elif "video_id" not in request_body:
-        invalid = {"details": "Request body must include video_id."}
-    else:
-        invalid = False
-    return invalid
 
 @rentals_bp.route("/check-out", methods=["POST"])
 def post_rental():
     request_body = request.get_json()
-    invalid_request = invalid_data(request_body)
+    invalid_request = invalid_rental_data(request_body)
     if invalid_request:
         return jsonify(invalid_request), 400
 
@@ -55,7 +47,7 @@ def post_rental():
 @rentals_bp.route("/check-in", methods=["POST"])
 def post_rental_return():
     request_body = request.get_json()
-    invalid_request = invalid_data(request_body)
+    invalid_request = invalid_rental_data(request_body)
     if invalid_request:
         return jsonify(invalid_request), 400
     

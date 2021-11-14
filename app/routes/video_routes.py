@@ -1,5 +1,6 @@
 from app import db
 from flask import Blueprint, jsonify, request
+from app.models.helper import invalid_video, invalid_video_data
 from app.models.video import Video
 from app.models.rental import Rental
 
@@ -22,42 +23,22 @@ def get_one_video(video_id):
     one_video = Video.query.get(video_id)
     return jsonify(one_video.video_dict()), 200
 
+
 @video_bp.route("/<video_id>/rentals", methods=["GET"])
 def get_vid_rental(video_id):
     if Video.query.get(video_id) is None:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
-    all_videos = Rental.query.filter_by(id=video_id) # get rental by cust_id
+    all_videos = Rental.query.filter_by(id=video_id)  # get rental by cust_id
     response = []
-    for video in all_videos: # to access formatted rental information
+    for video in all_videos:  # to access formatted rental information
         response.append(video.cust_by_name())
     return jsonify(response), 200
-
-def invalid_data(request_body):
-    if "title" not in request_body:
-        valid = {"details": "Request body must include title."}
-    elif "release_date" not in request_body:
-        valid = {"details": "Request body must include release_date."}
-    elif "total_inventory" not in request_body:
-        valid = {"details": "Request body must include total_inventory."}
-    else:
-        valid = False
-    return valid
-
-
-def invalid_video(video_id):
-    invalid = False
-    if not video_id.isnumeric():
-        invalid = {"message": f"Invalid video id"}, 400
-    elif video_id.isnumeric():
-        if Video.query.get(video_id) is None:
-            invalid = {"message": f"Video {video_id} was not found"}, 404
-    return invalid
 
 
 @video_bp.route("", methods=["POST"])
 def post_video():
     request_body = request.get_json()
-    invalid_response = invalid_data(request_body)
+    invalid_response = invalid_video_data(request_body)
     if not invalid_response:
         new_video = Video(
             title=request_body["title"],
@@ -80,15 +61,15 @@ def update_video(video_id):
         return invalid_vid
 
     request_body = request.get_json()
-    invalid_response = invalid_data(request_body)
-    
+    invalid_response = invalid_video_data(request_body)
+
     if invalid_response:
         return jsonify(invalid_response), 400
 
     one_video.title = request_body["title"]
     one_video.release_date = request_body["release_date"]
     one_video.total_inventory = request_body["total_inventory"]
-    
+
     db.session.commit()
     return jsonify(one_video.video_dict()), 200
 
@@ -99,7 +80,7 @@ def delete_video(video_id):
     invalid_vid = invalid_video(video_id)
     if invalid_vid:
         return invalid_vid
-    
+
     db.session.delete(one_video)
     db.session.commit()
     return jsonify(one_video.video_dict()), 200

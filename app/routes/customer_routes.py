@@ -3,35 +3,14 @@ from flask import Blueprint, jsonify, request
 from app.models.customer import Customer
 from app.models.rental import Rental
 from app.models.video import Video
+from app.models.helper import invalid_cust_data, invalid_customer
+
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
-
-
-def invalid_data(request_body):
-    if "name" not in request_body:
-        valid = {"details": "Request body must include name."}
-    elif "phone" not in request_body:
-        valid = {"details": "Request body must include phone."}
-    elif "postal_code" not in request_body:
-        valid = {"details": "Request body must include postal_code."}
-    else:
-        valid = False
-    return valid
-
-
-def invalid_customer(customer_id):
-    invalid = False
-    if not customer_id.isnumeric():
-        invalid = {"message": f"Invalid customer id"}, 400
-    elif customer_id.isnumeric():
-        if Customer.query.get(customer_id) is None:
-            invalid = {"message": f"Customer {customer_id} was not found"}, 404
-    return invalid
-
 
 @customers_bp.route("", methods=["POST"])
 def post_customer():
     request_body = request.get_json()
-    invalid_response = invalid_data(request_body)
+    invalid_response = invalid_cust_data(request_body)
     if not invalid_response:
         new_customer = Customer(
             name=request_body["name"],
@@ -42,7 +21,6 @@ def post_customer():
         db.session.commit()
         return jsonify(new_customer.to_json()), 201
     return jsonify(invalid_response), 400
-
 
 @customers_bp.route("", methods=["GET"])
 def get_customers():
@@ -69,7 +47,6 @@ def get_cust_rental(customer_id):
         response.append(rental.rental_by_title())
     return jsonify(response), 200
 
-
 @customers_bp.route("/<customer_id>", methods=["PUT"])
 def update_customer(customer_id):
     one_customer = Customer.query.get(customer_id)
@@ -77,7 +54,7 @@ def update_customer(customer_id):
     if invalid_cust:
         return invalid_cust
     request_body = request.get_json()
-    invalid_response = invalid_data(request_body)
+    invalid_response = invalid_cust_data(request_body)
     if invalid_response:
         return jsonify(invalid_response), 400
     one_customer.name = request_body["name"]
@@ -85,7 +62,6 @@ def update_customer(customer_id):
     one_customer.postal_code = request_body["postal_code"]
     db.session.commit()
     return jsonify(one_customer.to_json()), 200
-
 
 @customers_bp.route("/<customer_id>", methods=["DELETE"])
 def delete_customer(customer_id):
