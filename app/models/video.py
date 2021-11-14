@@ -1,6 +1,8 @@
 from flask import current_app
 from app import db
 from flask import make_response, abort
+from .rental import Rental
+from .customer import Customer
 
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -65,3 +67,42 @@ class Video(db.Model):
         self.release_date = json["release_date"]
         self.total_inventory = json["total_inventory"]
         return self
+
+    @classmethod
+    def current_associated_records(cls, id):
+        video = cls.valid_int(id)
+
+        customer_list = []
+
+        for customer in video.customers:
+            rental_record = Rental.query.filter_by(video_id=id, customer_id=customer.id, return_date=None).first()
+            customer_info = {
+                "due_date": rental_record.due_date,
+                "name": customer.name,
+                "phone": customer.phone,
+                "postal_code": customer.postal_code
+            }
+
+            customer_list.append(customer_info)
+        return customer_list
+
+    @classmethod
+    def past_associated_records(cls, id):
+        cls.valid_int(id)
+        past_rentals = Rental.query.filter(Rental.video_id==id, Rental.return_date!=None).all()
+        customer_list = []
+
+        for rental in past_rentals:
+            customer = Customer.query.get(rental.customer_id)
+            
+            customer_data = {
+                "customer_id" : customer.id,
+                "name": customer.name,
+                "postal_code": customer.postal_code,
+                "checkout_date": rental.checkout_date,
+                "due_date": rental.due_date
+            }
+
+            customer_list.append(customer_data)
+
+        return customer_list

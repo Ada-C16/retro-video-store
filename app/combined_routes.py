@@ -68,86 +68,17 @@ def delete_one_record(id):
     return jsonify(record.to_dict())
 
 # Custom endpoint for Wave 02
-
 @customer_bp.route("/<id>/rentals", methods=["GET"])
-def videos_customer_has_checked_out(id):
-    customer = Customer.valid_int(id)
-
-    videos_checked_out = []
-
-    for video in customer.videos:
-        rental_record = Rental.query.filter_by(customer_id=id, video_id=video.id, return_date=None).first()
-        video_info = {
-            "release_date": video.release_date,
-            "title": video.title,
-            "due_date": rental_record.due_date
-        }
-
-        videos_checked_out.append(video_info)
-
-    return jsonify(videos_checked_out), 200
-
 @videos_bp.route("/<id>/rentals", methods=["GET"])
-def all_customers_for_checked_out_video(id):
-    video = Video.valid_int(id)
+def read_all_current_rentals(id):
+    model = g.model
+    current_records = model.current_associated_records(id)
+    return jsonify(current_records), 200
 
-    customer_list = []
-
-    for customer in video.customers:
-        rental_record = Rental.query.filter_by(video_id=id, customer_id=customer.id, return_date=None).first()
-        customer_info = {
-            "due_date": rental_record.due_date,
-            "name": customer.name,
-            "phone": customer.phone,
-            "postal_code": customer.postal_code
-        }
-
-        customer_list.append(customer_info)
-
-    return jsonify(customer_list), 200
-
-
-# WAVE 03 Custom endpoints
+# WAVE 03 Custom endpoint
 @customer_bp.route("/<id>/history", methods = ["GET"])
-
-def read_all_past_video_for_customer(id):
-    customer = Customer.valid_int(id)
-    past_rentals = Rental.query.filter(Rental.customer_id==id, Rental.return_date!=None).all()
-    video_list = []
-
-    for rental in past_rentals:
-        video = Video.query.get(rental.video_id)
-        customer_data ={
-            "title": video.title,
-            "checkout_date": rental.checkout_date,
-            "due_date": rental.due_date,
-            "return_date": rental.return_date
-        }
-
-        video_list.append(customer_data)
-
-    return jsonify(video_list),200
-
 @videos_bp.route("/<id>/history", methods=["GET"])
-
-def read_all_customers_with_checkout_video(id):
-    video = Video.valid_int(id)
-
-    past_rentals = Rental.query.filter(Rental.video_id==id, Rental.return_date!=None).all()
-
-    customer_list = []
-
-    for rental in past_rentals:
-        customer = Customer.query.get(rental.customer_id)
-        
-        customer_data = {
-            "customer_id" : customer.id,
-            "name": customer.name,
-            "postal_code": customer.postal_code,
-            "checkout_date": rental.checkout_date,
-            "due_date": rental.due_date
-        }
-
-        customer_list.append(customer_data)
-
-    return jsonify(customer_list),200
+def read_all_past_rentals(id):
+    model = g.model
+    past_records = model.past_associated_records(id)
+    return jsonify(past_records),200
