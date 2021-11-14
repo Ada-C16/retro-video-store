@@ -2,7 +2,7 @@ import os
 import requests
 from sqlalchemy.orm import query
 from app import db
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from app.models.rental import Rental
 from app.models.video import Video
@@ -174,18 +174,18 @@ def get_rentals_for_customer(customer_id):
     if customer is None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
     elif request.method == "GET":
-        videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id, checked_out = True).count # only video rented by specific renter
+        videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id) # only video rented by specific renter
         list_of_videos = []
         for rental in videos_customer_rented:
             video = Video.query.get(rental.video_id)
             response_body = {
                 "release_date": video.release_date,
                 "title": video.title,
-                "due_date": rental.due_date,
+                "due_date": rental.due_date
             }
             list_of_videos.append(response_body)
 
-        return jsonify(list_of_videos), 200
+        return (list_of_videos), 200
  #joins rental & video Rental.join(Video,Video.id == Rental.video_id) 
 
 
@@ -196,8 +196,8 @@ def get_videos_for_rental(video_id):
     if video is None:
         return jsonify ({"message": f"Video {video_id} was not found"}), 404
     elif request.method == 'GET':
-        rented_out_videos = Rental.query.filter(Rental.video_id == video_id, checked_out = True).count
-        #available_inventory = video.total_inventory - rented_out_videos
+        rented_out_videos = Rental.query.filter(Rental.video_id == video_id)
+        
         list_of_customers = []
         for rental in rented_out_videos:
             customer = Customer.query.get(rental.customer_id)
@@ -211,13 +211,54 @@ def get_videos_for_rental(video_id):
 
         return jsonify(list_of_customers), 200
 
-
+#####
 @rentals_bp.route("/check-out", methods = ["POST"])
 def checked_out_rental():
     request_body = request.get_json()
-    if "customer" not in  request_body or "video" not in request_body or "available_inventory" not in request_body:
-        return jsonify(None),404
-        
+    # if "video_id" not 
+    video = Video.query.get(request_body["video_id"])
+    customer = Customer.query.get(request_body["customer_id"])
+
+    videos_checked_out = Rental.query.filter(Rental.customer_id == request_body["customer_id"],Rental.checked_out == True).count() 
+    
+    # Rental.checked_out == True).count()
+    
+    # Rental.query.filter(Rental.video_id == request_body["video_id"], Rental.checked_out == True).count()
+
+    
+    if videos_checked_out == video.total_inventory:
+        return jsonify ({
+            "message": "Could not perform checkout"
+        }), 400
+    
+
+    new_rental = Rental(
+        video_id = request_body["video_id"],
+        customer_id = request_body["customer_id"],
+        checked_out = True
+    )
+
+
+    db.session.add(new_rental)
+    db.session.commit()
+
+    # rentals = Rental.query.filter(Rental.customer_id == request_body["customer_id"], Rental.checked_out == True).count()
+
+    aval_inventory= Rental.query.filter(Rental.video_id == request_body["video_id"], Rental.checked_out == True).count()
+
+    available_inventory = Video.total_inventory - aval_inventory 
+
+
+    return jsonify({
+        "customer_id": customer.id,
+        "video": video.id,
+        "due_date":datetime.today() + timedelta(days=7),
+        "videos_checked_out_count": videos_checked_out,
+        "available_inventory": available_inventory
+    }), 200
+
+
+
 
 @rentals_bp.route("/check-in", methods = ["POST"])
 def get_rental(rental_id):
