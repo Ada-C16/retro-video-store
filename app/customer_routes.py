@@ -101,3 +101,11 @@ def delete_customer(id):
     db.session.commit()
 
     return make_response({"id": int(id)}, 200)
+
+
+@customer_bp.route("/<id>/history", methods = ["GET"])
+def get_customer_history(id):
+    customer = find_customer(id)
+    if not customer["found"]:
+        return customer["return"]
+    return make_response(jsonify(customer_history(customer["info"].id)), 200) 
