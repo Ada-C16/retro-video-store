@@ -11,6 +11,8 @@ class Customer(db.Model):
     videos = db.relationship('Video', secondary='rentals', backref='customers')
     
     def to_dict(self):
+        '''takes instance of Customer and returns a formatted dictionary
+        that includes instance attributes as key, value pairs'''
         customer_dict = {
             "id": self.id,
             "name": self.name,

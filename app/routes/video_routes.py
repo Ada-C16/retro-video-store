@@ -8,6 +8,9 @@ from flask import Blueprint, jsonify, make_response, request, abort
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
 def check_for_valid_input(request_body, list_of_attributes):
+    '''ensure all required attributes are included in
+    input from request body, abort and return 400 
+    error message if a required piece of data is missing'''
     for attribute in list_of_attributes:
         if attribute not in request_body:
             abort(make_response({"details": f"Request body must include {attribute}."}, 400))
@@ -15,6 +18,9 @@ def check_for_valid_input(request_body, list_of_attributes):
             
 
 def validate_video_input(request_body):
+    '''ensure all input from request body is a correct 
+    and valid data type, abort and return 400 error 
+    message if the data is not valid'''
     for key, value in request_body.items():
         if key == "title":
             if type(value) != str:

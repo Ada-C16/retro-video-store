@@ -9,6 +9,9 @@ from app.routes.video_routes import check_for_valid_input
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
 def validate_customer_input(request_body):
+    '''ensure all input from request body is a correct 
+    and valid data type, abort and return 400 error 
+    message if the data is not valid'''
     for key, value in request_body.items():
         if type(value) is not str:
             abort(make_response({"Invalid Input": f"The {key} value must be a string."}, 400))

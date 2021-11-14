@@ -8,6 +8,8 @@ class Video(db.Model):
     release_date = db.Column(db.DateTime, nullable=True)
 
     def to_dict(self):
+        '''takes instance of Customer and returns a formatted dictionary
+        that includes instance attributes as key, value pairs'''
         video_dict = {
             "id": self.id,
             "title": self.title,

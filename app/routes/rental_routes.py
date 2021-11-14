@@ -9,7 +9,9 @@ from app.routes.video_routes import check_for_valid_input
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 def validate_input(request_body):
-
+    '''ensure all input from request body is a correct 
+    and valid data type, abort and return 400 error 
+    message if the data is not valid'''
     for key, value in request_body.items():
         if type(value) is not int:
             error_message = jsonify({"Invalid Input": f"The {key} value must be an integer."})
