@@ -1,5 +1,7 @@
 from app import db
 from app.models.video import Video
+from app.models.customer import Customer
+from app.models.rental import Rental
 from datetime import datetime
 from flask import Blueprint, jsonify, request
 
@@ -119,3 +121,34 @@ def delete_single_video(video_id):
     db.session.commit()
 
     return jsonify(id=video.id), 200
+
+@videos_bp.route("/<video_id>/rentals", methods=["GET"]) 
+def get_customers_with_video_rented(video_id):
+    """
+    List of all customers with video rented.
+    """
+    try: 
+        video_id = int(video_id)
+    except:
+        return jsonify(None), 400
+    
+    video  = Video.query.get(video_id)
+    
+    if video == None:
+        return jsonify(message=f"Video {video_id} was not found"), 404
+
+    rental_list = Rental.query.filter_by(video_id=video.id, checked_out=True)
+
+    list_of_dicts = []
+
+    for rental in rental_list:
+        
+        customer = Customer.query.get(rental.video_id)
+        list_of_dicts.append({
+        "due_date": rental.due_date,
+        "name": customer.name,
+        "phone": customer.phone,
+        "postal_code": customer.postal_code
+    })
+
+    return jsonify(list_of_dicts), 200
