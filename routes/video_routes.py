@@ -10,7 +10,7 @@ video_bp = Blueprint("videos", __name__, url_prefix=("/videos"))
 @video_bp.route("", methods=["GET"])
 def get_all_videos():
     """
-    Retrieves all saved video records
+    Retrieves all saved video records.
     """
     video = Video.query.all()
     video_response = [video.to_json() for video in video]
@@ -20,9 +20,9 @@ def get_all_videos():
 @video_bp.route("", methods=["POST"])
 def create_video():
     """
-    Allows client to create new video records,
+    Allows client to create a new video record,
     which must have title, release_date, and
-    total_inventory in request_body
+    total_inventory in request_body.
     """
     if request.method == "POST":
         request_body = request.get_json()
@@ -54,10 +54,10 @@ def create_video():
 
 
 
-@video_bp.route("/<video_id>", methods=["GET","PUT","DELETE"])
-def handle_video_id(video_id):
+@video_bp.route("/<video_id>", methods=["GET"])
+def get_single_video(video_id):
     """
-    Allows client to retrieve, post, and delete video records
+    Allows client to retrieve a single video record,
     only after ensuring that the video_id is an integer.
     """
     try: 
@@ -78,30 +78,61 @@ def handle_video_id(video_id):
         }, 200
 
 
-    elif request.method == "PUT":
-        form_data = request.get_json()
+@video_bp.route("/<video_id>", methods=["PUT"])
+def edit_video_data(video_id):
+    """
+    Allows client to edit a single video record,
+    only after ensuring that the video_id is an integer.
+    """
+    try: 
+        video_id = int(video_id)
+    except:
+        return jsonify(None), 400
 
-        if "title" not in form_data or "release_date" not in form_data \
-        or "total_inventory" not in form_data:
-            return jsonify(None), 400
+    video = Video.query.get(video_id)
 
-        video.title = form_data["title"]
-        video.release_date = form_data["release_date"]
-        video.total_inventory = form_data["total_inventory"]
+    if video == None:
+        return jsonify(message=f"Video {video_id} was not found"), 404
 
-        db.session.commit()
+    form_data = request.get_json()
 
-        return {
-            "id": video.id,
-            "title": video.title,
-            "release_date": video.release_date,
-            "total_inventory": video.total_inventory
-        }, 200
+    if "title" not in form_data or "release_date" not in form_data \
+    or "total_inventory" not in form_data:
+        return jsonify(None), 400
 
-    elif request.method == "DELETE":
-        db.session.delete(video)
-        db.session.commit()
+    video.title = form_data["title"]
+    video.release_date = form_data["release_date"]
+    video.total_inventory = form_data["total_inventory"]
 
-        return {
-            "id": video.id
-        }, 200
+    db.session.commit()
+
+    return {
+        "id": video.id,
+        "title": video.title,
+        "release_date": video.release_date,
+        "total_inventory": video.total_inventory
+    }, 200
+
+
+@video_bp.route("/<video_id>", methods=["DELETE"])
+def delete_single_video(video_id):
+    """
+    Allows client to delete a single video record,
+    only after ensuring that the video_id is an integer.
+    """
+    try: 
+        video_id = int(video_id)
+    except:
+        return jsonify(None), 400
+
+    video = Video.query.get(video_id)
+
+    if video == None:
+        return jsonify(message=f"Video {video_id} was not found"), 404
+
+    db.session.delete(video)
+    db.session.commit()
+
+    return {
+        "id": video.id
+    }, 200
