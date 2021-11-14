@@ -291,10 +291,32 @@ def check_in_one_rental():
         # if video or customer don't exist, return 404
         return jsonify(""), 404
 
-                                           
- 
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"])
+def current_vids_customer_checked_out(customer_id):
+    customer_query = Customer.query.filter_by(id=customer_id).first()
+    if customer_query :
+# checked_out_vids is list of Rental objects fitting query params, but this will only  provide us with due_date
+# to get title and release_date, need to access Video table
+        checked_out_vids = Rental.query.filter_by(customer_id=customer_id,checked_in= False).all()
+        
+        rentals_response = []
+        # looping through each rental, converting to requested format (dict) and adding to
+        # videos_response which will be list of dicts
+        # bc we created relationship between Rental and Video in rental.py, now we can access Video attributes
+        # through dot notation, gets chained to rental.
+        for rental in checked_out_vids:    
+            rentals_response.append({
+            'title':rental.video.title,
+            'release_date':rental.video.release_date,
+            'due_date':rental.due_date
+            })
+        return jsonify(rentals_response), 200
+    else:
+        return jsonify({"message": f"Customer {customer_id} was not found"}), 404
+                                    
 
-     
+
+
                                 
     
 
