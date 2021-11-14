@@ -13,15 +13,17 @@ def list_objects(route, query_params):
         query_limit = query_params["n"]
         query_page = query_params["p"]
 
+        not_allowed = ["none", "None"]
+
         if query_sort == "desc":
             query_url = query_url + "sort=desc"
         else:
             query_url = query_url + "sort=asc"
 
-        if query_limit != "None":
+        if query_limit not in not_allowed:
             query_url = query_url + f"&n={query_limit}"
 
-        if query_page != "None":
+        if query_page not in not_allowed:
             query_url = query_url + f"&p={query_page}"
 
         response = requests.get(query_url)

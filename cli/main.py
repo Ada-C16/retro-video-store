@@ -261,15 +261,20 @@ def query_filter_options(class_type):
 
     query_params = {}
     query_params["sort"] = input("Sort by name asc or desc?: ")
-    query_params["n"] = check_if_numeric(input("If you would like to limit the number of responses per page please input number or None: "), class_type)
-    query_params["p"] = check_if_numeric(input("Please input the page number you would like to see if limiting responses, in no input None: "), class_type)
+    query_params["n"] = check_if_numeric_or_none(input("If you would like to limit the number of responses per page please input number or None: "), class_type)
+    query_params["p"] = check_if_numeric_or_none(input("Please input the page number you would like to see if limiting responses, in no input None: "), class_type)
+    
+    print(query_params)
 
     return query_params
 
-def check_if_numeric(thing_to_check, class_type):
+def check_if_numeric_or_none(thing_to_check, class_type):
     """Defined helper function if value is numeric"""
 
-    if not thing_to_check.isnumeric():
+    if thing_to_check == "None" or thing_to_check == "none":
+        return thing_to_check
+    
+    elif not thing_to_check.isnumeric():
         print("\nmessage: Please use a number")
         print_all_instances(class_type)
 
