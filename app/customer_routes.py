@@ -39,23 +39,19 @@ def get_customer_rentals(id):
 def post_customer():
     from datetime import datetime
     request_body = request.get_json()
-    try:
-        name = request_body["name"]
-    except:
-        return make_response({"details": "Request body must include name."}, 400)
-    try:     
-        phone = request_body["phone"]
-    except:
-        return make_response({"details": "Request body must include phone."}, 400)
-    try:    
-        postal_code = request_body["postal_code"]
-    except:
-        return make_response({"details": "Request body must include postal_code."}, 400)
 
+    attrs = ("name", "phone", "postal_code")
+
+    for attr in attrs:
+        try:
+            vars()[attr] = request_body[attr]
+        except:
+            return make_response({"details": f"Request body must include {attr}."}, 400)
+    
     new_customer = Customer(
-        name = name,
-        phone = phone, 
-        postal_code = postal_code,
+        name = vars()["name"],
+        phone = vars()["phone"], 
+        postal_code = vars()["postal_code"],
         registered_at = datetime.now()
     )
 
