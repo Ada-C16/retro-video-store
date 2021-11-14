@@ -65,6 +65,12 @@ def check_out_video():
 
 @rentals_bp.route("/check-in", methods=["POST"])
 def check_in_video():
+    """
+    The approach here was similar to that of a PUT method because we 
+    are updating the rental so that it is no longer considered during 
+    the check-out count and teh available inventory reflects these 
+    changes as well.
+    """
     request_body = request.get_json()
 
     if "customer_id" not in request_body:

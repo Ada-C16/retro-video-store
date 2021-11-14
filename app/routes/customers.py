@@ -16,6 +16,8 @@ from flask_sqlalchemy import _make_table
 from app import db
 from app.helpers.customers import *
 from app.models.customer import *
+from app.routes.videos import Video
+from app.routes.rentals import *
 
 # Write blueprint for customer 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
@@ -82,3 +84,27 @@ def delete_customer(customer):
     db.session.commit()
 
     return customer.customer_details(), 200
+
+# GET /customers/<id>/rentals 
+# Gives back details about the rentals a customer has checked out
+# Returns list of dictionaries with rental info
+
+@customers_bp.route("/<id>/rentals", methods = ["GET"])
+@require_valid_id
+def customer_rentals(customers):
+    customer = None
+    # HOW DO I PASS IN THE CUSTOMER ID WHEN THE ENDPOINT IS RENTALS?
+    customer_rentals = Rental.query.filter(Rental.customer_id==customer.id)
+
+    checked_out_videos = []
+
+    for rental in customer_rentals:
+        video = Video.query.get(rental.video_id)
+        response_body = {
+            "release_date": video.release_date,
+            "title": video.title,
+            "due_date": rental.due_date
+        }
+        checked_out_videos.append(response_body)
+    
+    return checked_out_videos, 200
