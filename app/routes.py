@@ -293,11 +293,11 @@ def check_in_one_rental():
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def current_vids_customer_checked_out(customer_id):
-# guard clause checking if the customer_id exists in Customer table
+    # guard clause checking if the customer_id exists in Customer table
     customer_query = Customer.query.filter_by(id=customer_id).first()
     if customer_query :
-# checked_out_vids is list of Rental objects fitting query params, but this will only  provide us with due_date
-# to get title and release_date, need to access Video table
+        # checked_out_vids is list of Rental objects fitting query params, but this will only  provide us with due_date
+        # to get title and release_date, need to access Video table
         checked_out_vids = Rental.query.filter_by(customer_id=customer_id,checked_in= False).all()
         rentals_response = []
         # looping through each rental, converting to requested format (dict) and adding to
@@ -318,8 +318,8 @@ def current_vids_customer_checked_out(customer_id):
 def all_customers_with_vid_checked_out(video_id):
     video_query = Video.query.filter_by(id=video_id).first()
     if video_query :
-# customers_with_vid is list of Rental objects fitting query params, but this will only  provide us with due_date
-# to get name, phone, postal_code, need to access Customer table
+        # customers_with_vid is list of Rental objects fitting query params, but this will only  provide us with due_date
+        # to get name, phone, postal_code, need to access Customer table
         customers_with_vid = Rental.query.filter_by(video_id=video_id,checked_in= False).all()
         customers_response =[]
         for rental in customers_with_vid:

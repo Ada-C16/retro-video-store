@@ -15,9 +15,7 @@ class Customer(db.Model):
     # backref is creating 2 new attributes as well as establishing the relationship here
     # backref is creating Customer.videos as well as Video.customers    
 
-    # does lazy need to be set?
-
-    videos = db.relationship("Video", secondary="rental", backref="customers", lazy=True)
+    videos = db.relationship("Video", secondary="rental", backref="customers")
 
     # returns the number of videos that an individual customer has checked out
     def customers_checked_out_videos(self):
