@@ -68,6 +68,7 @@ def handle_videos():
         new_video_dict = new_video.to_dict()
 
         return jsonify(new_video_dict), 201
+        
 
 @videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE"])
 def handle_video(video_id):

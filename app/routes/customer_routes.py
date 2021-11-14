@@ -73,10 +73,8 @@ def post_new_customer():
 
     list_of_attributes = ["name", "postal_code", "phone"]
 
-
     check_for_valid_input(request_body, list_of_attributes)
     validate_customer_input(request_body)
-
 
     new_customer = Customer(name=request_body["name"],
     postal_code=request_body["postal_code"],
@@ -126,7 +124,6 @@ def delete_customer(customer_id):
     db.session.delete(customer)
     db.session.commit()
     
-
     return jsonify({
         'id': customer.id
         }), 200
