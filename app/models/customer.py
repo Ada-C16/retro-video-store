@@ -3,7 +3,7 @@ from app import db
 
 
 class Customer(db.Model):
-    customer_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     customer_registration = db.Column(db.String)
     postal_code = db.Column(db.String)
@@ -11,7 +11,7 @@ class Customer(db.Model):
 
     def customer_information(self):
         return {
-            "id": self.customer_id,
+            "id": self.id,
             "name": self.name,
             "registered_at": self.customer_registration,
             "postal_code": self.postal_code,
