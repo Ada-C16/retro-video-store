@@ -344,7 +344,7 @@ def delete_customer(rental_id):
         
         db.session.delete(customer)
         db.session.commit()
-        return jsonify("Customer deleted"), 200
+        return jsonify("Customer delete"), 200
 
     else: 
         return jsonify(""), 404

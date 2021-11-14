@@ -2,6 +2,11 @@ from app import db
 from sqlalchemy.orm import backref
 
 class Rental(db.Model):
+
+    __mapper_args__ = {
+        'confirm_deleted_rows': False
+    }
+    
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), primary_key=True, nullable=False)
     video_id = db.Column(db.Integer, db.ForeignKey('video.id'), primary_key=True, nullable=False)
