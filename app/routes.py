@@ -328,7 +328,7 @@ def update_rentals():
     videos_checked_out_count = videos_in_rental.count()
     # rental_response[0]["videos_checked_out_count"] = videos_checked_out_count
 
-    # video = Video.query.get(request_body["video_id"])
+    video = Video.query.get(request_body["video_id"])
     video_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
 
 
@@ -347,17 +347,27 @@ def update_rentals():
     }, 200
 
 
+@customers_bp.route("/<customer_id>/rentals", methods = ["GET"])
+def get_videos_for_customer(customer_id):
+    customer_id = int(customer_id)
+    customer=Customer.query.get(customer_id)
+    if not customer:
+        return make_response({"message": f"Customer {customer_id} was not found"}, 404)
+    videos_in_rentals = Rental.query.filter_by(customer_id=customer_id)
+    response_test = []
+    for video in videos_in_rentals:
+        video1 = Video.query.get(video.video_id)
+        
 
-# @customers_bp.route("/<customer_id>/rentals", method=["GET"])
-# def list_videos_by_customer(customer_id):
-#     customer = Customer.query.get(customer_id)
-#     if not customer:
-#         return make_response({"message": "Customer not found"}, 404)
 
-#     videos = Rental.query.with_entities(Rental.video_id)
+        response_test.append({
+        "release_date": video1.release_date,
+        "title": video1.title,
+        "due_date": video.due_date
 
+    })
 
-
+    return jsonify(response_test), 200
 
     
 
