@@ -1,9 +1,8 @@
 from app import db
 from app.models.customer import Customer 
 from flask import Blueprint, jsonify, request
-import os
 from datetime import datetime
-
+from sqlalchemy import select
 from app.models.video import Video
 from app.models.rental import Rental
 
@@ -11,6 +10,7 @@ from app.models.rental import Rental
 # Blueprints
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 # Customer helper functions
 def display_customer_info(customer):
@@ -240,38 +240,56 @@ def delete_video(video_id):
 # *****************************
 
 # POST /rentals/check-out
-# *** QUESTION: DO WE NEED TO MAKE A NEW BLUEPRINT FOR RENTALS? ***
-@videos_bp.route("/rentals/check-out", methods = ["POST"])
+# changed bp to rentals vs videos
+@rentals_bp.route("/rentals/check-out", methods = ["POST"])
 def post_rentals_check_out(customer_id, video_id):
     request_body = request.get_json()
-    
     # check for valid input
     if "customer_id" not in request_body:
         response_body = {"details": "Request body must include customer_id."}
-        return jsonify(response_body), 400
-    elif "video_id" not in request_body:
+        return jsonify(None), 400
+    if "video_id" not in request_body:
         response_body = {"details": "Request body must include video_id."}
         return jsonify(response_body), 400
 
     # check if customer exists
     customer = Customer.query.get(customer_id)
     if not customer:
-        return customer_not_found(customer_id), 404
+        return jsonify("Not Found"), 404
 
-    #check if video exists
+    # check if video exists
     video = Video.query.get(video_id)
     if not video:
-        response_body = {"message" : f"Video {video_id} was not found"}
-        return jsonify(response_body), 404
+        # response_body = {"message" : f"Video {video_id} was not found"}
+        return jsonify("Not Found"), 404
+
 
     # create a response body
-    response_body = {}
+    # need to create new_rental instance when checking out
+    # this is not working yet just brainstorming
+    new_rental = Rental(
+        due_date=datetime.strptime(days=7),
+        videos_checked_out_count=customer.rentals,
+        available_inventory = (video_id.total_inventory - video_id.rentals)
+    )
 
-    return jsonify(response_body), 201
+    db.session.add(new_rental)
+    db.session.commit()
+
+    # this is not working yet just brainstorming
+    response_body = {
+            "customer_id": new_rental.customer_id,
+            "video_id": new_rental.video_id,
+            "videos_checked_out_count": customer.rentals,
+            "available_inventory": (video_id.total_inventory - video_id.rentals)
+        }
+
+    return jsonify(response_body), 200
 
 
 # POST /rentals/check-in
-@videos_bp.route("/rentals/check-in", methods = ["POST"])
+# changed bp to rentals vs videos
+@rentals_bp.route("/rentals/check-in", methods = ["POST"])
 def post_rentals_check_in(customer_id, video_id):
     request_body = request.get_json()
     
@@ -286,7 +304,8 @@ def post_rentals_check_in(customer_id, video_id):
     # check if customer exists
     customer = Customer.query.get(customer_id)
     if not customer:
-        return customer_not_found(customer_id), 404
+        response_body = {"message" : f"Customer {customer_id} was not found"}
+        return jsonify(response_body),404
 
     # check if video exists
     video = Video.query.get(video_id)
@@ -295,7 +314,7 @@ def post_rentals_check_in(customer_id, video_id):
         return jsonify(response_body), 404
 
     # access the rental being checked in (deleted)
-    rental = Rental.query.get(pass)
+    rental = Rental.query.get() # need to add some type of constraint here, what specific rental are we deleting?
 
     # create a response body
     response_body = {}
@@ -305,3 +324,32 @@ def post_rentals_check_in(customer_id, video_id):
     db.session.commit()
 
     return jsonify(response_body), 201
+
+
+# *****************************
+# *** GET custom endpoints ***
+# *****************************
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"])
+def get_checked_out_videos(customer_id):
+    customer = Customer.query.get(customer_id)
+    if customer is None:
+        return {"message" : f"Customer {customer_id} was not found"}, 404
+    
+    rentals = customer.rentals
+    if len(rentals) == 0:
+        response_body = []
+        return jsonify(response_body), 200
+
+    # working on getting tests to pass from this point
+    check_out = customer.video_id.total_inventory - len(customer.videos)
+    response_body = []    
+    for rental in rentals:
+        if check_out > 0:
+            response_body.append({
+                "release_date": rental.video.release_date,
+                "title": rental.video.title,
+                "due_date": rental.due_date
+            })
+
+    return jsonify(response_body), 200
+    
