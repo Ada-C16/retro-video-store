@@ -10,7 +10,7 @@ customer_bp = Blueprint("customers", __name__, url_prefix="/customers")
 @customer_bp.route("", methods = ["GET"])
 def get_customers():
     """
-    Retrieves all saved customer records
+    Retrieves all saved customer records.
     """
     customer = Customer.query.all()
     customer_response = [customer.to_json() for customer in customer]
@@ -18,11 +18,11 @@ def get_customers():
 
 
 @customer_bp.route("", methods = ["POST"])
-def post_customer():
+def create_customer():
     """
     Allows client to create new customer records,
     which must have name, phone number, and
-    postal_code in request_body
+    postal_code in request_body.
     """
     request_body = request.get_json() 
     if "name" not in request_body:
@@ -48,11 +48,11 @@ def post_customer():
     }, 201
 
 
-@customer_bp.route("/<customer_id>", methods=["GET", "PUT", "DELETE"]) 
-def handle_customer_id(customer_id):
+@customer_bp.route("/<customer_id>", methods=["GET"]) 
+def get_single_customer(customer_id):
     """
-    Allows client to retrieve, post, and delete customer records
-    only after ensuring that the customer_id is an integer.
+    Allows client to retrieve customer data only after 
+    ensuring that the customer_id is an integer.
     """
     try: 
         customer_id = int(customer_id)
@@ -72,29 +72,61 @@ def handle_customer_id(customer_id):
             "postal_code": customer.postal_code,
             }, 200
 
-    elif request.method == "PUT":
-        form_data = request.get_json()
 
-        if "name" not in form_data or "phone" not in form_data \
-        or "postal_code" not in form_data:
-            return jsonify(None), 400
+@customer_bp.route("/<customer_id>", methods=["PUT"]) 
+def edit_customer_data(customer_id):
+    """
+    Allows client to edit customer data only after ensuring 
+    that the customer_id is an integer.
+    """
+    try: 
+        customer_id = int(customer_id)
+    except:
+        return jsonify(None), 400
+    
+    customer = Customer.query.get(customer_id)
+    
+    if customer == None:
+        return jsonify(message=f"Customer {customer_id} was not found"), 404
+    
+    form_data = request.get_json()
 
-        customer.name = form_data["name"]
-        customer.phone = form_data["phone"]
-        customer.postal_code = form_data["postal_code"]
+    if "name" not in form_data or "phone" not in form_data \
+    or "postal_code" not in form_data:
+        return jsonify(None), 400
 
-        db.session.commit()
+    customer.name = form_data["name"]
+    customer.phone = form_data["phone"]
+    customer.postal_code = form_data["postal_code"]
 
-        return {
-            "id": customer.id,
-            "name": customer.name,
-            "phone": customer.phone,
-            "postal_code": customer.postal_code
-        }, 200
+    db.session.commit()
 
-    elif request.method == "DELETE":
-        db.session.delete(customer)
-        db.session.commit()
-        return {
-            "id": customer.id
-        }, 200
+    return {
+        "id": customer.id,
+        "name": customer.name,
+        "phone": customer.phone,
+        "postal_code": customer.postal_code
+    }, 200
+
+
+@customer_bp.route("/<customer_id>", methods=["DELETE"]) 
+def delete_single_customer(customer_id):
+    """
+    Allows client to delete customer data only after ensuring 
+    that the customer_id is an integer.
+    """
+    try: 
+        customer_id = int(customer_id)
+    except:
+        return jsonify(None), 400
+    
+    customer = Customer.query.get(customer_id)
+    
+    if customer == None:
+        return jsonify(message=f"Customer {customer_id} was not found"), 404
+    
+    db.session.delete(customer)
+    db.session.commit()
+    return {
+        "id": customer.id
+    }, 200

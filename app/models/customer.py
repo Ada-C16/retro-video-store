@@ -1,5 +1,6 @@
 from app import db
 from datetime import date
+from flask import Blueprint, jsonify, request
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

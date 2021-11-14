@@ -1,4 +1,5 @@
 from app import db
+from flask import jsonify
 
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

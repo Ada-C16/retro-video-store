@@ -8,7 +8,7 @@ video_bp = Blueprint("videos", __name__, url_prefix=("/videos"))
 
 
 @video_bp.route("", methods=["GET"])
-def get_videos():
+def get_all_videos():
     """
     Retrieves all saved video records
     """
@@ -17,9 +17,8 @@ def get_videos():
     return jsonify(video_response), 200
 
 
-# post a video
 @video_bp.route("", methods=["POST"])
-def post_video():
+def create_video():
     """
     Allows client to create new video records,
     which must have title, release_date, and
