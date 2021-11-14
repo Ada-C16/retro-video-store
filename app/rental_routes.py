@@ -97,6 +97,3 @@ def read_all_customers_with_overdue_rentals():
         list_of_customers.append(customer_data)
 
     return jsonify(list_of_customers), 200
-
-
-#GET AT THE CUSTOMERS_ID_RENTALS, GET VIDEOS_ID_RENTALS

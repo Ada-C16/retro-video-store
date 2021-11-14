@@ -18,8 +18,7 @@ def get_model():
         "videos": Video
     }
     g.model = blueprints[request.blueprint]
-
-
+   
 @customer_bp.route("", methods=["GET"])
 @videos_bp.route("", methods=["GET"])
 def read_all_records():
@@ -76,9 +75,44 @@ def read_all_current_rentals(id):
     return jsonify(current_records), 200
 
 # WAVE 03 Custom endpoint
+
 @customer_bp.route("/<id>/history", methods = ["GET"])
+def read_past_video_rentals(id):
+    Customer.valid_int(id)
+    past_rentals = Rental.query.filter(Rental.customer_id==id, Rental.return_date!=None).all()
+    video_list = []
+
+    for rental in past_rentals:
+        video = Video.query.get(rental.video_id)
+        customer_data ={
+            "title": video.title,
+            "checkout_date": rental.checkout_date,
+            "due_date": rental.due_date,
+            "return_date": rental.return_date
+        }
+
+        video_list.append(customer_data)
+    
+    return jsonify(video_list)
+
+
 @videos_bp.route("/<id>/history", methods=["GET"])
-def read_all_past_rentals(id):
-    model = g.model
-    past_records = model.past_associated_records(id)
-    return jsonify(past_records),200
+def read_all_past_customers(id):
+    Video.valid_int(id)
+    past_rentals = Rental.query.filter(Rental.video_id==id, Rental.return_date!=None).all()
+    customer_list = []
+
+    for rental in past_rentals:
+        customer = Customer.query.get(rental.customer_id)
+        
+        customer_data = {
+            "customer_id" : customer.id,
+            "name": customer.name,
+            "postal_code": customer.postal_code,
+            "checkout_date": rental.checkout_date,
+            "due_date": rental.due_date
+        }
+
+        customer_list.append(customer_data)
+
+    return jsonify(customer_list)

@@ -1,7 +1,6 @@
 from app import db
 from datetime import date
 from flask import make_response, abort
-from .video import Video
 from .rental import Rental
 
 
@@ -93,22 +92,3 @@ class Customer(db.Model):
             videos_checked_out.append(video_info)
 
         return videos_checked_out
-
-    @classmethod
-    def past_associated_records(cls, id):
-        cls.valid_int(id)
-        past_rentals = Rental.query.filter(Rental.customer_id==id, Rental.return_date!=None).all()
-        video_list = []
-
-        for rental in past_rentals:
-            video = Video.query.get(rental.video_id)
-            customer_data ={
-                "title": video.title,
-                "checkout_date": rental.checkout_date,
-                "due_date": rental.due_date,
-                "return_date": rental.return_date
-            }
-
-            video_list.append(customer_data)
-        
-        return video_list
