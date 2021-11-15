@@ -1,5 +1,19 @@
+
 # Investigate later
 https://stackoverflow.com/questions/6750251/sqlalchemy-order-by-on-relationship-for-join-table/13377228
+https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#orm-declarative-relationship-secondary-eval
+
+
+`.query(table1, table2).join(tablename).order_by()`
+`db.session.query(table1)`
+
+SELECT rentals.video_id, rentals.id, videos.title
+FROM rentals
+INNER JOIN videos
+ON rentals.video_id = videos.id
+ORDER BY videos.title;
+
+https://stackoverflow.com/questions/21996288/join-multiple-tables-in-sqlalchemy-flask
 
 # Wave 02
  

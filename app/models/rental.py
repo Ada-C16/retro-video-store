@@ -5,8 +5,8 @@ from .customer import Customer
 
 class Rental(db.Model):
 
-    sort_fields = ["due_date"]
-
+    sort_fields = ["due_date", "name", "title"]
+    
     __tablename__ = "rentals"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), primary_key=True, nullable=False)
