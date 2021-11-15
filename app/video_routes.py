@@ -42,8 +42,6 @@ def create_video():
     response_body["id"] = new_video.video_id
     return jsonify(response_body), 201
 
-
-
 # /videos/<video_id> routes
 @video_bp.route("/<video_id>", methods=["GET"])
 def get_video(video_id):
