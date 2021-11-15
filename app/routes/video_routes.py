@@ -2,11 +2,9 @@ from app import db
 from app.models.video import Video
 from app.models.rental import Rental
 from flask import Blueprint, request, jsonify
-from datetime import datetime
-import os
+# from app.routes.helper_fuctions import *
 
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
-
 
 @videos_bp.route("", methods=["GET"])
 def get_all_videos():
@@ -18,12 +16,9 @@ def get_all_videos():
 def create_video():
     request_body = request.get_json()
 
-    if "title" not in request_body:
-        return {"details": "Request body must include title."}, 400
-    if "release_date" not in request_body:
-        return {"details": "Request body must include release_date."}, 400
-    if "total_inventory" not in request_body:
-        return {"details": "Request body must include total_inventory."}, 400
+    error_message = validate_request(request_body)
+    if error_message:
+        return error_message
 
     new_video = Video(
         title= request_body["title"],
@@ -35,17 +30,32 @@ def create_video():
 
     return jsonify(new_video.to_dict()), 201
 
+def check_valid_id(Obj, id):
+    if type(id) == int:
+        obj = Obj.query.get(id)
+        return obj
+    else:
+        return "Invalid"
+
+def not_found_message(id):
+    return jsonify({"message": f"Video {id} was not found"}), 404
+
 @videos_bp.route("/<video_id>", methods=["GET"])
 def get_video(video_id):
-    try:
-        video = Video.query.get(video_id)
-    except:
+    # try:
+    #     video = Video.query.get(video_id)
+    # except:
+    #     return jsonify(None), 400
+    video = check_valid_id(Video, video_id)
+
+    if video == "Invalid":
         return jsonify(None), 400
 
     if video is None:
-        return jsonify({"message": f"Video {video_id} was not found"}), 404
+        return not_found_message(video_id)
 
     return video.to_dict()
+
 
 @videos_bp.route("/<video_id>", methods=["DELETE"])
 def delete_video(video_id):
@@ -67,12 +77,9 @@ def update_video(video_id):
     if video is None:
         return {"message": f"Video {video_id} was not found"}, 404
 
-    if "title" not in request_body:
-        return {"details": "Request body must include title."}, 400
-    if "release_date" not in request_body:
-        return {"details": "Request body must include release_date."}, 400
-    if "total_inventory" not in request_body:
-        return {"details": "Request body must include total_inventory."}, 400
+    error_message = validate_request(request_body)
+    if error_message:
+        return error_message
 
     video.title = request_body["title"]
     video.total_inventory = request_body["total_inventory"]
@@ -97,3 +104,19 @@ def get_rentals_by_video(video_id):
         customers.append(customer)
 
     return jsonify(customers)
+
+def validate_request(request_body):
+    attributes = ["title", "release_date", "total_inventory"]
+
+    for attribute in attributes:
+        if attribute not in request_body:
+            return {"details": f"Request body must include {attribute}."}, 400
+
+def validate_video(video_id):
+    try:
+        video = Video.query.get(video_id)
+    except:
+        return jsonify(None), 400
+
+    if video is None:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404

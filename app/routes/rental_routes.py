@@ -4,10 +4,8 @@ from app.models.customer import Customer
 from app.models.video import Video
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
-import os
 
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
-
 
 @rentals_bp.route("/check-out", methods=["POST"])
 def check_out_video():
@@ -42,7 +40,6 @@ def check_in_video():
         video = Video.query.get_or_404(request_body["video_id"])
     except KeyError:
         return jsonify(None), 400
-
 
     rental = Rental.query.filter_by(customer_id = customer.id, video_id = video.id).first()
     if not rental:

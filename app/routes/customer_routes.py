@@ -2,8 +2,6 @@ from app import db
 from app.models.customer import Customer
 from app.models.rental import Rental
 from flask import Blueprint, request, jsonify
-from datetime import datetime
-import os
 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
@@ -17,12 +15,9 @@ def get_all_customers():
 def create_customer():
     request_body = request.get_json()
 
-    if "postal_code" not in request_body:
-        return {"details": "Request body must include postal_code."}, 400
-    if "name" not in request_body:
-        return {"details": "Request body must include name."}, 400
-    if "phone" not in request_body:
-        return {"details": "Request body must include phone."}, 400
+    error_message = validate_request(request_body)
+    if error_message:
+        return error_message
 
     new_customer = Customer(
         name= request_body["name"],
@@ -67,8 +62,9 @@ def update_customer(customer_id):
     if customer is None:
         return {"message": f"Customer {customer_id} was not found"}, 404
 
-    if "name" not in request_body:
-        return jsonify(None), 400
+    error_message = validate_request(request_body)
+    if error_message:
+        return error_message
 
     customer.name = request_body["name"]
     customer.phone = request_body["phone"]
@@ -86,13 +82,18 @@ def get_rentals_by_customer(customer_id):
         return {"message": f"Customer {customer_id} was not found"}, 404
 
     videos= []
-    for video in customer.videos:# [1, 2, 3]
+    for video in customer.videos:
         rental = Rental.query.filter_by(customer_id = customer.id, video_id = video.id).first()
-        video = video.to_dict_using_rentals() #jsonify version
+        video = video.to_dict_using_rentals()
         video["due_date"] = rental.due_date
         videos.append(video)
 
     return jsonify(videos)
 
+def validate_request(request_body):
+    attributes = ["postal_code", "name", "phone"]
+    for attribute in attributes:
+        if attribute not in request_body:
+            return {"details": f"Request body must include {attribute}."}, 400
 
 
