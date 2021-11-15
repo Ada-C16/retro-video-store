@@ -47,7 +47,35 @@ def create_customer():
 
 @customer_bp.route("", methods=["GET"])
 def read_all_customers():
-    customers = Customer.query.all()
+    name_query = request.args.get("name")
+    sort_query =  request.args.get("sort")
+    p_query =  request.args.get("p")
+    n_query = request.args.get("n")
+
+    if name_query:
+        customers = Customer.query.filter_by(name=name_query)
+        print(name_query)
+    elif sort_query:
+        if sort_query == "asc":
+            customers = Customer.query.order_by(Customer.name.asc())
+        elif sort_query == "desc":
+            customers = Customer.query.order_by(Customer.name.desc())
+    # if id_query:
+    #     customers = Customer.query.order_by(Customer.id)
+    elif n_query and p_query:
+        customers = Customer.query.filter(id.between ("((n*p)-n)+1","n*p"))
+    #      DBSession.query(User).filter(User.birthday.between('1985-01-17', '1988-01-17')))
+    # (n+1) through (n*p) -----n=10, p = 2
+    # n= 10, p = 1
+    # if p = 1, and n =10, p to n
+    # 1, ((10*1)-10)+1=1 to n*p
+    #   ()  through (n*p)
+
+    #    1-10  11-20  21-30  31-40
+
+
+    else: 
+        customers = Customer.query.order_by(Customer.id.asc()).all()
     response = [customer.to_dict() for customer in customers]
     return jsonify(response)
 

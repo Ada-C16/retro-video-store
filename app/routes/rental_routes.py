@@ -51,10 +51,11 @@ def create_customer_video():
     
         if "videos_checked_out_count" not in request_body:
             videos_checked_out_count = 1
-        due_date = datetime.today() + timedelta(days=7)
 
+        due_date = datetime.today() + timedelta(days=7)
         total_inventory = video_to_be_checked_out.total_inventory
         available_inventory = total_inventory - videos_checked_out_count
+
         if total_inventory >= videos_checked_out_count:
             new_rental = Rental(video_id=video_id, customer_id=customer_id, videos_checked_out_count=videos_checked_out_count, due_date=due_date)
             video_to_be_checked_out.total_inventory = available_inventory
