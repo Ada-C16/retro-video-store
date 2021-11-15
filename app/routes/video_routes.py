@@ -47,7 +47,6 @@ def create_video():
 
 @videos_bp.route("", methods=["GET"])
 def read_videos():
-    videos = Video.query.all()
     response_body = []
     sort_query = request.args.get("sort")
 
