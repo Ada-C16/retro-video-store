@@ -44,23 +44,14 @@ def handle_videos():
 
         videos_table = Video.query.all() # searching for all the videos in the videos table
         videos_list_response = [] # empty list 
-        # if videos_table is None:
-        #     return jsonify (videos_list), 200
-            
-
-        print(videos_table)
+    
         for each_video in videos_table:
-                videos_list_response.append(
-                {
-
+                videos_list_response.append({
                     "id": each_video.id,
                     "title": each_video.title,
                     "release_date": each_video.release_date,
                     "total_inventory": each_video.total_inventory
-
-                }
-            )
-        print (videos_list_response)
+                })
         return jsonify(videos_list_response), 200
 
 @videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
@@ -93,7 +84,6 @@ def handle_video(video_id):
             video.release_date = form_data["release_date"]
 
             db.session.commit()
-
             return {"title" : video.title, "total_inventory" : video.total_inventory}, 200 
 
 @customers_bp.route("", methods=["GET", "POST"])
@@ -167,14 +157,13 @@ def handle_customer(customer_id):
         customer.postal_code = form_data["postal_code"]
 
         db.session.commit()
-
         return {"name" : customer.name, "phone" : customer.phone, "postal_code": customer.postal_code}, 200
 
+# Wave 2
 def due_date():
     due_date =datetime.today() + timedelta(days=7)
     return due_date
     
-
 @rentals_bp.route("/check-out", methods=["POST"])
 def handle_checkout():
     request_body = request.get_json()
@@ -199,12 +188,10 @@ def handle_checkout():
         customer_id = request_body["customer_id"],
         video_id = request_body["video_id"],
         due_date = movie_due)
-
     db.session.add(rental)
     db.session.commit()
     rentals = Rental.query.filter_by(video_id=video_id).count()
     customers_rentals = customer.video
-
     checked_out = {
                     "video_id": rental.video_id,
                     "customer_id" : rental.customer_id,
@@ -212,17 +199,7 @@ def handle_checkout():
                     "available_inventory": video.total_inventory - rentals,
                     "videos_checked_out_count": len(customers_rentals)
                     }
-
-    
-        
-                
-        
     return jsonify (checked_out), 200
-
-
-        
-                    
-
 
 @rentals_bp.route("/check-in", methods = ["POST"])
 def handle_checkin_rental():
@@ -244,17 +221,11 @@ def handle_checkin_rental():
     if customer_id == False:
         return 404
     movie_due = due_date()
-
-    
     rental = Rental (
             customer_id = customer.id,
             video_id = video.id,
             )
-    # Rental.query.get(rental).delete()
-
-    # db.session.add(rental)
-    # db.session.commit()
-
+   
     rentals = Rental.query.filter_by(video_id=video_id).count()
     customers_rentals = video.customer
     customers_rentals=Rental.query.filter_by(id=video_id).count()
@@ -262,12 +233,11 @@ def handle_checkin_rental():
         return{"message": "No outstanding rentals for customer 1 and video 1"}, 400
 
     checked_in = {
-                    "video_id": rental.video_id,
-                    "customer_id" : rental.customer_id,
-                    "due_date": movie_due,
-                    "available_inventory": video.total_inventory,
-                    "videos_checked_out_count": (customers_rentals - rentals)}
-
+            "video_id": rental.video_id,
+            "customer_id" : rental.customer_id,
+            "due_date": movie_due,
+            "available_inventory": video.total_inventory,
+            "videos_checked_out_count": (customers_rentals - rentals)}
     return jsonify(checked_in), 200
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
@@ -276,7 +246,6 @@ def get_customer_checkout(customer_id):
     if customer is None:
         return {"message" : f"Customer {customer_id} was not found"}, 404
     customers_rentals = customer.video
-    
     rentals = []
     for movie in customers_rentals:
         rental = Rental.query.filter_by(video_id=movie.id, customer_id=customer_id).first()
@@ -289,7 +258,6 @@ def get_customer_checkout(customer_id):
     if rentals is None:
         return jsonify(rental), 200
     return jsonify(rentals), 200 
-
 
 @videos_bp.route("/<video_id>/rentals", methods=["GET"])
 def get_video_cehckout(video_id):
