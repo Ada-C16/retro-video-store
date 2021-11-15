@@ -53,9 +53,6 @@ def checkin_rental():
     customer = get_customer_from_id(request_body["customer_id"])
     video = is_parameter_found(Video, request_body["video_id"])
 
-    # if video.rentals not in customer.rentals:
-    #     abort(make_response({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}, 400))
-
     rental_checkin = db.session.query(Rental).filter_by(customer_id=customer.id, video_id=video.id).first()
     if rental_checkin not in customer.rentals:
         abort(make_response({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}, 400))
