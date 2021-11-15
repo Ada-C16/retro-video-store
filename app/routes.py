@@ -240,15 +240,9 @@ def delete_video(video_id):
 # *****************************
 
 # POST /rentals/check-out
-<<<<<<< HEAD
-@videos_bp.route("/rentals/check-out", methods = ["POST"])
-# @customers_bp.route("/rentals/check-out", methods = ["POST"])
-def post_rentals_check_out():
-=======
 # changed bp to rentals vs videos
 @rentals_bp.route("/rentals/check-out", methods = ["POST"])
 def post_rentals_check_out(customer_id, video_id):
->>>>>>> c424b86991610b28ddf6220e21c53bd125ad5636
     request_body = request.get_json()
     # check for valid input
     if "customer_id" not in request_body:
@@ -261,15 +255,6 @@ def post_rentals_check_out(customer_id, video_id):
     # check if customer exists
     customer = Customer.query.get(request_body["customer_id"])
     if not customer:
-<<<<<<< HEAD
-        return customer_not_found(request_body["customer_id"]), 404
-
-    #check if video exists
-    video = Video.query.get(request_body["video_id"])
-    if not video:
-        response_body = {"message" : f"Video {request_body['video_id']} was not found"}
-        return jsonify(response_body), 404
-=======
         return jsonify("Not Found"), 404
 
     # check if video exists
@@ -278,7 +263,6 @@ def post_rentals_check_out(customer_id, video_id):
         # response_body = {"message" : f"Video {video_id} was not found"}
         return jsonify("Not Found"), 404
 
->>>>>>> c424b86991610b28ddf6220e21c53bd125ad5636
 
     # create a Rental instance
     # new_video = Video.from_dict(request_body)
@@ -288,11 +272,6 @@ def post_rentals_check_out(customer_id, video_id):
     db.session.commit()
 
     # create a response body
-<<<<<<< HEAD
-    # response_body = {new_rental.to_dict()}  
-    response_body = {}  
-
-=======
     # need to create new_rental instance when checking out
     # this is not working yet just brainstorming
     new_rental = Rental(
@@ -312,7 +291,6 @@ def post_rentals_check_out(customer_id, video_id):
             "available_inventory": (video_id.total_inventory - video_id.rentals)
         }
 
->>>>>>> c424b86991610b28ddf6220e21c53bd125ad5636
     return jsonify(response_body), 200
 
 
@@ -343,11 +321,7 @@ def post_rentals_check_in(customer_id, video_id):
         return jsonify(response_body), 404
 
     # access the rental being checked in (deleted)
-<<<<<<< HEAD
-    rental = Rental.query.get(customer_id)
-=======
     rental = Rental.query.get() # need to add some type of constraint here, what specific rental are we deleting?
->>>>>>> c424b86991610b28ddf6220e21c53bd125ad5636
 
     # create a response body
     response_body = {
