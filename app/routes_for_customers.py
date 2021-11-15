@@ -26,6 +26,7 @@ def handle_cusomters():
                 "phone":customer.phone
             })
         return jsonify(customers_response)
+
     elif request.method == "POST":
         request_body = request.get_json()
         if not request_body.get("postal_code"):
@@ -36,6 +37,7 @@ def handle_cusomters():
 
         elif not request_body.get("phone"):
             return make_response({"details":"Request body must include phone."}, 400) 
+        
         new_customer = Customer(
             name=request_body["name"],
             postal_code=request_body["postal_code"],
@@ -44,11 +46,7 @@ def handle_cusomters():
         db.session.add(new_customer)
         db.session.commit()
 
-        response_value = {"id":new_customer.id, """There's a funny story about this line"""
-            "name":new_customer.name,
-            "postal_code":new_customer.postal_code,
-            "phone":new_customer.phone}
-        return make_response(response_value, 201)
+        return make_response(new_customer.create_customer_dict(), 201)
 
 
 
@@ -66,14 +64,7 @@ def handle_customer_by_id(customer_id):
         return make_response(return_message, 404)
 
     elif request.method == "GET":
-        response_value = {
-            "id": customer.id,
-            "name": customer.name,
-            "phone": customer.phone,
-            "postal_code": customer.postal_code,
-            "registered_at": customer.registered_at
-        }
-        return make_response(response_value, 200)
+        return make_response(customer.create_customer_dict(), 200)
     
     elif request.method =="DELETE":
         db.session.delete(customer)
@@ -95,13 +86,7 @@ def handle_customer_by_id(customer_id):
 
         db.session.commit()
 
-        response_value = {
-            "id": customer_id,
-            "name": customer.name,
-            "postal_code": customer.postal_code,
-            "phone": customer.phone
-        }
-        return make_response(response_value, 200)
+        return make_response(customer.create_customer_dict(), 200)
 
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])

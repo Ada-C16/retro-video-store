@@ -9,3 +9,15 @@ class Customer(db.Model):
     
     rental = db.relationship("Rental",passive_deletes=True, backref="customers")
     video = db.relationship("Video", passive_deletes=True, secondary = "rental", backref="customers")
+
+
+
+    def create_customer_dict(self):
+        return_dict = {
+                "id":self.id,
+                "name":self.name,
+                "registered_at":self.registered_at,
+                "postal_code": self.postal_code,
+                "phone": self.phone
+                }
+        return return_dict

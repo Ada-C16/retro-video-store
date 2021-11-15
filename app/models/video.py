@@ -8,3 +8,13 @@ class Video(db.Model):
     total_inventory = db.Column(db.Integer)
 
     rental = db.relationship("Rental",passive_deletes=True, backref="videos")
+
+
+    def create_video_dict(self):
+        return_dict = {
+                "id":self.id,
+                "title":self.title,
+                "release_date":self.release_date,
+                "total_inventory": self.total_inventory
+                }
+        return return_dict
