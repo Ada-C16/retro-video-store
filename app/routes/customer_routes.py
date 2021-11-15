@@ -60,6 +60,9 @@ def read_all_customers():
             customers = Customer.query.order_by(Customer.name.asc())
         elif sort_query == "desc":
             customers = Customer.query.order_by(Customer.name.desc())
+
+    elif n_query and p_query:
+        customers = Customer.query.filter(id.between ("((n*p)-n)+1","n*p"))
     elif n_query and p_query:
         customers = Customer.query.filter(id.between ("((n*p)-n)+1","n*p"))
     else: 
