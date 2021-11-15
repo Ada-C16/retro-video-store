@@ -369,7 +369,7 @@ def update_rentals():
 
     }, 200
 
-
+# List the videos a customer currently has checked out
 @customers_bp.route("/<customer_id>/rentals", methods = ["GET"])
 def get_videos_by_customer(customer_id):
     customer_id = int(customer_id)
@@ -390,7 +390,26 @@ def get_videos_by_customer(customer_id):
     return jsonify(response_videos), 200
 
 
-
+# List the customers who currently have the video checked out
+@videos_bp.route("/<video_id>/rentals", methods = ["GET"])
+def get_customers_by_video(video_id):
+    video_id = int(video_id)
+    video=Video.query.get(video_id)
+    if not video:
+        return make_response({"message": f"Video {video_id} was not found"}, 404)
+    customers_in_rentals = Rental.query.filter_by(video_id=video_id)
+    response_customers = []
+    for customer_in_rental in customers_in_rentals:
+        customer = Customer.query.get(customer_in_rental.customer_id)
+        
+        response_customers.append({
+        "due_date": customer_in_rental.due_date,
+        "name": customer.name,
+        "phone": customer.phone,
+        "postal_code": customer.postal_code
+    })
+    
+    return jsonify(response_customers), 200
 
 
 
