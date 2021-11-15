@@ -14,8 +14,8 @@ class Customer(db.Model):
     videos_checked_out_count = db.Column(db.Integer)
     # backref is creating 2 new attributes as well as establishing the relationship here
     # backref is creating Customer.videos as well as Video.customers    
-
-    videos = db.relationship("Video", secondary="rental", backref="customers", lazy="joined")
+    # what is secondary doing?
+    videos = db.relationship("Rental", backref='Customer', cascade="all, delete-orphan", lazy="joined")
 
     # returns the number of videos that an individual customer has checked out
     def customers_checked_out_videos(self):

@@ -8,6 +8,7 @@ class Video(db.Model):
     release_date = db.Column(db.DateTime) #should this be nullable?
     total_inventory = db.Column(db.Integer)
     available_inventory = db.Column(db.Integer, nullable = True)
+    customers = db.relationship("Rental", backref='Video', cascade="all, delete-orphan", lazy="joined")
 
     def video_checked_out_count(self):
         rental_query = Rental.query.filter_by(video_id=self.id, checked_in=False)
