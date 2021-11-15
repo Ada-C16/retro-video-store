@@ -1,5 +1,5 @@
 from app import db
-from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 
 class Video(db.Model):
@@ -9,7 +9,8 @@ class Video(db.Model):
     release_date = db.Column(db.DateTime())
     due_date = db.Column(db.DateTime())
     total_inventory = db.Column(db.Integer)
-    customers = db.relationship("Rental", backref="video")
+    # customers = db.relationship("Customer", secondary="rental", backref="video")
+    # customers = db.relationship("Rental", backref="video")
     # ^ this line is not 100% necessary but is helpful in understanding the relationship, especially for someone looking at the code for the first time.
 
     def to_dict(self):

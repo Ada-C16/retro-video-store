@@ -8,7 +8,9 @@ class Customer(db.Model):
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime())
     video_id = db.Column(db.Integer, db.ForeignKey("video.id"))
-    videos = db.relationship("Video", secondary="rental", backref="customer")
+
+    rentals = db.relationship("Video", secondary="rental", backref="customers")
+    # ^ allows us to view videos associated with a specific customer
     # ^ Video is the child, line 11 maps out the relationship between the Video and Customer models, with rental as the secondary model (aka join table or intermediary table).
     
     # The Rental model recognizes the Customer model as "customer" 
