@@ -105,6 +105,8 @@ def CRUD_one_video(video_id):
                         "release_date": video.release_date,
                         "total_inventory": video.total_inventory}}, 200)
     elif request.method == "DELETE":
+        if Rental.query.filter_by(video_id=video_id, checked_in=False).count() > 0:
+            return jsonify({"message": f"Video {video_id} has outstanding rentals"}), 200
         db.session.delete(video)
         db.session.commit()
         return make_response({'id': video.id}, 200)
@@ -186,6 +188,8 @@ def handle_one_customer(id):
         return jsonify(make_customer_dict(customer)), 200
 
     elif request.method == "DELETE":
+        if Rental.query.filter_by(customer_id=id, checked_in=False).count() > 0:
+            return jsonify({"message": f"Customer {customer.id} has outstanding rentals"}), 200
         db.session.delete(customer)
         db.session.commit()
         return jsonify({"id": customer.id}), 200
@@ -333,24 +337,7 @@ def all_customers_with_vid_checked_out(video_id):
     else:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
 
-# @customers_bp.route("/<customer_id>", methods=["DELETE"])
-# def delete_customer(customer_id):
-#     rental_query = Rental.query.get(rental_id)
-#     if rental_query:
-#         # get customer with rental
-#         customer_id = rental_query.customer_id
-#         # find customer with id that matches
-#         customer = Customer.query.filter_by(id=customer_id).first()
-        
-#         db.session.delete(customer)
-#         db.session.commit()
-#         return jsonify("Customer delete"), 200
 
-#     else: 
-#         return jsonify(""), 404
-
-# @videos_bp.route("/<video_id>", methods=["DELETE"])
-# def delete_video(video_id):
    
                                     
 
