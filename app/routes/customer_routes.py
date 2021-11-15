@@ -64,9 +64,34 @@ def handle_customer(customer_id):
         return jsonify(customer.to_dict()), 200
 
     elif request.method == "DELETE":
+        if customer.rentals:
+            for rental in customer.rentals:
+                db.session.delete(rental)
         customer_id=int(customer_id)
         customer=Customer.query.get(customer_id)
         db.session.delete(customer)
         db.session.commit()
 
         return({"id":customer_id}), 200
+
+# Get Customer's Rentals
+@customer_bp.route("/<cust_id>/rentals", methods=["GET"])
+def handle_customer_rentals(cust_id):
+    try:
+        int(cust_id)
+    except ValueError:
+            return jsonify({"Error": "Customer ID must be an integer."}), 400
+
+    customer = Customer.query.get(cust_id)        
+    if customer is None:
+        return make_response({"message": f"Customer {cust_id} was not found"}), 404
+    
+    rentals = Rental.query.filter_by(customer_id=cust_id).all()
+    rentals_response = []
+
+    for rental in rentals:
+        video = Video.query.get(rental.video_id)
+        rentals_response.append({"title": video.title})
+        
+    return jsonify(rentals_response), 200
+

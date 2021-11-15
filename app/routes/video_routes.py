@@ -83,7 +83,31 @@ def delete_video(video_id):
     video = Video.query.get(video_id)
     if video is None:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
+    
+    if video.rentals:
+        for rental in video.rentals:
+            db.session.delete(rental)
 
     db.session.delete(video)
     db.session.commit()
     return jsonify({"id": video.video_id}), 200
+
+# Get rentals for a video
+@video_bp.route("/<vid_id>/rentals", methods=["GET"])
+def get_video_rentals(vid_id):
+    try:
+        int(vid_id)
+    except ValueError:
+        return jsonify({"Error": "Video ID must be an integer."}), 400
+
+    video = Video.query.get(vid_id)
+    if video is None:
+        return jsonify({"message": f"Video {vid_id} was not found"}), 404
+
+    rentals = Rental.query.filter_by(video_id=vid_id).all()
+
+    rentals_response = []
+    for rental in rentals:
+        customer = Customer.query.get(rental.customer_id)
+        rentals_response.append({"name": customer.name})
+    return jsonify(rentals_response), 200
