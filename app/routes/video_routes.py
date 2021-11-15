@@ -1,5 +1,7 @@
 from flask import Blueprint, jsonify, request, abort, make_response
 from app.models.video import Video
+from app.models.rental import Rental
+from app.models.customer import Customer
 from app import db
 from datetime import date
 import requests
@@ -7,9 +9,6 @@ import os
 TOKEN = os.environ.get('TOKEN')
 
 video_bp = Blueprint("video", __name__, url_prefix="/videos")
-
-
-###REGISTER BLUEPRINT???
 
 # Helper Functions
 def valid_int(number, parameter_type):
@@ -73,13 +72,11 @@ def get_videos():
         )
     return jsonify(videos_response), 200
 
-
 @video_bp.route("/<video_id>", methods=["PUT"])
 def update_video(video_id):
     """UPDATES video with given id"""
     if video_id == None:
         return make_response(404)
-
     else:
         video = get_video_from_id(video_id)
         request_body = request.get_json()
@@ -94,7 +91,6 @@ def update_video(video_id):
         video.title = request_body["title"]
         video.release_date = request_body["release_date"]    
         video.total_inventory = request_body["total_inventory"]
-
         video_response = video.to_dict()
 
         db.session.commit()
@@ -109,5 +105,18 @@ def delete_video(video_id):
     db.session.delete(video)
     db.session.commit()
     return video.to_dict(), 200
+
+@video_bp.route("/<video_id>/history", methods=["GET"])
+def get_video_history(video_id):
+    video = get_video_from_id(video_id)
+    list_customers = video.customers
+    response_list = []
+    for customer in list_customers:
+         rental_record = db.session.query(Rental).filter(Rental.customer_id==customer.id,Rental.video_id== video.video_id).first()
+         print(rental_record)
+         response_list.append({"customer_id": customer.id, "customer_name":customer.name, "customer_postal_code":customer.postal_code,
+         "checkout_date":rental_record.rental_date, "due_date":rental_record.calculate_due_date()})
+    return jsonify(response_list)
+     
 
 

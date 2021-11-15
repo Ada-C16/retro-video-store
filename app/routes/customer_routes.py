@@ -1,5 +1,6 @@
 from app import db
 from app.models.customer import Customer
+from app.models.rental import Rental
 from flask import Blueprint, jsonify, make_response,request, abort
 from dotenv import load_dotenv
 import os
@@ -54,26 +55,13 @@ def read_all_customers():
 
     if name_query:
         customers = Customer.query.filter_by(name=name_query)
-        print(name_query)
     elif sort_query:
         if sort_query == "asc":
             customers = Customer.query.order_by(Customer.name.asc())
         elif sort_query == "desc":
             customers = Customer.query.order_by(Customer.name.desc())
-    # if id_query:
-    #     customers = Customer.query.order_by(Customer.id)
     elif n_query and p_query:
         customers = Customer.query.filter(id.between ("((n*p)-n)+1","n*p"))
-    #      DBSession.query(User).filter(User.birthday.between('1985-01-17', '1988-01-17')))
-    # (n+1) through (n*p) -----n=10, p = 2
-    # n= 10, p = 1
-    # if p = 1, and n =10, p to n
-    # 1, ((10*1)-10)+1=1 to n*p
-    #   ()  through (n*p)
-
-    #    1-10  11-20  21-30  31-40
-
-
     else: 
         customers = Customer.query.order_by(Customer.id.asc()).all()
     response = [customer.to_dict() for customer in customers]
@@ -115,4 +103,15 @@ def delete_customer(customer_id):
     db.session.commit()
     
     return response.to_dict()
-  
+
+@customer_bp.route("/<customer_id>/history", methods=["GET"])
+def get_customer_history(customer_id):
+    customer = get_object_from_id(Customer, customer_id)
+    list_videos = customer.videos
+    response_list = []
+    for video in list_videos:
+         rental_record = db.session.query(Rental).filter(Rental.customer_id==customer.id,Rental.video_id== video.video_id).first()
+         print(rental_record)
+         response_list.append({"customer_id": customer.id, "customer_name":customer.name, "customer_postal_code":customer.postal_code,
+         "checkout_date":rental_record.rental_date, "due_date":rental_record.calculate_due_date()})
+    return jsonify(response_list)
