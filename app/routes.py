@@ -1,9 +1,10 @@
 from flask import Blueprint, jsonify, make_response, request
+from flask.globals import _request_ctx_stack
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 
 customer_bp = Blueprint('customers', __name__, url_prefix='/customers')
@@ -86,6 +87,19 @@ def handle_one_video(video_id):
 
         return make_response({"id": video.id})
 
+@video_bp.route('/<id>/rentals', methods=['GET'])
+def handle_rentals_by_video(id):
+    video = Video.query.get(id)
+    if video is None:
+        return jsonify({"message": f"Video {video.id} was not found"}), 404
+    else: 
+        # customers = Customer.query.filter_by().all()
+        return [{
+                "name": customer.name,
+                "phone": customer.phone,
+                "postal_code": customer.postal_code,
+                } for customer in video.customers]
+
 # CUSTOMER ENDPOINTS
 
 # Get all customers (no customer ids)
@@ -123,10 +137,8 @@ def handle_customers():
                                     "phone": new_customer.phone,
                                                 }, 201)
 
-
 @customer_bp.route('/<customer_id>', methods=['GET','PUT', 'DELETE'])
 def handle_one_customer(customer_id):       
-
     try:
         id = int(customer_id)
     except ValueError:
@@ -165,50 +177,64 @@ def handle_one_customer(customer_id):
 
         return make_response({"id": customer.id})
                     
-                    
-                    
-                    
 
+# RENTAL ENDPOINTS
+# Note: "dynamic" means an action (in this case, calculating available inventory) will be done a la minute 
+# and does not need to be stored in the database. 
+@rental_bp.route('/check-out', methods=['POST'])
+def handle_checkout():
+    request_body = request.get_json()
+    video_ids_list = db.session.query(Video.id) # Returns a list of video ids
 
+    if 'video_id' not in request_body.keys():
+        return make_response({"details": "Request must include video id."}, 400)
+
+    elif Video.query.filter_by(id=request_body['video_id']).first() is None:
+            return make_response({"details": "Video not found"}, 404)
+                
+    # In SQL: SELECT * FROM videos WHERE video_id = self.id
+        # Once specific video object is found, perform calculation
+    available_inventory = Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
+    if available_inventory == 0:
+        return make_response({"message": "Could not perform checkout"}, 400)
+
+    else:
+        new_rental = Rental(video_id=request_body["video_id"],
+                            customer_id=request_body["customer_id"])
+        
+        db.session.add(new_rental)
+        db.session.commit()
+        
+        videos_checked_out_count = len(Customer.query.filter_by(id=request_body['customer_id']).all())
+
+        available_inventory_after_check_out = Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
+
+        return make_response({"id": new_rental.id,
+                                "customer_id": new_rental.customer_id,
+                                "video_id": new_rental.video_id,
+                                "available_inventory": available_inventory_after_check_out,
+                                "videos_checked_out_count": videos_checked_out_count})
+
+@rental_bp.route('/check-in', methods=['POST'])
+def handle_checkin():
+    request_body = request.get_json()
+    
+    new_rental = Rental(video_id=request_body["video_id"],
+                            customer_id=request_body["customer_id"],
+                            is_checked_in=True)
+
+    db.session.add(new_rental)
+    db.session.commit()
+
+    # Update this code - add a way to calculate the following:
+        # Add 1 to available_inventory - Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
+        # Subtract 1 from videos_checked_out_count 
+    available_inventory_after_checkin = Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
+    videos_checked_out_count = Customer.query.filter_by(id=request_body['customer_id']).first().get_videos_checked_out_count()
+
+    return make_response({"video_id": new_rental.video_id,
+                            "customer_id": new_rental.customer_id,
+                            "videos_checked_out_count": videos_checked_out_count,
+                            "available_inventory": available_inventory_after_checkin})
 
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-# # RENTAL ENDPOINTS
-# @rental_bp.route('/check-out', methods=['POST'])
-# def handle_checkout():
-#     response_body = request.get_json()
-#     new_checkout = Rental(customer_id=response_body['customer_id'],
-#                             video_id=response_body['video_id'],
-#                             due_date=response_body['due_date'],
-#                             videos_checked_out_count=response_body['videos_checked_out_count'],
-#                             # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
-#                             available_inventory=response_body['available_inventory'])
-#     db.session.add(new_checkout)
-#     db.session.commit()
-
-#     return make_response({"customer_id": new_checkout.customer_id,
-#                             "video_id": new_checkout.video_id,
-#                             "due_date": new_checkout.due_date,
-#                             "videos_checked_out_count": new_checkout.videos_checked_out_count,
-#                             "available_inventory": new_checkout.available_inventory})
-    
-
-# @rental_bp.route('/check-in', methods=['POST'])
-# def handle_checkin():
-#     pass
