@@ -113,7 +113,6 @@ def get_video_history(video_id):
     response_list = []
     for customer in list_customers:
          rental_record = db.session.query(Rental).filter(Rental.customer_id==customer.id,Rental.video_id== video.video_id).first()
-         print(rental_record)
          response_list.append({"customer_id": customer.id, "customer_name":customer.name, "customer_postal_code":customer.postal_code,
          "checkout_date":rental_record.rental_date, "due_date":rental_record.calculate_due_date()})
     return jsonify(response_list)
