@@ -13,7 +13,6 @@ videos_bp = Blueprint("videos_bp", __name__, url_prefix="/videos")
 def get_videos():
     videos = Video.query.all()
 
-    videos_response = []
     videos_response = [video.create_dict() for video in videos]
 
     if not videos_response:
@@ -89,10 +88,10 @@ def rentals_by_id(video_id):
     if not video:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
 
-    rental_response = [rental.id for rental in video.rentals]
-    if not rental_response:
+    customer_ids = [rental.id for rental in video.rentals]
+    if not customer_ids:
         return jsonify([]), 200
 
     response_body = [Customer.query.get(
-        customer).customer_dict() for customer in rental_response]
+        customer).customer_dict() for customer in customer_ids]
     return jsonify(response_body), 200

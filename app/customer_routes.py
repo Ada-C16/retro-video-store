@@ -12,7 +12,7 @@ customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 def get_customers():
     customers = Customer.query.all()
     for customer in customers:
-        if customer.deleted_at is not None:
+        if customer.deleted_at:
             customers.remove(customer)
     customer_response = [customer.customer_dict() for customer in customers]
     return jsonify(customer_response), 200
@@ -27,7 +27,7 @@ def get_customers_by_id(customer_id):
     if not customer:
         response_body = {"message": f"Customer {customer_id} was not found"}
         return jsonify(response_body), 404
-    if customer.deleted_at is not None:
+    if customer.deleted_at:
         return jsonify(None), 404
     response_body = customer.customer_dict()
     return jsonify(response_body), 200
@@ -64,6 +64,9 @@ def put_customer_by_id(customer_id):
     customer = Customer.query.get(customer_id)
     if not customer:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
+    if customer.deleted_at:
+        return jsonify(None), 404
+
     request_body = request.get_json()
     if (
         "name" not in request_body or
@@ -102,7 +105,8 @@ def rentals_by_id(customer_id):
     if not customer:
         response_body = {"message": f"Customer {customer_id} was not found"}
         return jsonify(response_body), 404
-
+    if customer.deleted_at:
+        return jsonify(None), 404
     rental_response = [rental.id for rental in customer.rentals]
     if not rental_response:
         return jsonify([]), 200

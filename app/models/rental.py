@@ -20,7 +20,7 @@ class Rental(db.Model):
         return {
             "video_id": self.video_id,
             "customer_id": self.customer_id,
-            "videos_checked_out_count": customer.videos_checked_out,
+            "videos_checked_out_count": len(customer.rentals),
             "available_inventory": available_inventory
         }
 
@@ -31,6 +31,6 @@ class Rental(db.Model):
         return {
             "video_id": video.id,
             "customer_id": customer.customer_id,
-            "videos_checked_out_count": customer.videos_checked_out,
-            "available_inventory": video.total_inventory + len(video.rentals)
+            "videos_checked_out_count": len(customer.rentals),
+            "available_inventory": video.total_inventory - len(video.rentals)
         }
