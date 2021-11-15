@@ -5,7 +5,11 @@ from app.models.video import Video
 
 def handle_query_params(cls, request, filter_by={}):
 
-    sort_by = request.args.get("sort")
+    sort_by = request.args.get("sort") if request.args.get("sort") else None
+
+    per_page = int(request.args.get("n")) if request.args.get("n") else None
+
+    page = int(request.args.get("p")) if request.args.get("p") else None
 
     cls_join = None
 
@@ -17,10 +21,10 @@ def handle_query_params(cls, request, filter_by={}):
         sort_by = Customer.name
 
     if cls_join:
-        items = cls.query.filter_by(**filter_by).join(cls_join).order_by(sort_by)
+        items = cls.query.filter_by(**filter_by).join(cls_join).order_by(sort_by).paginate(per_page=per_page, page=page).items
     else:            
-        items = cls.query.filter_by(**filter_by).order_by(sort_by)
-
+        items = cls.query.filter_by(**filter_by).order_by(sort_by).paginate(per_page=per_page, page=page).items
+    print(items)
     return items
 
 def validate_query_params(cls, request):
