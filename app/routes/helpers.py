@@ -63,7 +63,8 @@ def check_rental_errors():
     
     return None, video_id, customer_id 
 
-# helper method for sorting + limiting results based on optional query params
+# helper method for sorting, limiting, and paginating results based on 
+# optional query params
 def sort_limit_and_paginate(object):
     '''
     returns a list of either videos or customers that have been sorted 
