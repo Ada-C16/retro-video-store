@@ -16,6 +16,8 @@ from flask_sqlalchemy import _make_table
 from app import db
 from app.models.video import *
 from app.helpers.videos import *
+from app.routes.customers import Customer
+from app.routes.rentals import Rental
 
 # Write blueprint for  video -> DONE
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
@@ -82,3 +84,26 @@ def delete_video(video):
     db.session.commit()
 
     return video.video_details(), 200
+
+# GET /videos/<id>/rentals 
+# List the customers who currently have the video checked out
+
+@videos_bp.route("/<id>/rentals", methods = ["GET"])
+@require_valid_id
+def customers_with_video(video):
+
+    videos_rented = Rental.query.filter(Rental.video_id==video.id)
+
+    rentees = []
+
+    for video in videos_rented:
+        customer = Customer.query.get(video.id)
+        response_body = {
+            "due_date": video.due_date,
+            "name": customer.name,
+            "postal_code": customer.postal_code,
+            "phone": customer.phone
+        }
+        rentees.append(response_body)
+    
+    return jsonify(rentees), 200

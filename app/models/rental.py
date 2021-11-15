@@ -7,10 +7,10 @@ def week_later():
     
 class Rental(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'),  nullable=False)
-    customer = db.relationship('Customer', backref=db.backref('rentals', lazy=True))
-    video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=False)
-    video = db.relationship('Video', backref=db.backref('rentals', lazy=True))
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id', ondelete='cascade'),  nullable=True)
+    customer = db.relationship('Customer', passive_deletes=True, backref=db.backref('rentals', lazy=True))
+    video_id = db.Column(db.Integer, db.ForeignKey('video.id', ondelete='cascade'), nullable=True)
+    video = db.relationship('Video', passive_deletes=True, backref=db.backref('rentals', lazy=True))
     due_date = db.Column(db.DateTime, nullable=False, default=week_later)
     checked_out = db.Column(db.Boolean)
 
