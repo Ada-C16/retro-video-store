@@ -34,6 +34,15 @@ def validate_customer_request_body(request_body):
         return jsonify({"details": "Request body must include phone."}), 400
     return False
 
+def validate_video_request_body(request_body):
+    if "title" not in request_body:
+        return jsonify({"details": "Request body must include title."}), 400
+    if "release_date" not in request_body:
+        return jsonify({"details": "Request body must include release_date."}), 400
+    if "total_inventory" not in request_body:
+        return jsonify({"details": "Request body must include total_inventory."}), 400
+    return False
+
 # ---------------------------
 # ------- CUSTOMERS ---------
 # ---------------------------
@@ -48,13 +57,6 @@ def create_customer():
         # Returns the invalid error message and status code
         return invalid
         
-    # if "name" not in request_body:
-    #     return jsonify({"details": "Request body must include name."}), 400
-    # if "postal_code" not in request_body:
-    #     return jsonify({"details": "Request body must include postal_code."}), 400
-    # if "phone" not in request_body:
-    #     return jsonify({"details": "Request body must include phone."}), 400
-
     new_customer = Customer(name=request_body["name"],
                     postal_code=request_body["postal_code"],
                     phone=request_body["phone"])
@@ -98,16 +100,6 @@ def handle_customer(id):
             # Returns the invalid error message and status code
             return invalid
 
-        # if "name" not in request_body:
-        #     return jsonify({"details": "Request body must include name."}), 400
-        # if "postal_code" not in request_body:
-        #     return jsonify({"details": "Request body must include postal_code."}), 400
-        # if "phone" not in request_body:
-        #     return jsonify({"details": "Request body must include phone."}), 400
-
-        # customer.name=f"Updated ${request_body['name']}"
-        # customer.postal_code=f"Updated ${request_body['postal_code']}"
-        # customer.phone=f"Updated ${request_body['phone']}"
         customer.name=request_body["name"]
         customer.postal_code=request_body["postal_code"]
         customer.phone=request_body["phone"]
@@ -115,30 +107,7 @@ def handle_customer(id):
         db.session.commit()
         return jsonify(customer.to_dict()), 200
 
-# ----- BELOW: PATCH ROUTE UNNEEDED SO FAR ------
-# @customers_bp.route("<customer_id>/<patch_complete>", methods=["PATCH"])
-# def patch_task(task_id, patch_complete):
-#     task_id = validate_id_int(task_id)
-#     task = Task.query.get(task_id)
-#     if not task:
-#         return make_response("", 404)
-#     if patch_complete == "mark_complete":
-#         task.completed_at=datetime.now()
-#         # ID of the channel you want to send the message to
-#         channel_id = "C02LA52J4AW"
-#         SLACK_KEY = os.environ.get("SLACK_API_KEY")
-#         text=f"Someone just completed the task {task.title}"
-#         data = {
-#             'channel': channel_id, 
-#             'as_user': True,
-#             'text': text
-#         }
-#         requests.post("https://slack.com/api/chat.postMessage", headers={"Authorization": f"Bearer {SLACK_KEY}"}, data=data)
-#     elif patch_complete == "mark_incomplete":
-#         task.completed_at=None
-#     db.session.commit()
-#     return jsonify({"task": task.to_dict()}), 200
-
+# Deletes one customer
 @customers_bp.route("/<id>", methods=["DELETE"])
 def delete_customer(id):
     #print(id)
@@ -157,29 +126,28 @@ def delete_customer(id):
 # --------- VIDEOS ----------
 # ---------------------------
 
+# Handles all videos
 @videos_bp.route("", methods = ["GET", "POST"])
 def handle_videos():
     if request.method == "GET":
-        videos = Video.query.all()
+        sort_by = request.args.get('sort')
+        if sort_by == 'asc':
+            videos = Video.query.order_by(Video.title).all()
+        elif sort_by == 'desc':
+            videos = Video.query.order_by(desc(Video.title)).all()
+        else:
+            videos = Video.query.all()
         videos_response = []
+
         for video in videos:
             videos_response.append(video.to_dict())
 
         return jsonify(videos_response), 200
     elif request.method == "POST":
         request_body = request.get_json()
-        if "title" not in request_body:
-            return make_response(
-                {"details": "Request body must include title."}, 400
-            )
-        elif "release_date" not in request_body:
-            return make_response(
-                {"details": "Request body must include release_date."}, 400
-            )
-        elif "total_inventory" not in request_body:
-            return make_response(
-                {"details": "Request body must include total_inventory."}, 400
-            )
+        invalid = validate_video_request_body(request_body)
+        if invalid:
+            return invalid
         new_video = Video(
             title = request_body["title"],
             release_date = request_body["release_date"],
@@ -192,13 +160,10 @@ def handle_videos():
         )
             
 
-
+# Handles one video
 @videos_bp.route("/<video_id>", methods = ["GET", "PUT", "DELETE"])
 def handle_video(video_id):
-    try:
-        video_id = int(video_id)
-    except ValueError:
-        return {"Error": "Id must be numeric"}, 400
+    video_id = validate_id_int(video_id)
     video = Video.query.get(video_id)
     if not video:
         return make_response({"message": f"Video {video_id} was not found"}, 404)
@@ -227,11 +192,7 @@ def handle_video(video_id):
 # -------- RENTALS ----------
 # ---------------------------
 
-# def create_due_date():
-#     # date_1 = datetime.datetime.strptime(rental_date, "%y-%m-%d")
-#     due_date = datetime.today() + datetime.timedelta(days=7)
-#     return due_date
-
+# Helper functions
 def validate_rental_request_body(request_body):
     if "customer_id" not in request_body:
         return jsonify({"details": "Request body must include customer_id."}), 400
@@ -244,13 +205,8 @@ def get_available_inventory(request_body):
     
     videos_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
 
-
     available_inventory = videos.total_inventory - videos_in_rentals.count()
     return available_inventory
-    # if available_inventory < 0:
-    #     return "Could not perform checkout", 400
-    # else:
-    #     return available_inventory
 
 # POST/Check-out a rental
 @rentals_bp.route("/check-out", methods = ["POST"])
@@ -284,29 +240,11 @@ def create_rental():
 
         new_rental_response = new_rental.to_dict()
 
-    # Calculate, then add to new_rental_response
-    # for customer_id in Rental
-    #     Video.query.get["customers"]:
-    #     request_body["customer_id"]
-    #     videos_count += 1
-    #     #videos = Customer.query.get['videos']
-    # videos_checked_out_count = Customer.query.get['videos']
-    # Number of videos checked out by this customer_id
-    # Count all rentals where customer_id is current rental's customer_id
-
         rentals = Rental.query.filter_by(customer_id=request_body["customer_id"])
     
         videos_checked_out_count = rentals.count()
         new_rental_response["videos_checked_out_count"] = videos_checked_out_count
 
-    # video = Video.query.get(request_body["video_id"])
-    
-    # video_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
-
-
-    # available_inventory = video.total_inventory - video_in_rentals.count()
-    # if available_inventory < 0:
-    #     return "Could not perform checkout", 400
         after_check_out_inventory = get_available_inventory(request_body)
         
         new_rental_response["available_inventory"] = after_check_out_inventory
@@ -315,8 +253,6 @@ def create_rental():
         videos_checked_out_count = videos_in_rental.count()
         new_rental_response["videos_checked_out_count"] = videos_checked_out_count
         return new_rental_response
-    # Count all rentals where video_id is current video_id
-    # Then subract from total_inventory for video with this video_id
 
     return jsonify(new_rental_response), 200
 
@@ -327,40 +263,26 @@ def update_rentals():
     if "video_id" not in request_body or "customer_id" not in request_body:
         return "Bad data", 400
 
-    video = Video.query.get(request_body["video_id"])
-    if not video:
-        return make_response({"message":"Could not perform checkin"}, 404)
+    validate_video_id = Video.query.get_or_404(request_body["video_id"])
+    validate_customer_id = Customer.query.get_or_404(request_body["customer_id"])
+    if validate_video_id and validate_customer_id:
+        rentals = Rental.query.filter_by(customer_id=request_body["customer_id"], video_id=request_body["video_id"])
+        if not rentals.first():
+            return make_response({"message": "No outstanding rentals for customer 1 and video 1"}, 400)
 
-    customer = Customer.query.get(request_body["customer_id"])
-    if not customer:
-        return make_response({"message":"Could not perform checkin"}, 404)
-
+        db.session.delete(rentals.first())
+        db.session.commit()
+            
+        videos_in_rental = Rental.query.filter_by(customer_id=request_body["customer_id"])    
+        videos_checked_out_count = videos_in_rental.count()
     
+        video = Video.query.get(request_body["video_id"])
+        video_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
+
+        available_inventory = video.total_inventory - video_in_rentals.count()
+        if available_inventory < 0:
+            return "Could not perform checkout", 400
     
-    rentals = Rental.query.filter_by(customer_id=request_body["customer_id"], video_id=request_body["video_id"])
-    # rental_response = []
-    if not rentals.first():
-        return make_response({"message": "No outstanding rentals for customer 1 and video 1"}, 400)
-    # for rental in rentals:
-    
-    #     rental_response.append({"customer_id":rental.customer_id, "video_id": rental.video_id})
-    db.session.delete(rentals.first())
-    db.session.commit()
-        
-    videos_in_rental = Rental.query.filter_by(customer_id=request_body["customer_id"])    
-    videos_checked_out_count = videos_in_rental.count()
-    # rental_response[0]["videos_checked_out_count"] = videos_checked_out_count
-
-    video = Video.query.get(request_body["video_id"])
-    video_in_rentals = Rental.query.filter_by(video_id=request_body["video_id"])
-
-
-    available_inventory = video.total_inventory - video_in_rentals.count()
-    if available_inventory < 0:
-        return "Could not perform checkout", 400
-    # rental_response[0]["available_inventory"] = available_inventory
-    
-
     return {
         "customer_id": request_body["customer_id"],
         "video_id": request_body["video_id"],
@@ -372,7 +294,7 @@ def update_rentals():
 # List the videos a customer currently has checked out
 @customers_bp.route("/<customer_id>/rentals", methods = ["GET"])
 def get_videos_by_customer(customer_id):
-    customer_id = int(customer_id)
+    customer_id = validate_id_int(customer_id)
     customer=Customer.query.get(customer_id)
     if not customer:
         return make_response({"message": f"Customer {customer_id} was not found"}, 404)
@@ -393,7 +315,7 @@ def get_videos_by_customer(customer_id):
 # List the customers who currently have the video checked out
 @videos_bp.route("/<video_id>/rentals", methods = ["GET"])
 def get_customers_by_video(video_id):
-    video_id = int(video_id)
+    video_id = validate_id_int(video_id)
     video=Video.query.get(video_id)
     if not video:
         return make_response({"message": f"Video {video_id} was not found"}, 404)
