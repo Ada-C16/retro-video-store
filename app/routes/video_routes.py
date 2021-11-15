@@ -53,7 +53,7 @@ def read_videos():
 
     if sort_query == "title":
         videos = Video.query.order_by(Video.title.asc())
-    if sort_query == "release_date":
+    elif sort_query == "release_date":
         videos = Video.query.order_by(Video.release_date.asc())
     elif sort_query == "desc":
         videos  = Video.query.order_by(Video.title.desc())
