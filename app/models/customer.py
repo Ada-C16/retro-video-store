@@ -1,3 +1,4 @@
+from sqlalchemy.orm import backref
 from app import db
 
 class Customer(db.Model):
@@ -6,17 +7,18 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)   
     register_at = db.Column(db.DateTime)
+    videos = db.relationship("Rental", backref="Customer", cascade="all, \
+        delete-orphan", lazy="joined")
 
-
-    # def to_json(self):
-    #     res = {
-    #         "id" : self.id,
-    #         "name" : self.name,
-    #         "registered_at" : str(self.register_at),
-    #         "postal_code" : self.postal_code,
-    #         "phone" : self.phone_number
-    #     }
-    #     return res
+    def to_json(self):
+        res = {
+            "id" : self.id,
+            "name" : self.name,
+            "registered_at" : self.register_at,
+            "postal_code" : self.postal_code,
+            "phone" : self.phone_number
+        }
+        return res
 
     # def from_json(cls):
     #     pass
