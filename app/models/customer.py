@@ -14,7 +14,9 @@ class Customer(db.Model):
     videos_checked_out_count = db.Column(db.Integer)
     # backref is creating 2 new attributes as well as establishing the relationship here
     # backref is creating Customer.videos as well as Video.customers    
-    # what is secondary doing?
+    # updated video and customer with cascade
+    # When the customer is deleted, all associated rentals are also deleted
+    # cascade allows us to "delete the ophans" associated with the customer id 
     videos = db.relationship("Rental", backref='Customer', cascade="all, delete-orphan", lazy="joined")
 
     # returns the number of videos that an individual customer has checked out

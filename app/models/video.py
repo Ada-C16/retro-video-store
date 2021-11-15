@@ -8,6 +8,8 @@ class Video(db.Model):
     release_date = db.Column(db.DateTime) #should this be nullable?
     total_inventory = db.Column(db.Integer)
     available_inventory = db.Column(db.Integer, nullable = True)
+    # When the video is deleted, all associated rentals are also deleted
+    # cascade allows us to "delete the ophans" associated with the video id 
     customers = db.relationship("Rental", backref='Video', cascade="all, delete-orphan", lazy="joined")
 
     def video_checked_out_count(self):
