@@ -19,17 +19,19 @@ def handle_rentals_out():
 
     customer = Customer.query.get(customer_id)
     if customer is None:
-        return jsonify(None), 404
+        return jsonify(None), 400
 
     video = Video.query.get(video_id)
     if video is None:
-        return jsonify(None), 404
+        return jsonify(None), 400
 
     video_checked_out_count = Rental.query.filter_by(video_id=video_id).count()
     available_inventory = video.total_inventory - video_checked_out_count
 
     if available_inventory == 0:
-        return jsonify(None), 400
+        return jsonify({
+            "message" : "Could not perform checkout"
+        }), 400
 
     new_rental = Rental(
         customer_id=customer.id,
@@ -39,6 +41,9 @@ def handle_rentals_out():
 
     db.session.add(new_rental)
     db.session.commit()
+
+    video_checked_out_count = Rental.query.filter_by(video_id=video_id).count()
+    available_inventory = video.total_inventory - video_checked_out_count
 
     return {
         "customer_id": new_rental.customer_id,
