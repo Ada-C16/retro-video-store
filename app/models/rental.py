@@ -12,6 +12,6 @@ class Rental(db.Model):
     # updated video and customer with cascade
     # When the customer or video is deleted, all associated rentals are also deleted
     # cascade allows us to "delete the ophans" associated with the video or customer id 
-    video =db.relationship('Video', backref=backref('rentals', cascade="all, delete-orphan", lazy="joined"))
+    video =db.relationship('Video', backref=backref('rentals', cascade="all, delete-orphan"))
     # this relationship establishes a new attribute for each rental object, which allows it to access the Customer object
-    customer =db.relationship('Customer', backref=backref('rentals', cascade="all, delete-orphan", lazy="joined"))
+    customer =db.relationship('Customer', backref=backref('rentals', cascade="all, delete-orphan"))
