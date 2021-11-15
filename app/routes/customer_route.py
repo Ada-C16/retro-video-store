@@ -1,14 +1,14 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from app import db 
 from app.models.customer import Customer 
 from app.models.rental import Rental
-from .helpers import id_is_valid, request_has_all_required_categories
+from .helpers import id_is_valid, request_has_all_required_categories, sort_and_limit
 
 customers_bp = Blueprint("customer", __name__, url_prefix="/customers")
 
 @customers_bp.route("", methods=["GET"])
 def customers():
-    customers = Customer.query.all()
+    customers = sort_and_limit(Customer())
     customers_response = [customer.to_json() for customer in customers]
     return jsonify(customers_response), 200
 

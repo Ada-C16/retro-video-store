@@ -3,25 +3,26 @@ from flask import Blueprint, request, make_response, jsonify
 from app import db
 from app.models.video import Video
 from app.models.rental import Rental
-from .helpers import id_is_valid, request_has_all_required_categories
+from .helpers import id_is_valid, request_has_all_required_categories, sort_and_limit
 
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
-@videos_bp.route("", methods=["POST","GET"])
+@videos_bp.route("", methods=["GET"])
 def handle_videos():
-    if request.method=="POST":
-        request_body, error_msg = request_has_all_required_categories("video")
-        if error_msg is not None:
-            return error_msg
-        video = Video().new_video(request_body)
-        db.session.add(video)
-        db.session.commit()
-        return jsonify(video.to_json()), 201
+    videos = sort_and_limit(Video())
+    videos_response = [video.to_json() for video in videos]
+    return jsonify(videos_response), 200
 
-    elif request.method=="GET":
-        videos = Video.query.all()
-        videos_response = [video.to_json() for video in videos]
-        return jsonify(videos_response), 200
+@videos_bp.route("", methods=["POST"])
+def add_video():
+    request_body, error_msg = request_has_all_required_categories("video")
+    if error_msg is not None:
+        return error_msg
+        
+    video = Video().new_video(request_body)
+    db.session.add(video)
+    db.session.commit()
+    return jsonify(video.to_json()), 201
 
 @videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE"])
 def handle_a_video(video_id):

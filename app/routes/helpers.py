@@ -2,7 +2,7 @@ from app.models.customer import Customer
 from app.models.video import Video 
 from flask import request
 
-# helper methods for validation 
+# helper methods for validation/error-checking 
 def id_is_valid(id, object_type):
     '''
     returns two values: an object and None (if no error is present),
@@ -62,3 +62,29 @@ def check_rental_errors():
         return error_msg, None, None  
     
     return None, video_id, customer_id 
+
+# helper method for sorting + limiting results based on optional query params
+def sort_and_limit(object):
+    '''
+    returns a list of either videos or customers that have been sorted 
+    (if a sort query is present) and limited (if a limit query is present); 
+    if no queries are present, returns all videos or all customers in DB
+    '''
+    sort_query = request.args.get("sort")
+    page_limit = request.args.get("n")
+
+    possible_sort_queries = []
+    if type(object) == Video:
+        possible_sort_queries = ["title", "release_date"]
+    elif type(object) == Customer:
+        possible_sort_queries = ["name", "phone", "postal_code"]
+
+    if sort_query:
+        if sort_query in possible_sort_queries:
+            objects = object.query.order_by(sort_query).limit(page_limit)
+        else: 
+            objects = object.query.limit(page_limit)
+    else:
+        objects = object.query.limit(page_limit)
+    
+    return objects 
