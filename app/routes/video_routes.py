@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, make_response, request, abort
 from app import db
 from app.models.video import Video, video_from_json
+from app.routes.route_helpers import invalid_id
 
 video_bp = Blueprint('videos', __name__, url_prefix='/videos')
 
@@ -39,11 +40,13 @@ def create_new_video():
 
 @video_bp.route('/<video_id>', methods=['GET'])
 def read_single_video(video_id):
-    if not video_id.isnumeric():
-        response_body = {
-            'details': 'Invalid video id'
-        }
-        return make_response(jsonify(response_body), 400)
+    # if not video_id.isnumeric():
+    #     response_body = {
+    #         'details': 'Invalid video id'
+    #     }
+    #     return make_response(jsonify(response_body), 400)
+    if invalid_id(video_id):
+        return invalid_id(video_id)
 
     video = Video.query.get(video_id)
     try:
@@ -55,10 +58,12 @@ def read_single_video(video_id):
 
 @video_bp.route("/<video_id>/rentals", methods=["GET"])
 def read_one_video_rentals(video_id):
-    try:
-        int(video_id)
-    except:
-        return {"message": "Invalid data"}, 400
+    # try:
+    #     int(video_id)
+    # except:
+    #     return {"message": "Invalid data"}, 400
+    if invalid_id(video_id):
+        return invalid_id(video_id)
 
     video = Video.query.get(video_id)
 
@@ -71,11 +76,13 @@ def read_one_video_rentals(video_id):
 
 @video_bp.route('/<video_id>', methods=['PUT'])
 def update_single_video(video_id):
-    if not video_id.isnumeric():
-        response_body = {
-            'details': 'Invalid video id'
-        }
-        return make_response(jsonify(response_body), 400)
+    # if not video_id.isnumeric():
+    #     response_body = {
+    #         'details': 'Invalid video id'
+    #     }
+    #     return make_response(jsonify(response_body), 400)
+    if invalid_id(video_id):
+        return invalid_id(video_id)
 
     video_to_update = Video.query.get(video_id)
     try:
@@ -108,11 +115,13 @@ def update_single_video(video_id):
 
 @video_bp.route('/<video_id>', methods=['DELETE'])
 def delete_single_video(video_id):
-    if not video_id.isnumeric():
-        response_body = {
-            'details': 'Invalid video id'
-        }
-        return make_response(jsonify(response_body), 400)
+    # if not video_id.isnumeric():
+    #     response_body = {
+    #         'details': 'Invalid video id'
+    #     }
+    #     return make_response(jsonify(response_body), 400)
+    if invalid_id(video_id):
+        return invalid_id(video_id)
 
     video_to_delete = Video.query.get(video_id)
     if not video_to_delete:
