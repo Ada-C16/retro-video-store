@@ -4,13 +4,8 @@ from app.models.customer import Customer
 from app.models.rental import Rental
 from app import db
 from datetime import date
-import requests, os
-from dotenv import load_dotenv
 
-video_bp = Blueprint("video", __name__, url_prefix="/videos")
 customer_bp = Blueprint("customer", __name__, url_prefix="/customers")
-rental_bp = Blueprint("rental", __name__, url_prefix="/rentals")
-load_dotenv()
 
 # Get and Post Customers
 @customer_bp.route("", methods=["POST", "GET"])
@@ -53,7 +48,7 @@ def handle_customer(customer_id):
         return make_response({"message": f"Customer {customer_id} was not found"}), 404
     
     elif request.method == "GET":
-        customer= Customer.query.get(customer_id)
+        customer = Customer.query.get(customer_id)
         if customer is None:
             return jsonify({"message": f"Customer {customer_id} was not found"}), 404
         return jsonify(customer.to_dict()), 200

@@ -4,13 +4,8 @@ from app.models.customer import Customer
 from app.models.rental import Rental
 from app import db
 from datetime import date
-import requests, os
-from dotenv import load_dotenv
 
 video_bp = Blueprint("video", __name__, url_prefix="/videos")
-customer_bp = Blueprint("customer", __name__, url_prefix="/customers")
-rental_bp = Blueprint("rental", __name__, url_prefix="/rentals")
-load_dotenv()
 
 # Helper Function to validate videos
 def validate_video(request_body):
@@ -91,4 +86,4 @@ def delete_video(video_id):
 
     db.session.delete(video)
     db.session.commit()
-    return jsonify({"id": video.id}), 200
+    return jsonify({"id": video.video_id}), 200
