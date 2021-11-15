@@ -92,3 +92,8 @@ def delete_single_video(video_id):
 @videos_bp.route("/hello", methods=["GET"])
 def get_hello():
     return jsonify(None), 400
+
+
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def get_customers_with_video_rented(video_id):
+    pass

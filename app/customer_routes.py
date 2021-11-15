@@ -109,3 +109,8 @@ def delete_single_customer(customer_id):
 @customer_bp.route("/hello", methods=["GET"])
 def get_hello():
     return jsonify(None), 400
+
+
+@customer_bp.route("/<customer_id>/rentals", methods=["GET"])
+def get_customers_current_rentals(customer_id):
+    pass
