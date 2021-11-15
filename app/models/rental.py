@@ -6,5 +6,5 @@ class Rental(db.Model):
     # video_id = db.Column(db.Integer, db.ForeignKey('video.id'), primary_key=True, nullable=False)
     # # customer_id = db.Column(db.Integer, db.ForeignKey('customer_id'), primary_key=True, nullable=False)
     # due_date= db.Column(db.DateTime)
-    # videos_checked_out_count = db.Column(db.Integer)
-    # available_inventory = db.Column(db.Integer)
+    # videos_checked_out_count = db.Column(db.Integer) 
+    # available_inventory = db.Column(db.Integer) ****This shouldn't be associated with the Rental table. ***OR just in response_body.****
