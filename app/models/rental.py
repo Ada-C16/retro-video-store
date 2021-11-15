@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 
 class Rental(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(
         db.Integer, db.ForeignKey("customer.id"), primary_key=True, nullable=False
     )
