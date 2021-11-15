@@ -1,5 +1,4 @@
 from app import db
-from sqlalchemy.orm import backref
 
 class Rental(db.Model):
 

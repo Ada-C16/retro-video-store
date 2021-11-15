@@ -1,12 +1,9 @@
-from flask import Blueprint, jsonify, request, make_response, abort
+from flask import Blueprint, jsonify, request, make_response
 from app.models.video import Video
 from app.models.customer import Customer
 from app.models.rental import Rental
 from app import db
-from sqlalchemy import desc
 from datetime import datetime, timedelta
-import requests
-import os
 
 # assign videos_bp to the new Blueprint instance
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
@@ -74,9 +71,9 @@ def CRUD_one_video(video_id):
                         "total_inventory": video.total_inventory}, 200)
     # PUT will replace the entire record with an entire new record, all fields
     elif request.method == "PUT":
-    # form data is a local variable to hold the body of the HTTP request
+        # form data is a local variable to hold the body of the HTTP request
         form_data = request.get_json()
-    # checking that form_data has all required fields
+        # checking that form_data has all required fields
         if "title" not in form_data or "release_date" not in form_data \
         or "total_inventory" not in form_data:
             return make_response({"details": "all fields must be present"}, 400)
@@ -105,6 +102,7 @@ def CRUD_one_video(video_id):
                         "release_date": video.release_date,
                         "total_inventory": video.total_inventory}}, 200)
     elif request.method == "DELETE":
+        # if the video has outstanding rentals, don't delete and send message stating there are outstanding rentals
         if Rental.query.filter_by(video_id=video_id, checked_in=False).count() > 0:
             return jsonify({"message": f"Video {video_id} has outstanding rentals"}), 200
         db.session.delete(video)
@@ -188,6 +186,7 @@ def handle_one_customer(id):
         return jsonify(make_customer_dict(customer)), 200
 
     elif request.method == "DELETE":
+        # if the customer has outstanding rentals, don't delete and send message stating there are outstanding rentals
         if Rental.query.filter_by(customer_id=id, checked_in=False).count() > 0:
             return jsonify({"message": f"Customer {customer.id} has outstanding rentals"}), 200
         db.session.delete(customer)
