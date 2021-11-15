@@ -94,4 +94,3 @@ def handle_customer_rentals(cust_id):
         rentals_response.append({"title": video.title})
         
     return jsonify(rentals_response), 200
-

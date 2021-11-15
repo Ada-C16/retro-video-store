@@ -20,13 +20,13 @@ def get_object_with_id(obj_type, obj_id):
         abort(404)
     return obj
 
-# Helper Function to get IDs
-def get_ids(customer_id, video_id):
-    customer = Customer.query.filter_by(id=customer_id).first()
-    video = Video.query.filter_by(id=video_id).first()
-    if customer is None or video is None:
-        abort(make_response(jsonify({"Error": "Info not found."}), 404))
-    return customer, video
+# Helper Function to get IDs - We didn't use this but look at what we did!! :)
+# def get_ids(customer_id, video_id):
+#     customer = Customer.query.filter_by(id=customer_id).first()
+#     video = Video.query.filter_by(id=video_id).first()
+#     if customer is None or video is None:
+#         abort(make_response(jsonify({"Error": "Info not found."}), 404))
+#     return customer, video
 
 def checkout_dict(video, customer):
     return {
@@ -35,7 +35,6 @@ def checkout_dict(video, customer):
         "videos_checked_out_count": customer.get_rentals_count(),
         "available_inventory": video.get_available_inventory()
     }
-
 
 # Nested Route for Rentals - Post checkout
 @rental_bp.route("/check-out", methods=["POST"])
