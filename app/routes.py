@@ -18,6 +18,9 @@ rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 def get_all_videos():
 
     if request.args:
+        params_error = validate_query_params(Video, request)
+        if params_error:
+            return params_error
         videos = handle_query_params(Video, request)
     else:            
         videos = Video.query.all()
@@ -108,6 +111,9 @@ def handle_customers():
     elif request.method == "GET":
 
         if request.args:
+            params_error = validate_query_params(Customer, request)
+            if params_error:
+                return params_error
             customers = handle_query_params(Customer, request)
         else:            
             customers = Customer.query.all()
@@ -198,6 +204,9 @@ def handle_customer_rentals(cust_id):
         return id_error
 
     if request.args:
+        params_error = validate_query_params(Rental, request)
+        if params_error:
+            return params_error
         rentals = handle_query_params(Rental, request, {"customer_id": cust_id})
     else:
         rentals = Rental.query.filter_by(customer_id = cust_id)
@@ -249,11 +258,14 @@ def gets_customers_by_rental(id):
         return video_id_error
 
     if request.args:
+        params_error = validate_query_params(Rental, request)
+        if params_error:
+            return params_error
         rentals = handle_query_params(Rental, request, {"video_id": id})
     else:
         rentals = Rental.query.filter_by(video_id = id).all()
-    rental_list = []
 
+    rental_list = []
     for rental in rentals:
         rent = rental.to_dict()
         customer = Customer.query.get(rental.customer_id)
@@ -271,6 +283,9 @@ def gets_customers_by_rental(id):
 def get_all_rentals():
     #gets all rentals in the database
     if request.args:
+        params_error = validate_query_params(Rental, request)
+        if params_error:
+            return params_error
         rentals = handle_query_params(Rental, request)
     else:            
         rentals = Rental.query.all()

@@ -1,5 +1,5 @@
 # Investigate later
-https://docs.sqlalchemy.org/en/14/core/type_basics.html#sqlalchemy.types.TIMESTAMP
+https://stackoverflow.com/questions/6750251/sqlalchemy-order-by-on-relationship-for-join-table/13377228
 
 # Wave 02
  
