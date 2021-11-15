@@ -41,13 +41,7 @@ def handle_rentals():
         db.session.add(new_rental)
         db.session.commit()
 
-        response_value = {"customer_id":new_rental.customer_id,
-            "video_id":new_rental.video_id,
-            "due_date": datetime.now() + timedelta(days=7),
-            "videos_checked_out_count": video_rentals,
-            "available_inventory": available_inventory}
-
-        return make_response(response_value, 200)
+        return make_response(new_rental.create_dict(), 200)
 
 
 @rentals_bp.route("/check-in", methods=["POST"])

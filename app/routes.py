@@ -113,15 +113,8 @@ def handle_rental_by_video_id(video_id):
     from app.models.rental import Rental
     video_rentals = Rental.query.filter_by(video_id = video.id).all()
     rentals_output_list = []
-    for rental in video_rentals:
+    for num, rental in enumerate(video_rentals):
         customer = Customer.query.filter_by(id = rental.customer_id).first()
-        customer_name = customer.name
-        rentals_output_list.append({
-                    "rental_id":rental.rental_id,
-                    "customer_id":rental.customer_id,
-                    "name": customer.name,
-                    "video_id":rental.video_id,
-                    "due_date":(rental.due_date + timedelta(days=7))
-        })
+        rentals_output_list.append(rental.create_dict())
 
     return make_response(jsonify(rentals_output_list), 200)
