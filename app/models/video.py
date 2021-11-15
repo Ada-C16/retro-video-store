@@ -8,7 +8,7 @@ class Video(db.Model):
     release_date = db.Column(db.String)
     total_inventory = db.Column(db.Integer)
 
-    def video_infromation(self):
+    def video_information(self):
         return {
             "id": self.id,
             "title": self.title,
