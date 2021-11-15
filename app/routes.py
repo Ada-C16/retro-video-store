@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, make_response, request
+from flask.globals import _request_ctx_stack
 from app import db
 from app.models.customer import Customer
 from app.models.video import Video
@@ -166,89 +167,46 @@ def handle_one_customer(customer_id):
             customer.postal_code = updates['postal_code']
             customer.phone = updates['phone']
 
+            db.session.commit()
+            return make_response({"id": customer.id,
+                                    "name": customer.name,
+                                    "postal_code": customer.postal_code,
+                                    "phone":customer.phone}) 
+    elif request.method == 'DELETE':
+        db.session.delete(customer)
+        db.session.commit()
+
+        return make_response({"id": customer.id})
+                    
+
 # RENTAL ENDPOINTS
 @rental_bp.route('/check-out', methods=['POST'])
 def handle_checkout():
-    # For calculating due date
-    today = datetime.now()
-    seven_days = timedelta(days=+7)
-
     request_body = request.get_json()
 
-    if 'customer_id' not in request_body.keys() :
-            return make_response({"details": "Request body must include customer."}, 404)
-    elif 'video_id' not in request_body.keys():
-            return make_response({"details":"Request body must include video."}, 404)
-    # Does checking for available inventory belong here or inside the else block?
-    elif request_body['available_inventory'] == 0:
-            return make_response({"details": "All videos currently checked out."}, 400)
+    if 'video_id' not in request_body.keys():
+        return make_response({"details": "Request must include video id."}, 400)
+
+    # Checking all video ids in the database for a match to the video id provided by end-user.
+    elif db.session.query(Video.id).filter_by(id=request_body['video_id']).first() is None: 
+            return make_response({"details": "Video not found"}, 404)
+
+    elif db.session.query(Rental.video_id).filter_by(available_inventory=0).first() == 0:
+        return make_response({"details": "Could not perform checkout"}, 400)
+
     else:
-        # Do I need these? I'm using these to access the specific video and customer objects that match video_id and customer_id
-        # I'm using these bc the rental instance hasn't been created yet.
-        customer = Customer.query.get(request_body['customer_id'])
-        video = Video.query.get(request_body['video_id'])
-
-        new_checkout = Rental(customer_id=request_body['customer_id'],
-                                video_id=request_body['video_id'],
-                                due_date=today+seven_days
-
-                                # Need to figure out how to calculate videos_checked_out_count
-                                    # Can I use a class method?
-                                # videos_checked_out_count= Use get_videos_checked_out_count()
-                                    # I need to add 1 to videos_checked_out_count
-
-                                # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
-                                    # Can I use a class method?
-                                # available_inventory= Use calculate_available_inventory()
-                                    # I need to subtract all copies currently checked out by all customers from total_inventory
-                                        # all copies currently checked out = all videos_checked_out_count added up from all customers
-                                            # Do I need to Rental.query.all() --> filter all videos_checked_out_count values and add them?
-                                            # OR can also do Rental.query.all() --> filter by video_id and add instances of rentals that have the same video_id
-                                )
-        db.session.add(new_checkout)
+    # Need to figure out how to calculate videos_checked_out_count and available inventory
+        # Can I use a class method?
+        new_rental = Rental(video_id=request_body["video_id"],
+                            customer_id=request_body["customer_id"],
+                            available_inventory=0,
+                            videos_checked_out_count=1)
+        
+        db.session.add(new_rental)
         db.session.commit()
 
-        return make_response({"customer_id": new_checkout.customer_id,
-                                "video_id": new_checkout.video_id,
-                                "due_date": new_checkout.due_date,
-                                "videos_checked_out_count": new_checkout.videos_checked_out_count,
-                                "available_inventory": new_checkout.available_inventory})
-
-
-@rental_bp.route('/check-in', methods=['POST'])
-def handle_checkin():
-    request_body = request.get_json()
-    rental_to_delete = Rental.query.get(request_body['video_id'])
-
-    if 'customer_id' not in request_body.keys() :
-            return make_response({"details": "Request body must include customer."}, 404)
-    elif 'video_id' not in request_body.keys():
-            return make_response({"details":"Request body must include video."}, 404)
-    # Does checking for available inventory belong here or inside the else block?
-    elif request_body['video_id'] not in request_body.values() and request_body['customer_id'] not in request_body.values():
-            return make_response({"details": "The video and customer information do not match the current rental"}, 400)
-
-    rental_deleted_confirmation =  Rental(customer_id=request_body['customer_id'],
-                                video_id=request_body['video_id'],
-                                due_date=request_body['due_date'] # What value do I put here? Do I use None?
-
-                                # Need to figure out how to calculate videos_checked_out_count
-                                    # Can I use a class method?
-                                # videos_checked_out_count= Use get_videos_checked_out_count()
-                                    # I need to subtract 1 from videos_checked_out_count
-
-                                # Need to figure out how to calculate available_inventory -- see Wave 2 ReadMe
-                                    # Can I use a class method?
-                                # available_inventory= Use calculate_available_inventory()
-                                    # I need to add one to available_inventory 
-                                )
-
-    # Delete the rental - am I deleting a rental instance currently that already exists due to the video being rented?
-    db.session.delete(rental_to_delete)
-    db.session.commit()
-
-    # Make a response
-    return make_response({"customer_id": rental_deleted_confirmation.customer_id,
-                            "video_id": rental_deleted_confirmation.video_id,
-                            "videos_checked_out_count": rental_deleted_confirmation.videos_checked_out_count,
-                            "available_inventory": rental_deleted_confirmation.available_inventory})
+        return make_response({"id": new_rental.id,
+                                "customer_id": new_rental.customer_id,
+                                "video_id": new_rental.video_id,
+                                "available_inventory": new_rental.available_inventory,
+                                "videos_checked_out_count": new_rental.videos_checked_out_count})
