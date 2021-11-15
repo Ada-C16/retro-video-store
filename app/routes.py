@@ -240,9 +240,9 @@ def delete_video(video_id):
 # *****************************
 
 # POST /rentals/check-out
-# *** QUESTION: DO WE NEED TO MAKE A NEW BLUEPRINT FOR RENTALS? ***
 @videos_bp.route("/rentals/check-out", methods = ["POST"])
-def post_rentals_check_out(customer_id, video_id):
+# @customers_bp.route("/rentals/check-out", methods = ["POST"])
+def post_rentals_check_out():
     request_body = request.get_json()
     
     # check for valid input
@@ -254,20 +254,28 @@ def post_rentals_check_out(customer_id, video_id):
         return jsonify(response_body), 400
 
     # check if customer exists
-    customer = Customer.query.get(customer_id)
+    customer = Customer.query.get(request_body["customer_id"])
     if not customer:
-        return customer_not_found(customer_id), 404
+        return customer_not_found(request_body["customer_id"]), 404
 
     #check if video exists
-    video = Video.query.get(video_id)
+    video = Video.query.get(request_body["video_id"])
     if not video:
-        response_body = {"message" : f"Video {video_id} was not found"}
+        response_body = {"message" : f"Video {request_body['video_id']} was not found"}
         return jsonify(response_body), 404
 
-    # create a response body
-    response_body = {}
+    # create a Rental instance
+    # new_video = Video.from_dict(request_body)
+    new_rental = Rental.from_dict(request_body)
 
-    return jsonify(response_body), 201
+    db.session.add(new_rental)
+    db.session.commit()
+
+    # create a response body
+    # response_body = {new_rental.to_dict()}  
+    response_body = {}  
+
+    return jsonify(response_body), 200
 
 
 # POST /rentals/check-in
@@ -295,13 +303,19 @@ def post_rentals_check_in(customer_id, video_id):
         return jsonify(response_body), 404
 
     # access the rental being checked in (deleted)
-    rental = Rental.query.get(pass)
+    rental = Rental.query.get(customer_id)
 
     # create a response body
-    response_body = {}
+    response_body = {
+            "customer_id": rental.customer_id,
+            "video_id" : rental.video_id,
+            "due_date" : rental.due_date,
+            "videos_checked_out_count" : rental.videos_checkout_count,
+            "available_inventory" : rental.available_inventory
+        }    
 
     # delete the rental record
-    db.session.delete(rental)
+    # db.session.delete(rental)
     db.session.commit()
 
     return jsonify(response_body), 201
