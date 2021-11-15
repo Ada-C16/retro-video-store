@@ -9,6 +9,8 @@ customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 videos_bp = Blueprint("videos_bp", __name__, url_prefix=("/videos"))
 rentals_bp = Blueprint("rentals_bp", __name__, url_prefix=("/rentals"))
 
+
+
 @rentals_bp.route("/check-out", methods=["POST"])
 def handle_rentals_out():
     # if request.method == "POST":
@@ -18,14 +20,19 @@ def handle_rentals_out():
     due_date = date.today() + timedelta(days=7)
 
     customer = Customer.query.get(customer_id)
-    if customer is None:
+    if customer_id is None:
         return jsonify(None), 400
+    if customer is None:
+        return jsonify(None), 404
 
     video = Video.query.get(video_id)
-    if video is None:
+    if video_id is None:
         return jsonify(None), 400
+    if video is None:
+        return jsonify(None), 404
+    
 
-    video_checked_out_count = Rental.query.filter_by(video_id=video_id).count()
+    video_checked_out_count = Rental.query.filter_by(video_id=video_id, checked_in_status=False).count()
     available_inventory = video.total_inventory - video_checked_out_count
 
     if available_inventory == 0:
@@ -53,8 +60,57 @@ def handle_rentals_out():
         "available_inventory": available_inventory 
         }, 200
  
-
 @rentals_bp.route("/check-in", methods=["POST"])
+def handle_rentals_in():
+    request_body = request.get_json()
+    customer_id = request_body.get("customer_id")
+    video_id = request_body.get("video_id")
+
+    customer = Customer.query.get(customer_id)
+    if customer_id is None:
+        return jsonify(None), 400
+    if customer is None:
+        return jsonify(None), 404
+
+    video = Video.query.get(video_id)
+    if video_id is None:
+        return jsonify(None), 400
+    if video is None:
+        return jsonify(None), 404
+
+    rental = Rental.query.filter_by(customer_id=customer_id, video_id=video_id, checked_in_status=False).order_by(Rental.due_date.asc()).first()
+    if rental is None:
+        return jsonify({"message" : f"No outstanding rentals for customer {customer_id} and video {video_id}"
+        }), 400
+
+    rental.checked_in_status = True
+    video_checked_out_count = Rental.query.filter_by(video_id=video_id, checked_in_status=False).count()
+    available_inventory = video.total_inventory - video_checked_out_count
+
+    db.session.commit()
+
+    return {
+        "customer_id": rental.customer_id,
+        "video_id": rental.video_id,
+        "videos_checked_out_count": video_checked_out_count,
+        "available_inventory": available_inventory 
+        }, 200
+
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"])
+def list_customer_rentals(customer_id):
+    customer_rentals = Rental.query.filter_by(customer_id=customer_id).all()
+    customer_rentals_response = []
+    for customer_rental in customer_rentals:
+        customer_rentals_response.append({
+            "release_date": video.release_
+            "title":
+            "due_date"
+        }
+
+        )
+
+
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
 
 
 @videos_bp.route("", methods=["GET", "POST"])
