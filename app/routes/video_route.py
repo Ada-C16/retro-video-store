@@ -3,13 +3,13 @@ from flask import Blueprint, request, make_response, jsonify
 from app import db
 from app.models.video import Video
 from app.models.rental import Rental
-from .helpers import id_is_valid, request_has_all_required_categories, sort_and_limit
+from .helpers import id_is_valid, request_has_all_required_categories, sort_limit_and_paginate
 
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
 @videos_bp.route("", methods=["GET"])
 def handle_videos():
-    videos = sort_and_limit(Video())
+    videos = sort_limit_and_paginate(Video())
     videos_response = [video.to_json() for video in videos]
     return jsonify(videos_response), 200
 
@@ -22,6 +22,7 @@ def add_video():
     video = Video().new_video(request_body)
     db.session.add(video)
     db.session.commit()
+
     return jsonify(video.to_json()), 201
 
 @videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE"])

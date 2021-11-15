@@ -64,14 +64,16 @@ def check_rental_errors():
     return None, video_id, customer_id 
 
 # helper method for sorting + limiting results based on optional query params
-def sort_and_limit(object):
+def sort_limit_and_paginate(object):
     '''
     returns a list of either videos or customers that have been sorted 
-    (if a sort query is present) and limited (if a limit query is present); 
-    if no queries are present, returns all videos or all customers in DB
+    (if a sort query is present), limited (if a page limit query is present), 
+    and paginated (if a pagination query is present); if no queries are present, 
+    returns all videos or all customers in DB
     '''
     sort_query = request.args.get("sort")
     page_limit = request.args.get("n")
+    pagination_query = request.args.get("p")
 
     possible_sort_queries = []
     if type(object) == Video:
@@ -79,11 +81,20 @@ def sort_and_limit(object):
     elif type(object) == Customer:
         possible_sort_queries = ["name", "phone", "postal_code"]
 
-    if sort_query:
-        if sort_query in possible_sort_queries:
-            objects = object.query.order_by(sort_query).limit(page_limit)
-        else: 
+    if not sort_query or sort_query not in possible_sort_queries:
+        if pagination_query:
+            objects = object.query.paginate(
+                page=int(pagination_query),
+                per_page=int(page_limit),error_out=False).items
+        else:
             objects = object.query.limit(page_limit)
+    elif sort_query in possible_sort_queries: 
+        if pagination_query:
+            objects = object.query.order_by(sort_query).paginate(
+                page=int(pagination_query),
+                per_page=int(page_limit),error_out=False).items
+        else:
+            objects = object.query.order_by(sort_query).limit(page_limit)
     else:
         objects = object.query.limit(page_limit)
     
