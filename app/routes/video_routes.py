@@ -96,6 +96,7 @@ def delete_video(video_id):
     if rental_entries:
         for rental in rental_entries:
             db.session.delete(rental)
+    db.session.commit()
     db.session.delete(video)
 
 

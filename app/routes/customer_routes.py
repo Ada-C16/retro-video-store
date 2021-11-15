@@ -28,7 +28,18 @@ def get_customer_from_id(customer_id):
 # Get all customers
 @customer_bp.route("", methods =["GET"])
 def read_all_customers():
-    customers = Customer.query.all()
+    sort_query = request.args.get("sort")
+
+    # sort by name
+    if sort_query == "name":
+        customers = Customer.query.order_by(Customer.name.asc())
+    # sort asc by registered_at, postal_code
+    elif sort_query == "registered_at":
+        customers = Customer.query.order_by(Customer.registered_at.asc())
+    elif sort_query =="postal_code":
+        customers = Customer.query.order_by(Customer.postal_code.asc())
+    else:
+        customers = Customer.query.all()
 
     customers_response = []
     for customer in customers:
@@ -93,7 +104,7 @@ def delete_customer(customer_id):
     if rental_entries:
         for rental in rental_entries:
             db.session.delete(rental)
-    
+    db.session.commit()
     db.session.delete(customer)
     db.session.commit()
 
