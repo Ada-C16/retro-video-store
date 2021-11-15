@@ -46,7 +46,8 @@ def get_videos_by_id(video_id):
     video = Video.query.get(video_id)
     if not video:
         return jsonify({"message": "Video 1 was not found"}), 404
-
+    if video.deleted_at:
+        return jsonify(None), 404
     response_body = video.create_dict()
     return jsonify(response_body), 200
 
@@ -59,7 +60,6 @@ def delete_video(video_id):
 
     video.deleted_at = datetime.now()
     delete_message = video.create_dict()
-    db.session.delete(video)
     db.session.commit()
 
     return jsonify(delete_message), 200
