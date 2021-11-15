@@ -241,21 +241,27 @@ def delete_video(video_id):
 
 # POST /rentals/check-out
 # changed bp to rentals vs videos
-@rentals_bp.route("/rentals/check-out", methods = ["POST"])
-def post_rentals_check_out(customer_id, video_id):
+@rentals_bp.route("/check-out", methods = ["POST"])
+def post_rentals_check_out():
     request_body = request.get_json()
+
     # check for valid input
     if "customer_id" not in request_body:
-        response_body = {"details": "Request body must include customer_id."}
-        return jsonify(None), 400
+        return {"details": "Request body must include customer_id."}, 400
+        # return jsonify(response_body), 400
+    
     if "video_id" not in request_body:
-        response_body = {"details": "Request body must include video_id."}
-        return jsonify(response_body), 400
+        return {"details": "Request body must include video_id."}, 400
+        # return jsonify(response_body), 400
+
+    # this is the customer id of the customer who has this rental
+    customer_id = request_body["customer_id"]
+    video_id = request_body["video_id"]
 
     # check if customer exists
-    customer = Customer.query.get(request_body["customer_id"])
+    customer = Customer.query.get(customer_id)
     if not customer:
-        return jsonify("Not Found"), 404
+        return jsonify("ther is no customer with that id num"), 404
 
     # check if video exists
     video = Video.query.get(video_id)
@@ -263,33 +269,30 @@ def post_rentals_check_out(customer_id, video_id):
         # response_body = {"message" : f"Video {video_id} was not found"}
         return jsonify("Not Found"), 404
 
-    # create a Rental instance
-    new_rental = Rental.from_dict(request_body)
-
-    db.session.add(new_rental)
-    db.session.commit()
-
-    # create a response body
     # need to create new_rental instance when checking out
     # this is not working yet just brainstorming
     new_rental = Rental(
-        due_date=datetime.strptime(days=7),
-        videos_checked_out_count=customer.rentals,
-        available_inventory = (video_id.total_inventory - video_id.rentals)
+        due_date=datetime.now(),
+        # videos_checked_out_count=len(customer.rentals),
+    #     available_inventory = (video.total_inventory - len(video.rentals))
     )
 
     db.session.add(new_rental)
     db.session.commit()
 
-    # this is not working yet just brainstorming
-    response_body = {
-            "customer_id": new_rental.customer_id,
-            "video_id": new_rental.video_id,
-            "videos_checked_out_count": customer.rentals,
-            "available_inventory": (video_id.total_inventory - video_id.rentals)
-        }
+    # if videos_checked_outlen(video.rentals)
 
-    return jsonify(response_body), 200
+    # # create a response body
+    # # this is not working yet just brainstorming
+    # response_body = {
+    #         "customer_id": new_rental.customer_id,
+    #         "video_id": new_rental.video_id,
+    #         "videos_checked_out_count": video.rentals,
+    #         "available_inventory": (video.total_inventory - len(video.rentals))
+    #     }
+
+    # return jsonify(response_body), 200
+    return jsonify(customer.rentals, video.rentals, new_rental.due_date, new_rental.videos_checked_out_count), 200
 
 
 # POST /rentals/check-in
