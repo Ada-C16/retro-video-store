@@ -7,14 +7,19 @@ def handle_query_params(cls, request, filter_by={}):
 
     sort_by = request.args.get("sort")
 
-    if cls == Rental and sort_by == "name":
-        items = Rental.query.join(Customer).order_by(Customer.name)
-    elif cls == Rental and sort_by == "title":
-        items = Rental.query.join(Video).order_by(Video.title)
-    elif filter_by:
-        items = cls.query.filter_by(**filter_by).order_by(sort_by)
+    cls_join = None
+
+    if cls == Rental and sort_by == "title":
+        cls_join = Video
+        sort_by = Video.title
+    elif cls == Rental and sort_by == "name":
+        cls_join = Customer
+        sort_by = Customer.name
+
+    if cls_join:
+        items = cls.query.filter_by(**filter_by).join(cls_join).order_by(sort_by)
     else:            
-        items = cls.query.order_by(sort_by)
+        items = cls.query.filter_by(**filter_by).order_by(sort_by)
 
     return items
 
