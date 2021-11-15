@@ -1,8 +1,10 @@
-from flask import Blueprint, jsonify, request
-from app import db
-from app.models.video import Video
-from app.models.customer import Customer
+from datetime import datetime
 
+from flask import Blueprint, jsonify, request
+
+from app import db
+from app.models.customer import Customer
+from app.models.video import Video
 
 videos_bp = Blueprint("videos_bp", __name__, url_prefix="/videos")
 
@@ -56,6 +58,7 @@ def delete_video(video_id):
     if not video:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
 
+    video.deleted_at = datetime.now()
     delete_message = video.create_dict()
     db.session.delete(video)
     db.session.commit()

@@ -107,6 +107,7 @@ def rentals_by_id(customer_id):
     if not rental_response:
         return jsonify([]), 200
 
-    response_body = [Video.query.get(video).create_dict()
-                     for video in rental_response]
+    response_body = [
+        Video.query.get(video).create_dict() for video in rental_response
+    ]
     return jsonify(response_body), 200
