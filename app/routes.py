@@ -333,37 +333,25 @@ def all_customers_with_vid_checked_out(video_id):
     else:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
 
-@customers_bp.route("/<rental_id>", methods=["DELETE"])
-def delete_customer(rental_id):
-    rental_query = Rental.query.get(rental_id)
-    if rental_query:
-        # get customer with rental
-        customer_id = rental_query.customer_id
-        # find customer with id that matches
-        customer = Customer.query.filter_by(id=customer_id).first()
+# @customers_bp.route("/<customer_id>", methods=["DELETE"])
+# def delete_customer(customer_id):
+#     rental_query = Rental.query.get(rental_id)
+#     if rental_query:
+#         # get customer with rental
+#         customer_id = rental_query.customer_id
+#         # find customer with id that matches
+#         customer = Customer.query.filter_by(id=customer_id).first()
         
-        db.session.delete(customer)
-        db.session.commit()
-        return jsonify("Customer delete"), 200
+#         db.session.delete(customer)
+#         db.session.commit()
+#         return jsonify("Customer delete"), 200
 
-    else: 
-        return jsonify(""), 404
+#     else: 
+#         return jsonify(""), 404
 
-@videos_bp.route("/<rental_id>", methods=["DELETE"])
-def delete_video(rental_id):
-    rental_query = Rental.query.get(rental_id)
-    if rental_query:
-        # get video_id with rental
-        video_id = rental_query.video_id
-        # find video with id that matches
-        video = Video.query.filter_by(id=video_id).first()
-
-        db.session.delete(video)
-        db.session.commit()
-        return jsonify("Video deleted"), 200
-
-    else: 
-        return jsonify(""), 404
+# @videos_bp.route("/<video_id>", methods=["DELETE"])
+# def delete_video(video_id):
+   
                                     
 
 
