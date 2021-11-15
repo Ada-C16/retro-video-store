@@ -12,9 +12,12 @@ class Rental(db.Model):
 
     def to_dict(self):
         video = Video.query.get(self.video_id)
+        checked_out = Rental.query.filter_by(video_id = self.video_id, is_checked_in=False).all()
         return {
             "video_id": self.video_id,
             "customer_id": self.customer_id,
-            "videos_checked_out_count": len(video.customers),
-            "available_inventory": video.total_inventory - len(video.customers)
+            # "videos_checked_out_count": len(video.customers),
+            "videos_checked_out_count": len(checked_out),
+            # "available_inventory": video.total_inventory - len(video.customers),
+            "available_inventory": video.total_inventory - len(checked_out)
         }

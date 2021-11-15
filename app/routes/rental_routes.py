@@ -43,11 +43,12 @@ def check_in_video():
     except KeyError:
         return jsonify(None), 400
 
+
     rental = Rental.query.filter_by(customer_id = customer.id, video_id = video.id).first()
+    if not rental:
+        return {"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}, 400
 
     rental.is_checked_in = True
-    # customer.videos.remove(video)
-
     db.session.commit()
 
     return jsonify(rental.to_dict())
