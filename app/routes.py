@@ -26,9 +26,9 @@ def handle_videos():
             return jsonify({"details": "Request body must include total_inventory."}), 400
     
         new_video = Video(
-            title = video_request_body["title"],
-            release_date = video_request_body["release_date"],
-            total_inventory = video_request_body["total_inventory"]
+            title=video_request_body["title"],
+            release_date=video_request_body["release_date"],
+            total_inventory=video_request_body["total_inventory"]
         )
 
         db.session.add(new_video)
@@ -55,9 +55,9 @@ def handle_videos():
             videos = Video.query.all()
 
 
-        video_response = []
-        for video in videos:
-            video_response.append(video.get_video_dict())
+        video_response = [video.get_video_dict() for video in videos]
+        # for video in videos:
+        #     video_response.append(video.get_video_dict())
         
         if video_response == []:
             return jsonify(video_response), 200
@@ -84,9 +84,9 @@ def handle_one_video_at_a_time(video_id):
         if "title" not in video_update_request_body:
             return jsonify(None), 400
         
-        video.title = video_update_request_body["title"],
-        video.release_date = video_update_request_body["release_date"],
-        video.total_inventory = video_update_request_body["total_inventory"]
+        video.title=video_update_request_body["title"],
+        video.release_date=video_update_request_body["release_date"],
+        video.total_inventory=video_update_request_body["total_inventory"]
             
         db.session.commit()
 
@@ -117,14 +117,22 @@ def customers_who_checked_out(video_id):
     # Telling query to return both customer and rental
     results = db.session.query(Customer, Rental).filter(Rental.video_id == video.id, Rental.checked_out == True).all()
 
-    customer_list = []
-    for customer, rental in results:
-        customer_list.append({
+    customer_list = [
+        {
             "due_date": rental.due_date,
             "name": customer.name,
             "phone": customer.phone,
             "postal_code": customer.postal_code
-        })
+        } 
+        for customer, rental in results
+    ]
+    # for customer, rental in results:
+    #     customer_list.append({
+    #         "due_date": rental.due_date,
+    #         "name": customer.name,
+    #         "phone": customer.phone,
+    #         "postal_code": customer.postal_code
+    #     })
 
     return jsonify(customer_list), 200
 
@@ -177,9 +185,9 @@ def handle_customers():
             customers = Customer.query.all()
 
 
-        customers_response = []
-        for customer in customers:
-            customers_response.append(customer.get_cust_dict())
+        customers_response = [customer.get_cust_dict() for customer in customers]
+        # for customer in customers:
+        #     customers_response.append(customer.get_cust_dict())
 
         if customers_response == []:
             return jsonify(customers_response), 200
@@ -246,13 +254,20 @@ def videos_checked_out(customer_id):
 
     results = db.session.query(Video, Rental).filter(Rental.customer_id == customer.id, Rental.checked_out == True).all()
 
-    video_list = []
-    for video, rental in results:
-        video_list.append({
+    video_list = [
+        {
             "release_date": video.release_date,
             "title": video.title,
             "due_date": rental.due_date,
-        })
+        } 
+        for video, rental in results
+    ]
+    # for video, rental in results:
+    #     video_list.append({
+    #         "release_date": video.release_date,
+    #         "title": video.title,
+    #         "due_date": rental.due_date,
+    #     })
 
     if video_list == []:
         return jsonify(video_list), 200
@@ -281,9 +296,9 @@ def handle_rental_check_outs():
         return jsonify({"message": "Could not perform checkout"}), 400
 
     new_rental = Rental(
-        customer_id = customer.id,
-        video_id = video.id,
-        checked_out = True
+        customer_id=customer.id,
+        video_id=video.id,
+        checked_out=True
     )
 
     db.session.add(new_rental)
@@ -325,9 +340,9 @@ def handle_video_check_ins():
     # Number of checked out videos
     videos_checked_out = Rental.query.filter(Rental.video_id == rentals_request_body["video_id"], Rental.checked_out == True).count()
 
-    rental.customer_id = customer.id,
-    rental.video_id = video.id,
-    rental.checked_out = False
+    rental.customer_id=customer.id,
+    rental.video_id=video.id,
+    rental.checked_out=False
 
     db.session.commit()
 
