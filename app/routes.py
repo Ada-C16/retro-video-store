@@ -274,7 +274,7 @@ def handle_checkin_rental():
 def get_customer_checkout(customer_id):
     customer = Customer.query.get(customer_id)
     if customer is None:
-        return {"message" : "Customer 1 was not found"}, 404
+        return {"message" : f"Customer {customer_id} was not found"}, 404
     customers_rentals = customer.video
     
     rentals = []
@@ -290,4 +290,22 @@ def get_customer_checkout(customer_id):
         return jsonify(rental), 200
     return jsonify(rentals), 200 
 
-    
+
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def get_video_cehckout(video_id):
+    video = Video.query.get(video_id)
+    if video is None:
+        return {"message" : f"Video {video_id} was not found"}, 404
+    video_rentals = video.customer
+    rentals = []
+    for movie in video_rentals:
+        rental = Rental.query.filter_by(video_id=video_id, customer_id=movie.id).first()
+        rentals.append({
+            "due_date" : rental.due_date,
+            "name" : movie.name,
+            "phone" : movie.phone,
+            "postal_code": movie.postal_code
+            })
+    if rentals is None:
+        return jsonify(rental), 200
+    return jsonify(rentals), 200
