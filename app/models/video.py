@@ -1,5 +1,6 @@
 from app import db
 
+
 class Video(db.Model):
     __tablename__='video'
     id = db.Column(db.Integer, primary_key=True)
@@ -10,10 +11,16 @@ class Video(db.Model):
 
     def calculate_available_inventory(self):
         from app.models.rental import Rental
+        available_inventory = 0
 
         # In SQL: SELECT COUNT(*) FROM rental WHERE video_id = self.id
         number_of_rentals_with_given_video_id = Rental.query.filter_by(video_id=self.id).count()
 
-        available_inventory = self.total_inventory - number_of_rentals_with_given_video_id
+        if Rental.query.filter_by(is_checked_in=True):
+            available_inventory += 1
+
+        else:
+
+            available_inventory = self.total_inventory - number_of_rentals_with_given_video_id
         
         return available_inventory
