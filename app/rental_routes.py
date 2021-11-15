@@ -71,7 +71,7 @@ def check_in():
     # finding rental associated with specfic the custoemr_id and video_id and 
     # deleting their rental record of the sepcified video.
     Rental.query.filter_by(customer_id=customer_id, video_id=video_id).delete()
-
+    db.session.commit()
     # creating checkin dictionary for the response body of a successful request.
     # Updates the videos_checked_out_count and available inventory. 
     customer.videos_checked_out = len(customer.rentals)
