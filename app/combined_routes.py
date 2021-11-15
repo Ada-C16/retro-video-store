@@ -66,7 +66,8 @@ def delete_one_record(id):
     db.session.commit()
     return jsonify(record.to_dict())
 
-# Custom endpoint for Wave 02
+# WAVE 02 Custom endpoint
+
 @customer_bp.route("/<id>/rentals", methods=["GET"])
 @videos_bp.route("/<id>/rentals", methods=["GET"])
 def read_all_current_rentals(id):
@@ -74,7 +75,7 @@ def read_all_current_rentals(id):
     current_records = model.current_associated_records(id)
     return jsonify(current_records), 200
 
-# WAVE 03 Custom endpoint
+# WAVE 03 Custom endpoints
 
 @customer_bp.route("/<id>/history", methods = ["GET"])
 def read_past_video_rentals(id):
