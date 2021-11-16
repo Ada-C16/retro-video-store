@@ -127,8 +127,21 @@ def delete_existing_customer(customer_id):
     if not customer:
         return customer_not_found(customer_id), 404
 
+    if customer.videos:
+        rentals = customer.videos
+        for rental in rentals:
+            db.session.delete(rental)
+            db.session.commit()
+    
     db.session.delete(customer)
-    db.session.commit()
+
+    return {"id": customer.id}, 200
+
+
+    # return {
+    #     "message": f"Customer {customer.name} has been deleted from the system...FOREVER"
+    #     }, 200
+
 
     return {
         "id": customer.id
@@ -353,6 +366,8 @@ def post_rentals_check_in():
 # *****************************
 # *** GET custom endpoints ***
 # *****************************
+
+# GET
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def get_checked_out_videos(customer_id):
     customer = Customer.query.get(customer_id)
@@ -372,6 +387,27 @@ def get_checked_out_videos(customer_id):
 
     return jsonify(checked_out), 200
 
+
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def get_customers_by_video(video_id):
+    video = Video.query.get(video_id)
+    if video is None:
+        return {"message" : f"Video {video_id} was not found"}, 404
+    
+    customers_with_videos = []
+    # customers = Customer.query.get(video_id)
+    rentals = video.rentals
+    for rental in rentals:
+        customers_with_videos.append({
+            "name": rental.customer.name,
+            "phone": rental.customer.phone,
+            "postal_code": rental.customer.postal_code,
+            "due_date": rental.due_date
+        })
+
+    return jsonify(customers_with_videos), 200
+
+# DELETE
 @rentals_bp.route("/<customer_id>", methods=["DELETE"])
 def delete_customer_with_rental(customer_id):
     customer = Customer.query.get(customer_id)
