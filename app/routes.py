@@ -328,20 +328,21 @@ def post_rentals_check_in():
         response_body = {"message" : f"Video {video_id} was not found"}
         return jsonify(response_body), 404
 
-
-    # access the rental being checked in (deleted)
-    # rental = Rental.query.filter_by(customer_id=customer.id, video_id=video.id)
-    rental = Rental.query.get(id=customer_id)
-    # del_rental = db.session.query(Rental).filter_by(customer_id = customer.id, video_id = video.id)
-
+    # logic for counting number of check-ins
     checked_in_count = len(video.rentals) - 1
-    # create a response body
-    response_body = {
+
+    rentals = customer.rentals
+    if not rentals:
+        return {"message": "No outstanding rentals for customer 1 and video 1"}, 400 
+
+    for rental in rentals:
+        response_body = {
             "customer_id": rental.customer_id,
             "video_id" : rental.video_id,
             "videos_checked_out_count" : (len(customer.videos) - 1),
             "available_inventory" : (video.total_inventory - checked_in_count) 
-        }    
+        }   
+
     # delete the rental record
     db.session.delete(rental)
     db.session.commit()
@@ -360,10 +361,37 @@ def get_checked_out_videos(customer_id):
     if customer is None:
         return {"message" : f"Customer {customer_id} was not found"}, 404
     
-    # get a list of all the rentals associated with the customers
+    checked_out = []
     rentals = customer.rentals
+    videos = customer.videos
+    for rental in rentals:
+        for video in videos:
+            checked_out.append({
+                "release_date": video.release_date,
+                "title": video.title,
+                "due_date": rental.due_date
+                })
 
-    response_body = rentals[0]
+    return jsonify(checked_out), 200
 
-    return jsonify(response_body), 200
-    
+@rentals_bp.route("/<customer_id>", methods=["DELETE"])
+def delete_customer_with_rental(customer_id):
+    customer = Customer.query.get(customer_id)
+    rentals = Rental.query.filter_by(customer_id=customer.id)
+
+    rentals = customer.rentals
+    for rental in rentals:
+        db.session.delete(rental)
+        db.session.delete(customer)
+
+        db.session.commit()
+
+    return {
+        "message": f"Customer {customer.name} has been deleted from the system...FOREVER"
+        }, 200
+
+
+
+# vange's testing area
+
+# video 
