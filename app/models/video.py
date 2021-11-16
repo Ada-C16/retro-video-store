@@ -8,11 +8,11 @@ class Video(db.Model):
     available_inventory = db.Column(db.Integer)
     rentals = db.relationship('Rental', backref='video', lazy=True)
 
-    def video_dict(self):
+    def video_information(self):
         return {
             "id": self.id,
             "title": self.title,
             "release_date": self.release_date,
             "total_inventory": self.total_inventory,
-            "available_inventory": self.available_inventory
+            # "available_inventory": self.available_inventory
         }

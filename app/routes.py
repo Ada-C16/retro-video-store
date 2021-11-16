@@ -75,12 +75,7 @@ def handle_videos():
         db.session.add(new_video)
         db.session.commit()
 
-        return jsonify({
-            "id": new_video.id,
-            "title": new_video.title,
-            "release_date": new_video.release_date,
-            "total_inventory": new_video.total_inventory
-        }), 201
+        return new_video.video_information(), 201
 
 @videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE"])
 def handle_video_id(video_id):
@@ -94,11 +89,7 @@ def handle_video_id(video_id):
         return jsonify({"message": f"Video {video_id} was not found"}), 404
 
     elif request.method == "GET":
-        return jsonify({
-                "id": video.id,
-                "title": video.title,
-                "total_inventory": video.total_inventory
-        }), 200
+        return video.video_information(), 200
     
     elif request.method == "PUT":
         updated_body = request.get_json()
@@ -111,12 +102,7 @@ def handle_video_id(video_id):
         video.total_inventory = updated_body["total_inventory"]
         db.session.commit()
 
-        return jsonify({
-            "id": video.id,
-            "title": video.title,
-            "release_date": video.release_date,
-            "total_inventory": video.total_inventory
-        })
+        return video.video_information(), 200
 
     elif request.method == "DELETE":
         db.session.delete(video)
@@ -131,7 +117,7 @@ def active_customers():
 
         customers_response = []
         for customer in customers:
-                customers_response.append(customer.customer_dict())
+                customers_response.append(customer.customer_information())
 
         return jsonify(customers_response),200
 
@@ -153,19 +139,21 @@ def active_customers():
         db.session.add(new_customer)
         db.session.commit()
 
-        new_customer_response = new_customer.customer_dict()
-
-        return jsonify(new_customer_response),201
+        return jsonify(new_customer.customer_information()),201
 
 @customers_bp.route("/<customer_id>", methods=["GET", "PUT", "DELETE"])
 def retrieve_customer(customer_id):
+    
     if customer_id.isdigit() is False:
         return return_none()
+        
     customer = Customer.query.get(customer_id)
+    
     if customer == None:
         return jsonify({"message": "Customer 1 was not found"}), 404
+    
     elif request.method == 'GET':
-        response_body  = customer.customer_dict()
+        response_body  = customer.customer_information()
         return jsonify(response_body), 200
 
     elif request.method == 'PUT':
@@ -178,14 +166,13 @@ def retrieve_customer(customer_id):
         customer.phone = request_body["phone"]
         db.session.commit()
 
-        response_body= customer.customer_dict()
+        response_body= customer.customer_information()
         return jsonify(response_body),200
 
     elif request.method == "DELETE":
         db.session.delete(customer)
         db.session.commit()
         return jsonify({"id": customer.id}), 200
-######
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def get_rentals_for_customer(customer_id):
@@ -238,7 +225,6 @@ def get_rental_check_out():
     customer = Customer.query.get_or_404(request_body["customer_id"])
 
     videos_checked_out = Rental.query.filter_by(video_id=video.id, checked_out=True).count()
-    # keyword argument and wouldn't have the space
 
     available_inventory = video.total_inventory - videos_checked_out
 
@@ -250,7 +236,7 @@ def get_rental_check_out():
     new_rental = Rental(
         video_id = video.id,
         customer_id = customer.id,
-        due_date = datetime.now() + timedelta(days=7),
+        due_date=datetime.now() + timedelta(days=7),
         checked_out=True
         # python - keyword argument passing through vs assignment, keyword argument to instate something or method, python convention
     )

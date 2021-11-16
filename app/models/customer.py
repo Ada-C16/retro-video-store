@@ -8,8 +8,8 @@ class Customer(db.Model):
     registered_at = db.Column(db.DateTime, nullable=True)
     rentals = db.relationship('Rental', backref='customer', lazy=True)
 
-    def customer_dict(self):
-        return{
+    def customer_information(self):
+        return {
         "id": self.id,
         "name": self.name,
         "postal_code": self.postal_code,
