@@ -114,6 +114,9 @@ def rental_check_in():
     customer = Customer.query.get(request_body["customer_id"])
     video = Video.query.get(request_body["video_id"])
 
+    if not Rental.query.filter(Rental.video_id == video.id, Rental.customer_id == customer.id).first():
+        return make_response(jsonify({"message": "No outstanding rentals for customer 1 and video 1"}), 400)
+    
     Rental.query.filter(Rental.video_id == video.id, Rental.customer_id == customer.id).delete()
 
     db.session.commit()
@@ -158,6 +161,47 @@ def get_one_customer(id):
         return make_response(jsonify({"message": f"Customer {id} was not found"}),404)
     
     return jsonify(customer.to_dict())
+
+@video_bp.route("/<id>/rentals", methods=["GET"])
+def rentals_by_video(id):
+    try:
+        video = validate_video_id(id)
+    except NotFound:
+        return make_response(jsonify({"message": f"Video {id} was not found"}),404)
+    request_body = request.get_json
+
+    rentals = Rental.query.filter(Rental.video_id == video.id)
+    customer_list = []
+    
+    for rental in rentals:
+        customer_info = {
+            "due_date": rental.due_date,
+            "name" : rental.customer.name,
+            "phone": rental.customer.postal_code ,
+            "postal_code": rental.customer.postal_code
+            }
+        customer_list.append(customer_info)
+    return make_response(jsonify(customer_list))
+
+@customer_bp.route("/<id>/rentals", methods=["GET"])
+def rentals_by_customer(id):
+    try:
+        customer = validate_customer_id(id)
+    except NotFound:
+        return make_response(jsonify({"message": f"Customer {id} was not found"}),404)
+    request_body = request.get_json
+
+    rentals = Rental.query.filter(Rental.customer_id == customer.id)
+    video_list = []
+    
+    for rental in rentals:
+        video_info = {
+            "release_date": rental.video.release_date,
+            "title" : rental.video.title,
+            "due_date": rental.due_date ,
+            }
+        video_list.append(video_info)
+    return make_response(jsonify(video_list))
 
 #----------- UPDATE ---------------------
 
@@ -227,11 +271,4 @@ def delete_customer(id):
     
     response_body = ({'id':customer.id, 'details': f'Customer {customer.id} successfully deleted'})
     return make_response(jsonify(response_body),200) 
-    try:
-        video = validate_video_id(id)
-    except NotFound:
-
-        return make_response(jsonify({"message": f"Video {id} was not found"}), 404)
-    return jsonify(video.to_dict())
-
 

@@ -9,7 +9,6 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     register_at = db.Column(db.DateTime)
-    #videos_checked_out = db.Column(db.Integer, default=0)
     rentals = db.relationship("Rental", back_populates= "customer") #NEW
     
     def to_dict(self): 
