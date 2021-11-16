@@ -2,7 +2,7 @@ from app import db
 from app.models.customer import Customer 
 from flask import Blueprint, jsonify, request
 import datetime
-from datetime import timedelta
+from datetime import timedelta 
 from sqlalchemy import select
 from app.models.video import Video
 from app.models.rental import Rental
@@ -303,7 +303,7 @@ def post_rentals_check_out():
 # POST /rentals/check-in
 # changed bp to rentals vs videos
 @rentals_bp.route("/rentals/check-in", methods = ["POST"])
-def post_rentals_check_in(customer_id, video_id):
+def post_rentals_check_in():
     request_body = request.get_json()
     
     # check for valid input
@@ -326,8 +326,13 @@ def post_rentals_check_in(customer_id, video_id):
         response_body = {"message" : f"Video {video_id} was not found"}
         return jsonify(response_body), 404
 
+    # this is the customer id of the customer who has this rental
+    customer_id = request_body["customer_id"]
+    # this is the video id of the video that is being checked in
+    video_id = request_body["video_id"]
+
     # access the rental being checked in (deleted)
-    rental = Rental.query.get() # need to add some type of constraint here, what specific rental are we deleting?
+    rental = Rental.query.filter_by(customer_id=customer.id) # need to add some type of constraint here, what specific rental are we deleting?
 
     # create a response body
     response_body = {
