@@ -2,7 +2,6 @@ from app import db
 from app.models.video import Video
 from app.models.rental import Rental
 from flask import Blueprint, request, jsonify
-# from app.routes.helper_fuctions import *
 
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 
@@ -30,29 +29,16 @@ def create_video():
 
     return jsonify(new_video.to_dict()), 201
 
-def check_valid_id(Obj, id):
-    if type(id) == int:
-        obj = Obj.query.get(id)
-        return obj
-    else:
-        return "Invalid"
-
-def not_found_message(id):
-    return jsonify({"message": f"Video {id} was not found"}), 404
 
 @videos_bp.route("/<video_id>", methods=["GET"])
 def get_video(video_id):
-    # try:
-    #     video = Video.query.get(video_id)
-    # except:
-    #     return jsonify(None), 400
-    video = check_valid_id(Video, video_id)
-
-    if video == "Invalid":
+    try:
+        video = Video.query.get(video_id)
+    except:
         return jsonify(None), 400
 
     if video is None:
-        return not_found_message(video_id)
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
 
     return video.to_dict()
 
