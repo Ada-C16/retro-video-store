@@ -31,7 +31,7 @@ Status: `200`
   "video_id": 235040983,
   "due_date": "2020-06-31",
   "videos_checked_out_count": 2,
-  "available_inventory": 5 
+  "available_inventory": 5
 }
 ```
 
