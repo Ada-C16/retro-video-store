@@ -238,6 +238,17 @@ def delete_video(video_id):
     if video is None:
         response_body = {"message": f"Video {video_id} was not found"}
         return jsonify(response_body), 404
+    
+    if video.customers:
+        for rental_record in video.rentals:
+            db.session.delete(rental_record)
+        db.session.delete(video)
+        db.session.commit()
+        response_body = {"message" : f"{video.title} and all rental records for that film have been deleted",
+        }
+        return jsonify(response_body), 200
+    
+
     else:
         response_body = {"id" : video.id}
 
