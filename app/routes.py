@@ -124,9 +124,10 @@ def update_existing_customer(customer_id):
 @customers_bp.route("/<customer_id>", methods=["DELETE"])
 def delete_existing_customer(customer_id):
     customer = Customer.query.get(customer_id)
+
     if not customer:
         return customer_not_found(customer_id), 404
-
+        
     db.session.delete(customer)
     db.session.commit()
 
@@ -251,11 +252,9 @@ def post_rentals_check_out():
     # check for valid input
     if "customer_id" not in request_body:
         return {"details": "Request body must include customer_id."}, 400
-        # return jsonify(response_body), 400
     
     if "video_id" not in request_body:
         return {"details": "Request body must include video_id."}, 400
-        # return jsonify(response_body), 400
 
     # this is the customer id of the customer who has this rental
     customer_id = request_body["customer_id"]
@@ -292,7 +291,7 @@ def post_rentals_check_out():
             "customer_id": new_rental.customer_id,
             "video_id": new_rental.video_id,
             "due_date": new_rental.due_date,
-            "videos_checked_out_count": len(customer.videos), # 5 is temporary input
+            "videos_checked_out_count": len(customer.videos),
             "available_inventory": video.total_inventory - len(video.rentals)
         }
 
@@ -302,17 +301,20 @@ def post_rentals_check_out():
 
 # POST /rentals/check-in
 # changed bp to rentals vs videos
-@rentals_bp.route("/rentals/check-in", methods = ["POST"])
+@rentals_bp.route("/check-in", methods = ["POST"])
 def post_rentals_check_in():
     request_body = request.get_json()
     
     # check for valid input
     if "customer_id" not in request_body:
-        response_body = {"details": "Request body must include customer_id."}
-        return jsonify(response_body), 400
-    elif "video_id" not in request_body:
-        response_body = {"details": "Request body must include video_id."}
-        return jsonify(response_body), 400
+        return {"details": "Request body must include customer_id."}, 400
+
+    if "video_id" not in request_body:
+        return {"details": "Request body must include video_id."}, 400
+
+    # this is the customer id of the customer who has this rental
+    customer_id = request_body["customer_id"]
+    video_id = request_body["video_id"]
 
     # check if customer exists
     customer = Customer.query.get(customer_id)
@@ -326,28 +328,25 @@ def post_rentals_check_in():
         response_body = {"message" : f"Video {video_id} was not found"}
         return jsonify(response_body), 404
 
-    # this is the customer id of the customer who has this rental
-    customer_id = request_body["customer_id"]
-    # this is the video id of the video that is being checked in
-    video_id = request_body["video_id"]
 
     # access the rental being checked in (deleted)
-    rental = Rental.query.filter_by(customer_id=customer.id) # need to add some type of constraint here, what specific rental are we deleting?
+    # rental = Rental.query.filter_by(customer_id=customer.id, video_id=video.id)
+    rental = Rental.query.get(id=customer_id)
+    # del_rental = db.session.query(Rental).filter_by(customer_id = customer.id, video_id = video.id)
 
+    checked_in_count = len(video.rentals) - 1
     # create a response body
     response_body = {
             "customer_id": rental.customer_id,
             "video_id" : rental.video_id,
-            "due_date" : rental.due_date,
-            "videos_checked_out_count" : rental.videos_checkout_count,
-            "available_inventory" : rental.available_inventory
+            "videos_checked_out_count" : (len(customer.videos) - 1),
+            "available_inventory" : (video.total_inventory - checked_in_count) 
         }    
-
     # delete the rental record
-    # db.session.delete(rental)
+    db.session.delete(rental)
     db.session.commit()
 
-    return jsonify(response_body), 201
+    return jsonify(response_body), 200
 
 
 # *****************************
@@ -355,25 +354,16 @@ def post_rentals_check_in():
 # *****************************
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def get_checked_out_videos(customer_id):
+
+    #check if the customer exists
     customer = Customer.query.get(customer_id)
     if customer is None:
         return {"message" : f"Customer {customer_id} was not found"}, 404
     
+    # get a list of all the rentals associated with the customers
     rentals = customer.rentals
-    if len(rentals) == 0:
-        response_body = []
-        return jsonify(response_body), 200
 
-    # working on getting tests to pass from this point
-    check_out = customer.video_id.total_inventory - len(customer.videos)
-    response_body = []    
-    for rental in rentals:
-        if check_out > 0:
-            response_body.append({
-                "release_date": rental.video.release_date,
-                "title": rental.video.title,
-                "due_date": rental.due_date
-            })
+    response_body = rentals[0]
 
     return jsonify(response_body), 200
     

@@ -16,4 +16,5 @@ class Customer(db.Model):
 
     def get_count_checked_out(self):
         pass
+        
 
