@@ -54,10 +54,7 @@ def handle_videos():
         else:
             videos = Video.query.all()
 
-
         video_response = [video.get_video_dict() for video in videos]
-        # for video in videos:
-        #     video_response.append(video.get_video_dict())
         
         if video_response == []:
             return jsonify(video_response), 200
@@ -126,14 +123,7 @@ def customers_who_checked_out(video_id):
         } 
         for customer, rental in results
     ]
-    # for customer, rental in results:
-    #     customer_list.append({
-    #         "due_date": rental.due_date,
-    #         "name": customer.name,
-    #         "phone": customer.phone,
-    #         "postal_code": customer.postal_code
-    #     })
-
+    
     return jsonify(customer_list), 200
 
 
@@ -152,9 +142,9 @@ def handle_customers():
             return jsonify({"details": "Request body must include phone."}), 400
 
         new_customer = Customer(
-            name = cust_request_body["name"],
-            postal_code = cust_request_body["postal_code"],
-            phone = cust_request_body["phone"]
+            name=cust_request_body["name"],
+            postal_code=cust_request_body["postal_code"],
+            phone=cust_request_body["phone"]
         )
 
         db.session.add(new_customer)
@@ -184,10 +174,7 @@ def handle_customers():
         else:
             customers = Customer.query.all()
 
-
         customers_response = [customer.get_cust_dict() for customer in customers]
-        # for customer in customers:
-        #     customers_response.append(customer.get_cust_dict())
 
         if customers_response == []:
             return jsonify(customers_response), 200
@@ -214,9 +201,9 @@ def handle_one_customer_at_a_time(customer_id):
         if "name" not in put_request_body:
             return jsonify(None), 400
 
-        customer.name = put_request_body["name"]
-        customer.phone = put_request_body["phone"]
-        customer.postal_code = put_request_body["postal_code"]
+        customer.name=put_request_body["name"]
+        customer.phone=put_request_body["phone"]
+        customer.postal_code=put_request_body["postal_code"]
 
         db.session.commit()
 
@@ -244,7 +231,7 @@ def handle_one_customer_at_a_time(customer_id):
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def videos_checked_out(customer_id):
-    #return list of videos a customer currently has checked out
+    # return list of videos a customer currently has checked out
     if not customer_id.isnumeric():
         return jsonify(None), 400
 
@@ -262,12 +249,6 @@ def videos_checked_out(customer_id):
         } 
         for video, rental in results
     ]
-    # for video, rental in results:
-    #     video_list.append({
-    #         "release_date": video.release_date,
-    #         "title": video.title,
-    #         "due_date": rental.due_date,
-    #     })
 
     if video_list == []:
         return jsonify(video_list), 200
@@ -275,8 +256,8 @@ def videos_checked_out(customer_id):
     return jsonify(video_list), 200
     
 
-#RENTAL ROUTES
-#CHECK-OUT ENDPOINT
+# RENTAL ROUTES
+# CHECK-OUT ENDPOINT
 @rentals_bp.route("/check-out", methods=["POST"])
 def handle_rental_check_outs():
     rentals_request_body = request.get_json()
@@ -318,7 +299,7 @@ def handle_rental_check_outs():
 
     return jsonify(rental_receipt), 200
 
-#CHECK-IN ENDPOINT
+# CHECK-IN ENDPOINT
 @rentals_bp.route("/check-in", methods=["POST"])
 def handle_video_check_ins():
     rentals_request_body = request.get_json()
@@ -359,3 +340,51 @@ def handle_video_check_ins():
         }
 
     return jsonify(checkin_rental_receipt), 200
+
+# OPTIONAL ENHANCEMENT (Overdue Endpoint)
+# --------------------------------------
+@rentals_bp.route("/overdue", methods=["GET"])
+def handle_overdue_rentals():
+    # list all customers with overdue rentals
+    sort_query = request.args.get("sort")
+    if sort_query:
+        customer = Customer.query.order_by(Customer.id.asc())
+        customer = Customer.query.order_by(Customer.name.asc())
+        customer = Customer.query.order_by(Customer.postal_code.asc())
+        video = Video.query.order_by(Video.id.asc())
+        video = Video.query.order_by(Video.title.asc())
+        rental = Rental.query.order_by(Rental.due_date.asc())
+    else:
+        customer = Customer.query.all()
+        video = Video.query.all()
+        rental = Rental.query.all()
+
+    # Checking for overdue rentals
+    now = datetime.datetime(2021, 11, 24) 
+
+    due_date = Rental.query.filter(Rental.due_date < now).all()
+    # overdue_rental = now > due_date
+
+    print("*************")
+    print(now)
+    print(due_date)
+    # print(overdue_rental)
+
+    cust_overdue_list = []
+    for customer in due_date:
+        # if overdue_rental:
+        cust_overdue_list.append(
+            {
+            "video_id": rental.video_id,
+            "title": video.title,
+            "customer_id": rental.customer_id,
+            "name": customer.name,
+            "postal_code": customer.postal_code,
+            "due_date": rental.due_date
+            }
+        )
+    print(cust_overdue_list)
+    return jsonify(cust_overdue_list), 200
+    
+
+        
