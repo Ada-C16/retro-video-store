@@ -7,7 +7,6 @@ class Customer(db.Model):
     postal_code = db.Column(db.String) #To account for 0s; all expected outputs had strings
     phone = db.Column(db.String)
     registered_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow())
-    videos = db.relationship("Video", secondary="rental", back_populates="customers", lazy=True)
     
 
 

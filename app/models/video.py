@@ -6,7 +6,6 @@ class Video(db.Model):
     title = db.Column(db.String)
     release_date = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow())
     total_inventory = db.Column(db.Integer)
-    customers = db.relationship("Customer", secondary="rental", back_populates="videos", lazy=True)
     
     
     # Return response body
@@ -16,9 +15,3 @@ class Video(db.Model):
             "title": self.title,
             "total_inventory": self.total_inventory
         }
-
-
-    #Video Counter
-
-
-    #Available Inventory
