@@ -111,12 +111,3 @@ def validate_request(request_body):
     for attribute in attributes:
         if attribute not in request_body:
             return {"details": f"Request body must include {attribute}."}, 400
-
-def validate_video(video_id):
-    try:
-        video = Video.query.get(video_id)
-    except:
-        return jsonify(None), 400
-
-    if video is None:
-        return jsonify({"message": f"Video {video_id} was not found"}), 404
