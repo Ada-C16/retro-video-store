@@ -131,8 +131,8 @@ def delete_existing_customer(customer_id):
     if customer.videos:
         for rental_record in customer.rentals:
             db.session.delete(rental_record)
-            db.session.commit()
-        customer = Customer.query.get(customer_id)
+        db.session.delete(customer)
+        db.session.commit()
         response_body = {"message" : f"{customer.name} and all their rental records have been deleted",
         }
         return jsonify(response_body), 200
