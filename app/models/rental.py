@@ -4,10 +4,13 @@ import datetime
 
 class Rental(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    video_id = db.Column(db.Integer, db.ForeignKey("video.id"), primary_key=True, nullable=False)
-    customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), primary_key=True, nullable=False)
+    video_id = db.Column(db.Integer, db.ForeignKey("video.id"), nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
     due_date = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow() + datetime.timedelta(days=7))
     checked_out = db.Column(db.Boolean)
+    video = db.relationship("Video", backref="rentals")
+    customer = db.relationship("Customer", backref="rentals")
+
 
     #pure join table = no other attributes present besides foreign key(s)
 

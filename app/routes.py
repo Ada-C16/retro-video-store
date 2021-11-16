@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request
 from app.models.customer import Customer
 from app.models.video import Video
 from app.models.rental import Rental
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 
@@ -360,30 +360,21 @@ def handle_overdue_rentals():
         rental = Rental.query.all()
 
     # Checking for overdue rentals
-    now = datetime.datetime(2021, 11, 24) 
+    now = datetime.utcnow() + timedelta(days=14) #mock time
+    overdue_rentals = Rental.query.filter(Rental.due_date < now).all()
 
-    due_date = Rental.query.filter(Rental.due_date < now).all()
-    # overdue_rental = now > due_date
-
-    print("*************")
-    print(now)
-    print(due_date)
-    # print(overdue_rental)
-
-    cust_overdue_list = []
-    for customer in due_date:
-        # if overdue_rental:
-        cust_overdue_list.append(
-            {
+    cust_overdue_list = [
+        {
             "video_id": rental.video_id,
-            "title": video.title,
+            "title": rental.video.title,
             "customer_id": rental.customer_id,
-            "name": customer.name,
-            "postal_code": customer.postal_code,
+            "name": rental.customer.name,
+            "postal_code": rental.customer.postal_code,
             "due_date": rental.due_date
             }
-        )
-    print(cust_overdue_list)
+            for rental in overdue_rentals
+            ]
+    
     return jsonify(cust_overdue_list), 200
     
 
