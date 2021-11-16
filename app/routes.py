@@ -91,14 +91,18 @@ def handle_one_video(video_id):
 def handle_rentals_by_video(id):
     video = Video.query.get(id)
     if video is None:
-        return jsonify({"message": f"Video {video.id} was not found"}), 404
-    else: 
-        # customers = Customer.query.filter_by().all()
-        return [{
-                "name": customer.name,
-                "phone": customer.phone,
-                "postal_code": customer.postal_code,
-                } for customer in video.customers]
+        return jsonify({"message": f"Video {id} was not found"}), 404
+    else:
+        rentals = Rental.query.filter_by(video_id=id, is_checked_in=False).all()
+        customer_ids = [rental.customer_id for rental in rentals]
+
+        customer_objs = []
+        for customer_id in customer_ids:
+            customer_obj = Customer.query.filter_by(id=customer_id).first()
+            customer_dict = {"name": customer_obj.name}
+            customer_objs.append(customer_dict)
+
+        return jsonify(customer_objs)
 
 # CUSTOMER ENDPOINTS
 
