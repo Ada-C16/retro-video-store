@@ -6,6 +6,7 @@ from sqlalchemy import select
 from app.models.video import Video
 from app.models.rental import Rental
 
+DUE_DATE = datetime.timedelta(days=7)
 
 # Blueprints
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
@@ -275,7 +276,7 @@ def post_rentals_check_out():
 
     # create a new rental instance
     new_rental = Rental(
-        due_date=datetime.now(),
+        due_date=DUE_DATE,
         customer_id=customer.id,
         video_id=video.id
     )
