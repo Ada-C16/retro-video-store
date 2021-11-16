@@ -109,7 +109,7 @@ def update_existing_customer(customer_id):
     customer.name = request_body.get("name")
     customer.postal_code = request_body.get("postal_code")
     customer.phone = request_body.get("phone")
-    customer.registered_at = datetime.now()
+    customer.registered_at = NOW
 
     db.session.commit()
     response_body = ({
@@ -129,24 +129,18 @@ def delete_existing_customer(customer_id):
         return customer_not_found(customer_id), 404
 
     if customer.videos:
-        rentals = customer.videos
-        for rental in rentals:
-            db.session.delete(rental)
+        for rental_record in customer.rentals:
+            db.session.delete(rental_record)
             db.session.commit()
+        customer = Customer.query.get(customer_id)
+        response_body = {"message" : f"{customer.name} and all their rental records have been deleted",
+        }
+        return jsonify(response_body), 200
     
     db.session.delete(customer)
+    db.session.commit()
 
     return {"id": customer.id}, 200
-
-
-    # return {
-    #     "message": f"Customer {customer.name} has been deleted from the system...FOREVER"
-    #     }, 200
-
-
-    return {
-        "id": customer.id
-        }, 200
 
 
 # *****************************
