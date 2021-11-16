@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from app.models.rental import Rental
 from app.models.video import Video
 from app.models.customer import Customer
-from flask import Blueprint, json, jsonify, request
+from flask import Blueprint, json, jsonify, request,make_response
 
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
@@ -185,7 +185,7 @@ def get_rentals_for_customer(customer_id):
             }
             list_of_videos.append(response_body)
 
-        return (list_of_videos), 200
+        return jsonify(list_of_videos), 200
  #joins rental & video Rental.join(Video,Video.id == Rental.video_id) 
 
 
@@ -215,17 +215,22 @@ def get_videos_for_rental(video_id):
 @rentals_bp.route("/check-out", methods = ["POST"])
 def checked_out_rental():
     request_body = request.get_json()
-    # if "video_id" not 
+
+    if "video_id" not in request_body or "customer_id" not in request_body:
+        return jsonify(None), 400 
+
     video = Video.query.get(request_body["video_id"])
     customer = Customer.query.get(request_body["customer_id"])
 
-    # videos_checked_out = Rental.query.filter(Rental.customer_id == request_body["customer_id"],Rental.checked_out == True).count() 
+    if video is None:
+        return jsonify({"message":"Video does not exist"}) ,404 #f string with request body for video
+
+    if customer is None:
+        return jsonify ({"message": "Customer does not exist"}),404
+
+    
     videos_checked_out = Rental.query.filter(Rental.video_id == request_body["video_id"], Rental.checked_out == True).count()
     
-    # Rental.checked_out == True).count()
-    
-    # Rental.query.filter(Rental.video_id == request_body["video_id"], Rental.checked_out == True).count()
-
     
     if videos_checked_out == video.total_inventory:
         return jsonify ({
@@ -243,24 +248,63 @@ def checked_out_rental():
     db.session.add(new_rental)
     db.session.commit()
 
-    # rentals = Rental.query.filter(Rental.customer_id == request_body["customer_id"], Rental.checked_out == True).count()
 
-    aval_inventory= Rental.query.filter(Rental.video_id == request_body["video_id"], Rental.checked_out == True).count()
+    videos_checked_out = Rental.query.filter(Rental.video_id == request_body["video_id"], Rental.checked_out == True).count()
 
-    available_inventory = Video.total_inventory - aval_inventory 
+    available_inventory = video.total_inventory - videos_checked_out
 
 
     return jsonify({
         "customer_id": customer.id,
-        "video": video.id,
-        "due_date":datetime.today() + timedelta(days=7),
+        "video_id": video.id,
+        "due_date":datetime.now() + timedelta(days=7),
         "videos_checked_out_count": videos_checked_out,
         "available_inventory": available_inventory
     }), 200
 
-
-
-
 @rentals_bp.route("/check-in", methods = ["POST"])
-def get_rental(rental_id):
-    pass
+def get_rental():
+    request_body = request.get_json()
+
+    if "video_id" not in request_body or "customer_id" not in request_body:
+        return jsonify(None), 400
+
+    video = Video.query.get(request_body["video_id"])
+    customer = Customer.query.get(request_body["customer_id"])   
+
+    if video is None or customer is None:
+        return jsonify({"message":"Video and customer does not exist"}) ,404
+
+    rental = Rental.query.filter(Rental.video_id == request_body["video_id"], Rental.customer_id == customer.id, Rental.checked_out == True).first()
+
+    if rental is None:
+        return jsonify({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"}),400
+        
+    rental.checked_out = False
+
+
+
+    db.session.commit()
+
+    videos_checked_out = Rental.query.filter(Rental.video_id == request_body["video_id"], Rental.checked_out == True).count()
+
+
+    available_inventory = video.total_inventory - videos_checked_out
+
+    videos_checked_out = Rental.query.filter(Rental.customer_id == request_body["customer_id"], Rental.checked_out == True).count()
+
+
+    return jsonify({
+        "customer_id": customer.id,
+        "video_id": video.id,
+        "videos_checked_out_count": videos_checked_out,
+        "available_inventory": available_inventory
+    }), 200
+
+    
+
+        
+
+
+
+    
