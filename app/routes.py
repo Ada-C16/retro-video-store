@@ -205,7 +205,7 @@ def handle_checkout():
         db.session.add(new_rental)
         db.session.commit()
         
-        videos_checked_out_count = len(Customer.query.filter_by(id=request_body['customer_id']).all())
+        videos_checked_out_count = Customer.query.filter_by(id=request_body['customer_id']).count()
 
         available_inventory_after_check_out = Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
 
@@ -219,20 +219,17 @@ def handle_checkout():
 def handle_checkin():
     request_body = request.get_json()
     
-    new_rental = Rental(video_id=request_body["video_id"],
-                            customer_id=request_body["customer_id"],
-                            is_checked_in=True)
+    existing_rental = Rental.query.filter_by(video_id=request_body["video_id"], customer_id=request_body["customer_id"], \
+                        is_checked_in=False).first()
 
-    db.session.add(new_rental)
+    existing_rental.is_checked_in = True
+
     db.session.commit()
 
-    # Update this code - add a way to calculate the following:
-        # Add 1 to available_inventory - Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
-        # Subtract 1 from videos_checked_out_count 
     available_inventory_after_checkin = Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
     videos_checked_out_count = Customer.query.filter_by(id=request_body['customer_id']).first().get_videos_checked_out_count()
-    return make_response({"video_id": new_rental.video_id,
-                            "customer_id": new_rental.customer_id,
+    return make_response({"video_id": existing_rental.video_id,
+                            "customer_id": existing_rental.customer_id,
                             "videos_checked_out_count": videos_checked_out_count,
                             "available_inventory": available_inventory_after_checkin})
 
