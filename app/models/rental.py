@@ -9,7 +9,6 @@ class Rental(db.Model):
     video = db.relationship('Video', backref='rentals')
     customer = db.relationship('Customer', backref='rentals')
     
-    # videos_checkout_count = db.Column(db.Integer)
     # available_inventory = db.Column(db.Integer) # available_inventory will be a video's total_inventory minus the number of rentals associated with that video 
     # (video.total_inventory -video.customers).
     # video = db.relationship('Video', backref='customers')

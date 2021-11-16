@@ -268,31 +268,33 @@ def post_rentals_check_out():
     if not video:
         # response_body = {"message" : f"Video {video_id} was not found"}
         return jsonify("Not Found"), 404
+    
+    # check if video is in stock
+    if video.total_inventory - len(video.rentals) < 1:
+        return {"message": "Could not perform checkout"}, 400 
 
-    # need to create new_rental instance when checking out
-    # this is not working yet just brainstorming
+    # create a new rental instance
     new_rental = Rental(
         due_date=datetime.now(),
-        # videos_checked_out_count=len(customer.rentals),
-    #     available_inventory = (video.total_inventory - len(video.rentals))
+        customer_id=customer.id,
+        video_id=video.id
     )
 
+    # add new_rental instance to the database
     db.session.add(new_rental)
     db.session.commit()
 
-    # if videos_checked_outlen(video.rentals)
+    # create a response body
+    response_body = {
+            "customer_id": new_rental.customer_id,
+            "video_id": new_rental.video_id,
+            "due_date": new_rental.due_date,
+            "videos_checked_out_count": len(customer.videos), # 5 is temporary input
+            "available_inventory": video.total_inventory - len(video.rentals)
+        }
 
-    # # create a response body
-    # # this is not working yet just brainstorming
-    # response_body = {
-    #         "customer_id": new_rental.customer_id,
-    #         "video_id": new_rental.video_id,
-    #         "videos_checked_out_count": video.rentals,
-    #         "available_inventory": (video.total_inventory - len(video.rentals))
-    #     }
-
-    # return jsonify(response_body), 200
-    return jsonify(customer.rentals, video.rentals, new_rental.due_date, new_rental.videos_checked_out_count), 200
+    return jsonify(response_body), 200
+    # return jsonify(new_rental.due_date), 200
 
 
 # POST /rentals/check-in
