@@ -231,7 +231,6 @@ def handle_checkin():
         # Subtract 1 from videos_checked_out_count 
     available_inventory_after_checkin = Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
     videos_checked_out_count = Customer.query.filter_by(id=request_body['customer_id']).first().get_videos_checked_out_count()
-
     return make_response({"video_id": new_rental.video_id,
                             "customer_id": new_rental.customer_id,
                             "videos_checked_out_count": videos_checked_out_count,
