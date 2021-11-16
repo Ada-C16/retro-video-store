@@ -1,12 +1,14 @@
 from app import db
 from app.models.customer import Customer 
 from flask import Blueprint, jsonify, request
-from datetime import datetime
+import datetime
+from datetime import timedelta
 from sqlalchemy import select
 from app.models.video import Video
 from app.models.rental import Rental
 
-DUE_DATE = datetime.timedelta(days=7)
+NOW = datetime.datetime.now()
+DUE_DATE = NOW + timedelta(days=7)
 
 # Blueprints
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
