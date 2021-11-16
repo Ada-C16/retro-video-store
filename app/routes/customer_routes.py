@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
 
 
-# create
+# refactored and cleaned
 
 
 @customers_bp.route("", methods=["POST"])
