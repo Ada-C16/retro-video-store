@@ -188,7 +188,6 @@ def handle_one_customer(customer_id):
 @rental_bp.route('/check-out', methods=['POST'])
 def handle_checkout():
     request_body = request.get_json()
-    video_ids_list = db.session.query(Video.id) # Returns a list of video ids
 
     if 'video_id' not in request_body.keys():
         return make_response({"details": "Request must include video id."}, 400)
