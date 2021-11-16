@@ -12,6 +12,9 @@ videos_bp = Blueprint("videos_bp", __name__, url_prefix="/videos")
 @videos_bp.route("", methods=["GET"])
 def get_videos():
     videos = Video.query.all()
+    for video in videos:
+        if video.deleted_at:
+            videos.remove(video)
 
     videos_response = [video.create_dict() for video in videos]
 
@@ -32,7 +35,8 @@ def post_videos():
         response_body = {"details": "Request body must include release_date."}
         return jsonify(response_body), 400
     elif "total_inventory" not in request_body:
-        response_body = {"details": "Request body must include total_inventory."}
+        response_body = {
+            "details": "Request body must include total_inventory."}
         return jsonify(response_body), 400
     new_video = Video.from_json()
     video_response = new_video.create_dict()
@@ -74,7 +78,8 @@ def put_video_by_id(video_id):
     video = Video.query.get(video_id)
     if not video:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
-
+    if video.deleted_at:
+        return jsonify(None), 404
     video.update(form_data)
 
     response_body = video.create_dict()
@@ -87,7 +92,8 @@ def rentals_by_id(video_id):
     video = Video.query.get(video_id)
     if not video:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
-
+    if video.deleted_at:
+        return jsonify(None), 404
     customer_ids = [rental.id for rental in video.rentals]
     if not customer_ids:
         return jsonify([]), 200
