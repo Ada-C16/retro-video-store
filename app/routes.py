@@ -91,14 +91,18 @@ def handle_one_video(video_id):
 def handle_rentals_by_video(id):
     video = Video.query.get(id)
     if video is None:
-        return jsonify({"message": f"Video {video.id} was not found"}), 404
-    else: 
-        # customers = Customer.query.filter_by().all()
-        return [{
-                "name": customer.name,
-                "phone": customer.phone,
-                "postal_code": customer.postal_code,
-                } for customer in video.customers]
+        return jsonify({"message": f"Video {id} was not found"}), 404
+    else:
+        rentals = Rental.query.filter_by(video_id=id, is_checked_in=False).all()
+        customer_ids = [rental.customer_id for rental in rentals]
+
+        customer_objs = []
+        for customer_id in customer_ids:
+            customer_obj = Customer.query.filter_by(id=customer_id).first()
+            customer_dict = {"name": customer_obj.name}
+            customer_objs.append(customer_dict)
+
+        return jsonify(customer_objs)
 
 # CUSTOMER ENDPOINTS
 
@@ -184,7 +188,6 @@ def handle_one_customer(customer_id):
 @rental_bp.route('/check-out', methods=['POST'])
 def handle_checkout():
     request_body = request.get_json()
-    video_ids_list = db.session.query(Video.id) # Returns a list of video ids
 
     if 'video_id' not in request_body.keys():
         return make_response({"details": "Request must include video id."}, 400)
@@ -205,7 +208,7 @@ def handle_checkout():
         db.session.add(new_rental)
         db.session.commit()
         
-        videos_checked_out_count = len(Customer.query.filter_by(id=request_body['customer_id']).all())
+        videos_checked_out_count = Customer.query.filter_by(id=request_body['customer_id']).count()
 
         available_inventory_after_check_out = Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
 
@@ -218,24 +221,32 @@ def handle_checkout():
 @rental_bp.route('/check-in', methods=['POST'])
 def handle_checkin():
     request_body = request.get_json()
+    if 'video_id' not in request_body.keys():
+        return make_response({"details": "Request must include video id."}, 400)
+    elif Rental.query.filter_by(video_id=request_body['video_id']).first() is None and \
+            Rental.query.filter_by(customer_id=request_body['customer_id']).first() is None:
+        return make_response({
+            "message": f"No outstanding rentals for customer {request_body['customer_id']} and video {request_body['video_id']}"}, 400)
     
-    new_rental = Rental(video_id=request_body["video_id"],
-                            customer_id=request_body["customer_id"],
-                            is_checked_in=True)
+    elif not bool(Video.query.filter_by(id=request_body['video_id'])):
+        return make_response({"details": "Video not found"}, 404)
 
-    db.session.add(new_rental)
-    db.session.commit()
+    else:
+        # Using the information from request_body, locate the rental whose status needs to be changed (i.e., the video is being returned)
+        existing_rental = Rental.query.filter_by(video_id=request_body["video_id"], customer_id=request_body["customer_id"], \
+                            is_checked_in=False).first()
 
-    # Update this code - add a way to calculate the following:
-        # Add 1 to available_inventory - Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
-        # Subtract 1 from videos_checked_out_count 
-    available_inventory_after_checkin = Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
-    videos_checked_out_count = Customer.query.filter_by(id=request_body['customer_id']).first().get_videos_checked_out_count()
+        existing_rental.is_checked_in = True
 
-    return make_response({"video_id": new_rental.video_id,
-                            "customer_id": new_rental.customer_id,
-                            "videos_checked_out_count": videos_checked_out_count,
-                            "available_inventory": available_inventory_after_checkin})
+        db.session.commit()
+
+        available_inventory_after_checkin = Video.query.filter_by(id=request_body['video_id']).first().calculate_available_inventory()
+        videos_checked_out_count = Customer.query.filter_by(id=request_body['customer_id']).first().get_videos_checked_out_count()
+
+        return make_response({"video_id": existing_rental.video_id,
+                                "customer_id": existing_rental.customer_id,
+                                "videos_checked_out_count": videos_checked_out_count,
+                                "available_inventory": available_inventory_after_checkin})
 
 
 
