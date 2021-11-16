@@ -11,16 +11,3 @@ class Rental(db.Model):
 
 
  
-    # foreign key to connect to the video and customer rental?
-    # how do we calculate something dynamically and put it in the table
-
-'''
-Notes
-
-# from author to book update the author model (specifically with the particular relationship
-
-update the place we are going to with the foreign key and the relationship
-
-we need to do this x2 for video and customer
-
-'''
