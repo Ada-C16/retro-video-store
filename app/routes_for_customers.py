@@ -18,13 +18,7 @@ def handle_cusomters():
         customers = Customer.query.all()
         customers_response = []
         for customer in customers:
-            customers_response.append({
-                "id":customer.id,
-                "name":customer.name,
-                "registered_at":customer.registered_at,
-                "postal_code":customer.postal_code,
-                "phone":customer.phone
-            })
+            customers_response.append(customer.create_customer_dict())
         return jsonify(customers_response)
 
     elif request.method == "POST":
@@ -80,6 +74,7 @@ def handle_customer_by_id(customer_id):
             form_data["phone"]
         except:
             return make_response("OOPs try again.", 400)
+            
         customer.name = form_data["name"]
         customer.postal_code = form_data["postal_code"]
         customer.phone = form_data["phone"]
@@ -96,10 +91,8 @@ def customers_current_rentals(customer_id):
         return_message = {"message": f"Customer {customer_id} was not found"}
         return make_response(return_message, 404)
 
-    videos_checked_out = []
-    for video in customer.video: 
-        videos_checked_out.append({
-            "release_date": video.release_date,
-            "title": video.title,
-            "due_date": datetime.now() + timedelta(days=7)})
+    videos_checked_out =[]
+    rentals =Rental.query.filter_by(customer_id = customer.id).all()
+    for rental in rentals: 
+        videos_checked_out.append(rental.create_dict())
     return jsonify(videos_checked_out), 200

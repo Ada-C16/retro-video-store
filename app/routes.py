@@ -18,12 +18,7 @@ def handle_videos():
         videos = Video.query.all()
         videos_response = []
         for video in videos:
-            videos_response.append({
-                "id": video.id,
-                "title": video.title,
-                "total_inventory": video.total_inventory,
-                "release_date": video.release_date
-            })
+            videos_response.append(video.create_video_dict())
         return jsonify(videos_response)
 
     if request.method == "POST":

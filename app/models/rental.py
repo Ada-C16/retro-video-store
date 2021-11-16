@@ -16,14 +16,17 @@ class Rental(db.Model):
     def create_dict(self):
         customer = Customer.query.filter_by(id=self.customer_id).first()
         out_count = Rental.query.filter_by(video_id = self.video_id).count()
-        total_count = Video.query.get(self.video_id).total_inventory
+        video = Video.query.get(self.video_id)
+        total_count = video.total_inventory
         return_dict = {
             "rental_id":self.rental_id,
             "customer_id":self.customer_id,
             "video_id":self.video_id,
             "name": customer.id,
+            "title":video.title,
             "due_date": self.check_out_time + timedelta(days=7),
             "videos_checked_out_count" : out_count,
             "available_inventory": total_count - out_count
             }
         return return_dict
+    

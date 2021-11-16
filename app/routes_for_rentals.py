@@ -24,16 +24,17 @@ def handle_rentals():
     elif not video:
         return make_response({"message":"Could not perform checkout"}, 404)
 
-    video_total_inventory = video.total_inventory
-    video_rentals = Rental.query.filter_by(video_id = video.id).count()
-    available_inventory = video_total_inventory - video_rentals
+    # video_total_inventory = video.total_inventory
+    # rental = Rental.query.filter_by(video_id = video.id).first()
+    # available_inventory = video_total_inventory - video_rentals
     
-    if available_inventory == 0:
-        return make_response({"message": "Could not perform checkout"}),400
+
+    if video.available_inventory() == 0:
+        return make_response({"message": "Could not perform checkout"},400)
 
     else:
-        available_inventory-= 1
-        video_rentals+=1
+        # available_inventory-= 1
+        # video_rentals+=1
         new_rental = Rental(
                 customer_id=request_body["customer_id"],
                 video_id=request_body["video_id"]
@@ -57,27 +58,28 @@ def handle_rental_checkin():
     elif not video:
         return make_response({"message":"Could not perform checkin"}, 404)
     
-    if not Rental.query.filter_by(video_id = video.id, customer_id = customer.id).first():
+    rental = Rental.query.filter_by(video_id = video.id, customer_id = customer.id).first()
+    if not rental:
         return make_response({"message": f"No outstanding rentals for customer {customer.id} and video {video.id}"},400)
         
             
-    video_total_inventory = video.total_inventory
-    video_rentals = Rental.query.filter_by(video_id = video.id).count()
-    available_inventory = video_total_inventory - video_rentals
-    videos_checked_out = Rental.query.filter_by(customer_id = customer.id).count()
+    # video_total_inventory = video.total_inventory
+    # video_rentals = Rental.query.filter_by(video_id = video.id).count()
+    # available_inventory = video_total_inventory - video_rentals
+    # videos_checked_out = Rental.query.filter_by(customer_id = customer.id).count()
 
-    available_inventory+= 1
-    video_rentals-=1
-    videos_checked_out-=1
+    # available_inventory+= 1
+    # video_rentals-=1
+    # videos_checked_out-=1
 
-    db.session.query(Rental).filter(Rental.video_id == video.id, Rental.customer_id == customer.id).delete()
+    db.session.delete(rental)
     db.session.commit()
 
-    response_value = {"customer_id":customer.id,
-        "video_id":video.id,
-        "videos_checked_out_count": videos_checked_out,
-        "available_inventory": available_inventory}
+    # response_value = {"customer_id":customer.id,
+    #     "video_id":video.id,
+    #     "videos_checked_out_count": videos_checked_out,
+    #     "available_inventory": available_inventory}
 
-    return make_response(response_value, 200)
+    return make_response(rental.create_dict(), 200)
 
     
