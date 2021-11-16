@@ -1,6 +1,4 @@
 from app import db
-from datetime import datetime, timedelta
-
 
 class Video(db.Model):
 
@@ -8,10 +6,6 @@ class Video(db.Model):
     title = db.Column(db.String)
     release_date = db.Column(db.DateTime())
     total_inventory = db.Column(db.Integer)
-    
-    # customers = db.relationship("Customer", secondary="rental", backref="video")
-    # customers = db.relationship("Rental", backref="video")
-    # ^ this line is not 100% necessary but is helpful in understanding the relationship, especially for someone looking at the code for the first time.
 
     def to_dict(self):
         return {
