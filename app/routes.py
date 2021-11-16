@@ -392,3 +392,29 @@ def check_in_vid():
             "available_inventory": available_inventory 
         }
     return jsonify(response_body), 200
+
+
+@customers_bp.route("/<customer_id>/rentals", methods=["GET"])  
+def customer_rentals(customer_id):
+    if customer_id.isnumeric() != True:
+        return jsonify({"error": "Invalid Data"}), 400
+
+    customer = Customer.query.get(customer_id)
+
+    if customer is None:
+        return {"message": f"Customer {customer_id} was not found"}, 404
+
+    rentals = Rental.query.filter_by(customer_id=customer.customer_id, videos_checked_in=False)
+
+    response_body = list()
+
+    for rental in rentals:
+        video = Video.query.get(rental.video_id)
+        
+        response_body.append(
+        {
+        "release_date": video.release_date,
+        "title": video.title,
+        "due_date": rental.due_date})
+
+    return jsonify(response_body), 200
