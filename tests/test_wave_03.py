@@ -37,13 +37,10 @@ def test_get_videos_when_sort_query_is_invalid(client, three_videos):
     # Assert
     assert response.status_code == 200
     assert len(response_body) == 3
-
     assert response_body[0]["title"] == "Brand new video"
     assert response_body[0]["id"] == 1 
-
     assert response_body[1]["title"] == "Another video"
     assert response_body[1]["id"] == 2 
-
     assert response_body[2]["title"] == "Final video"
     assert response_body[2]["id"] == 3 
 
@@ -55,10 +52,8 @@ def test_get_certain_number_of_videos(client, three_videos):
     # Assert
     assert response.status_code == 200
     assert len(response_body) == 2
-
     assert response_body[0]["title"] == "Brand new video"
     assert response_body[0]["id"] == 1 
-
     assert response_body[1]["title"] == "Another video"
     assert response_body[1]["id"] == 2 
 
@@ -70,7 +65,6 @@ def test_get_certain_number_of_videos_by_page(client, three_videos):
     # Assert
     assert response.status_code == 200
     assert len(response_body) == 1
-
     assert response_body[0]["title"] == "Another video"
     assert response_body[0]["id"] == 2 
 
@@ -82,7 +76,6 @@ def test_get_certain_num_of_vids_by_page_sort_by_title(client, three_videos):
     # Assert
     assert response.status_code == 200
     assert len(response_body) == 1
-
     assert response_body[0]["title"] == "Brand new video"
     assert response_body[0]["id"] == 1
 
@@ -134,13 +127,10 @@ def test_get_customers_when_sort_query_is_invalid(client, three_customers):
     # Assert
     assert response.status_code == 200
     assert len(response_body) == 3
-
     assert response_body[0]["name"] == "Mary Claire"
     assert response_body[0]["id"] == 1 
-
     assert response_body[1]["name"] == "Trenisha Tea"
     assert response_body[1]["id"] == 2 
-
     assert response_body[2]["name"] == "Candy Corn"
     assert response_body[2]["id"] == 3 
 
@@ -152,10 +142,8 @@ def test_get_certain_number_of_customers(client, three_customers):
     # Assert
     assert response.status_code == 200
     assert len(response_body) == 2
-
     assert response_body[0]["name"] == "Mary Claire"
     assert response_body[0]["id"] == 1 
-
     assert response_body[1]["name"] == "Trenisha Tea"
     assert response_body[1]["id"] == 2 
 
@@ -167,7 +155,6 @@ def test_get_certain_number_of_customers_by_page(client, three_customers):
     # Assert
     assert response.status_code == 200
     assert len(response_body) == 1
-
     assert response_body[0]["name"] == "Trenisha Tea"
     assert response_body[0]["id"] == 2 
 
@@ -179,6 +166,5 @@ def test_get_certain_num_of_customers_by_page_sort_by_name(client, three_custome
     # Assert
     assert response.status_code == 200
     assert len(response_body) == 1
-
     assert response_body[0]["name"] == "Mary Claire"
     assert response_body[0]["id"] == 1
