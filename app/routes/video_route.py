@@ -1,4 +1,3 @@
-
 from flask import Blueprint, request, make_response, jsonify
 from app import db
 from app.models.video import Video

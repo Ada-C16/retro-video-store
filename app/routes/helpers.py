@@ -86,14 +86,16 @@ def sort_limit_and_paginate(object):
         if pagination_query:
             objects = object.query.paginate(
                 page=int(pagination_query),
-                per_page=int(page_limit),error_out=False).items
+                per_page=int(page_limit),
+                error_out=False).items
         else:
             objects = object.query.limit(page_limit)
     elif sort_query in possible_sort_queries: 
         if pagination_query:
             objects = object.query.order_by(sort_query).paginate(
                 page=int(pagination_query),
-                per_page=int(page_limit),error_out=False).items
+                per_page=int(page_limit),
+                error_out=False).items
         else:
             objects = object.query.order_by(sort_query).limit(page_limit)
     else:
