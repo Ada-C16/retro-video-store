@@ -1,4 +1,5 @@
 import os
+from flask.signals import request_tearing_down
 import requests
 from sqlalchemy.orm import query
 from app import db
@@ -13,7 +14,26 @@ rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 customers_bp = Blueprint("customer", __name__, url_prefix="/customers")
 
-@videos_bp.route("", methods = ["GET", "POST"])
+def return_none():
+    return jsonify(None), 400
+
+def word_not_included_in_request_body(missing_field):
+    return jsonify({"details": f"Request body must include {missing_field}."}), 400
+    # don't need if you are only using it in one place and return in line 47 instead, make it global if it shows up more
+
+# def string_not_included_in_request_body(missing_field):
+#     request_body = request.get_json()
+
+#     missing_field_list = []
+
+#     for missing_field in missing_field_list:
+#         missing_field_list.append(missing_field)
+            
+#     for word in missing_field_list:
+#         if word not in request_body:
+#             return jsonify({"details": f"Request body must include {missing_field}."}), 400
+
+@videos_bp.route("", methods=["GET", "POST"])
 
 def handle_videos():
     videos = Video.query.all()
@@ -36,24 +56,15 @@ def handle_videos():
     elif request.method == "POST":
         request_body = request.get_json()
 
-        def request_body_error(missing_field):
-            return jsonify({"details": f"Request body must include {missing_field}."}), 400
-        # probably don't need if you are only using it in one place and return in line 47 instead, make it global if it shows up more
-
         missing_field_list = ["title", "release_date", "total_inventory"]
+
+        # how would I add the inputs to the list? For loop - 20 different inputs?
 
         for word in missing_field_list:
             # instead of having the variable you could put the list in the line, think about readibility
             # optimize for readibility, written once, and read a lot of times, how a reader is interperting
             if word not in request_body:
-                return request_body_error(word)
-
-        # if "title" not in request_body:
-        #     return jsonify({"details": "Request body must include title."}), 400
-        # elif "release_date" not in request_body:
-        #     return jsonify({"details": "Request body must include release_date."}), 400
-        # elif "total_inventory" not in request_body:
-        #     return jsonify({"details": "Request body must include total_inventory."}), 400
+                return word_not_included_in_request_body(word)
 
         new_video = Video(
             title = request_body["title"],
@@ -71,14 +82,13 @@ def handle_videos():
             "total_inventory": new_video.total_inventory
         }), 201
 
-@videos_bp.route("/<video_id>", methods = ["GET", "PUT", "DELETE"])
+@videos_bp.route("/<video_id>", methods=["GET", "PUT", "DELETE"])
 def handle_video_id(video_id):
 
     if video_id.isnumeric() is False:
-        return jsonify(None), 400
+        return return_none()
     
     video = Video.query.get(video_id)
-    # video = Video.query.get_or_404(video_id), gives a 404 error ahead of time and a response body of None
 
     if video is None:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
@@ -94,7 +104,7 @@ def handle_video_id(video_id):
         updated_body = request.get_json()
 
         if "title" not in updated_body or "release_date" not in updated_body or "total_inventory" not in updated_body:
-            return jsonify(None), 400
+            return return_none()
 
         video.title = updated_body["title"]
         video.release_date = updated_body["release_date"]
@@ -121,38 +131,36 @@ def active_customers():
 
         customers_response = []
         for customer in customers:
-                customer_dict = customer.customer_dict()
-                customers_response.append(customer_dict)
+                customers_response.append(customer.customer_dict())
 
         return jsonify(customers_response),200
 
     elif request.method == 'POST':
-        cst_request_body = request.get_json()
-        if "name" not in cst_request_body:
-            return jsonify({"details": "Request body must include name."}), 400
-        elif "postal_code" not in cst_request_body:
-            return jsonify({"details": "Request body must include postal_code."}), 400
-        elif "phone" not in cst_request_body:
-            return jsonify({"details": "Request body must include phone."}), 400
+        request_body = request.get_json()
+
+        missing_field_list = ["name", "postal_code", "phone"]
+
+        for word in missing_field_list:
+            if word not in request_body:
+                return word_not_included_in_request_body(word)
         
         new_customer = Customer(
-            # id = cst_request_body["id"],
-            name = cst_request_body["name"],
-            phone = cst_request_body["phone"],
-            postal_code = cst_request_body["postal_code"]
+            name = request_body["name"],
+            phone = request_body["phone"],
+            postal_code = request_body["postal_code"]
         )
 
         db.session.add(new_customer)
         db.session.commit()
 
-        new_cst_response = new_customer.customer_dict()
+        new_customer_response = new_customer.customer_dict()
 
-        return jsonify(new_cst_response),201
+        return jsonify(new_customer_response),201
 
-@customers_bp.route("/<customer_id>", methods =["GET", "PUT", "DELETE"])
+@customers_bp.route("/<customer_id>", methods=["GET", "PUT", "DELETE"])
 def retrieve_customer(customer_id):
     if customer_id.isdigit() is False:
-        return jsonify(None), 400
+        return return_none()
     customer = Customer.query.get(customer_id)
     if customer == None:
         return jsonify({"message": "Customer 1 was not found"}), 404
@@ -163,9 +171,8 @@ def retrieve_customer(customer_id):
     elif request.method == 'PUT':
         request_body = request.get_json()
         if "name" not in request_body or "postal_code" not in request_body or "phone" not in request_body:
-            return jsonify(None), 400
+            return return_none()
 
-        
         customer.name = request_body["name"]
         customer.postal_code = request_body["postal_code"]
         customer.phone = request_body["phone"]
@@ -185,9 +192,8 @@ def get_rentals_for_customer(customer_id):
     customer = Customer.query.get(customer_id)
     if customer is None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
+    
     elif request.method == "GET":
-        # videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id, checked_out = True).count # only video rented by specific renter
-        # videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id).count # only video rented by specific renter
         list_of_videos = []
         for rental in customer.rentals:
             video = Video.query.get(rental.video_id)
@@ -199,11 +205,8 @@ def get_rentals_for_customer(customer_id):
             list_of_videos.append(response_body)
 
         return jsonify(list_of_videos), 200
- #joins rental & video Rental.join(Video,Video.id == Rental.video_id) 
 
-
-
-@videos_bp.route("/<video_id>/rentals", methods = ["GET"])
+@videos_bp.route("/<video_id>/rentals", methods=["GET"])
 def get_videos_for_rental(video_id):
     video = Video.query.get(video_id)
     if video is None:
@@ -229,7 +232,7 @@ def get_rental_check_out():
     request_body = request.get_json()
 
     if "video_id" not in request_body or "customer_id" not in request_body:
-        return jsonify(None), 400
+        return return_none()
 
     video = Video.query.get_or_404(request_body["video_id"])
     customer = Customer.query.get_or_404(request_body["customer_id"])
@@ -271,19 +274,19 @@ def get_rental_check_out():
 }), 200
 
 
-@rentals_bp.route("/check-in", methods = ["POST"])
+@rentals_bp.route("/check-in", methods=["POST"])
 def get_rental_check_in():
     request_body = request.get_json()
 
     if "video_id" not in request_body or "customer_id" not in request_body:
-        return jsonify(None), 400
+        return return_none()
 
     video = Video.query.get_or_404(request_body["video_id"])
     customer = Customer.query.get_or_404(request_body["customer_id"])
     # queries automatically add to the session/db so redundate to do it again
     
-    number_of_rentals = Rental.query.filter_by(video_id = video.id, customer_id = customer.id, checked_out = True).count()
-    videos_checked_out = Rental.query.filter_by(customer_id = customer.id, checked_out = True).count()
+    number_of_rentals = Rental.query.filter_by(video_id=video.id, customer_id=customer.id, checked_out=True).count()
+    videos_checked_out = Rental.query.filter_by(customer_id=customer.id, checked_out=True).count()
 
     if number_of_rentals == 0 or videos_checked_out == 0:
         return jsonify({
@@ -297,7 +300,7 @@ def get_rental_check_in():
 
     video_availablity = Rental.query.filter_by(video_id=video.id, checked_out=True).count()
     available_inventory = video.total_inventory - video_availablity
-    videos_checked_out = Rental.query.filter_by(customer_id = customer.id, checked_out = True).count()
+    videos_checked_out = Rental.query.filter_by(customer_id=customer.id, checked_out=True).count()
 
     return jsonify({
         "customer_id": customer.id,
