@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from app.models.rental import Rental
 from app.models.video import Video
 from app.models.customer import Customer
-from flask import Blueprint, json, jsonify, request,make_response
+from flask import Blueprint, json, jsonify, request
 
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
@@ -66,7 +66,6 @@ def handle_video_id(video_id):
         return jsonify(None), 400
     
     video = Video.query.get(video_id)
-    # video = Video.query.get_or_404(video_id), gives a 404 error ahead of time and a response body of None
 
     if video is None:
         return jsonify({"message": f"Video {video_id} was not found"}), 404
@@ -124,7 +123,6 @@ def active_customers():
             return jsonify({"details": "Request body must include phone."}), 400
         
         new_customer = Customer(
-            # id = cst_request_body["id"],
             name = cst_request_body["name"],
             phone = cst_request_body["phone"],
             postal_code = cst_request_body["postal_code"]
@@ -153,7 +151,6 @@ def retrieve_customer(customer_id):
         if "name" not in request_body or "postal_code" not in request_body or "phone" not in request_body:
             return jsonify(None), 400
 
-        
         customer.name = request_body["name"]
         customer.postal_code = request_body["postal_code"]
         customer.phone = request_body["phone"]
@@ -166,7 +163,7 @@ def retrieve_customer(customer_id):
         db.session.delete(customer)
         db.session.commit()
         return jsonify({"id": customer.id}), 200
-######
+
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def get_rentals_for_customer(customer_id):
@@ -174,7 +171,7 @@ def get_rentals_for_customer(customer_id):
     if customer is None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
     elif request.method == "GET":
-        videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id) # only video rented by specific renter
+        videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id) 
         list_of_videos = []
         for rental in videos_customer_rented:
             video = Video.query.get(rental.video_id)
@@ -186,8 +183,6 @@ def get_rentals_for_customer(customer_id):
             list_of_videos.append(response_body)
 
         return jsonify(list_of_videos), 200
- #joins rental & video Rental.join(Video,Video.id == Rental.video_id) 
-
 
 
 @videos_bp.route("/<video_id>/rentals", methods = ["GET"])
@@ -211,7 +206,7 @@ def get_videos_for_rental(video_id):
 
         return jsonify(list_of_customers), 200
 
-#####
+
 @rentals_bp.route("/check-out", methods = ["POST"])
 def checked_out_rental():
     request_body = request.get_json()
@@ -223,7 +218,7 @@ def checked_out_rental():
     customer = Customer.query.get(request_body["customer_id"])
 
     if video is None:
-        return jsonify({"message":"Video does not exist"}) ,404 #f string with request body for video
+        return jsonify({"message":"Video does not exist"}) ,404 
 
     if customer is None:
         return jsonify ({"message": "Customer does not exist"}),404
@@ -282,8 +277,6 @@ def get_rental():
         
     rental.checked_out = False
 
-
-
     db.session.commit()
 
     videos_checked_out = Rental.query.filter(Rental.video_id == request_body["video_id"], Rental.checked_out == True).count()
@@ -292,7 +285,6 @@ def get_rental():
     available_inventory = video.total_inventory - videos_checked_out
 
     videos_checked_out = Rental.query.filter(Rental.customer_id == request_body["customer_id"], Rental.checked_out == True).count()
-
 
     return jsonify({
         "customer_id": customer.id,
