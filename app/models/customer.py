@@ -8,11 +8,12 @@ class Customer(db.Model):
     register_at = db.Column(db.DateTime)
 
     def to_dict(self):
-        {
+        response={ 
         "id": self.id,
         "name": self.name,
         "postal_code": self.postal_code,
         "phone": self.phone,
         "register_at": self.register_at,
         }
+        return response
 
