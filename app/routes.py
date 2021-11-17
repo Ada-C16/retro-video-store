@@ -101,8 +101,8 @@ def active_customers():
 
         customers_response = []
         for customer in customers:
-                customer_dict = customer.customer_dict()
-                customers_response.append(customer_dict)
+            customer_dict = customer.customer_dict()
+            customers_response.append(customer_dict)
 
         return jsonify(customers_response),200
 
