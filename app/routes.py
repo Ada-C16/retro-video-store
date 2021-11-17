@@ -36,12 +36,24 @@ def handle_videos():
     elif request.method == "POST":
         request_body = request.get_json()
 
-        if "title" not in request_body:
-            return jsonify({"details": "Request body must include title."}), 400
-        elif "release_date" not in request_body:
-            return jsonify({"details": "Request body must include release_date."}), 400
-        elif "total_inventory" not in request_body:
-            return jsonify({"details": "Request body must include total_inventory."}), 400
+        def request_body_error(missing_field):
+            return jsonify({"details": f"Request body must include {missing_field}."}), 400
+        # probably don't need if you are only using it in one place and return in line 47 instead, make it global if it shows up more
+
+        missing_field_list = ["title", "release_date", "total_inventory"]
+
+        for word in missing_field_list:
+            # instead of having the variable you could put the list in the line, think about readibility
+            # optimize for readibility, written once, and read a lot of times, how a reader is interperting
+            if word not in request_body:
+                return request_body_error(word)
+
+        # if "title" not in request_body:
+        #     return jsonify({"details": "Request body must include title."}), 400
+        # elif "release_date" not in request_body:
+        #     return jsonify({"details": "Request body must include release_date."}), 400
+        # elif "total_inventory" not in request_body:
+        #     return jsonify({"details": "Request body must include total_inventory."}), 400
 
         new_video = Video(
             title = request_body["title"],
@@ -174,9 +186,10 @@ def get_rentals_for_customer(customer_id):
     if customer is None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
     elif request.method == "GET":
-        videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id) # only video rented by specific renter
+        # videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id, checked_out = True).count # only video rented by specific renter
+        # videos_customer_rented = Rental.query.filter(Rental.customer_id == customer_id).count # only video rented by specific renter
         list_of_videos = []
-        for rental in videos_customer_rented:
+        for rental in customer.rentals:
             video = Video.query.get(rental.video_id)
             response_body = {
                 "release_date": video.release_date,
@@ -194,11 +207,11 @@ def get_rentals_for_customer(customer_id):
 def get_videos_for_rental(video_id):
     video = Video.query.get(video_id)
     if video is None:
-        return jsonify ({"message": f"Video {video_id} was not found"}), 404
+        return jsonify (
+            {"message": f"Video {video_id} was not found"}), 404
     elif request.method == 'GET':
-        rented_out_videos = Rental.query.filter(Rental.video_id == video_id)
         list_of_customers = []
-        for rental in rented_out_videos:
+        for rental in video.rentals:
             customer = Customer.query.get(rental.customer_id)
             response_body = {
                 "due_date": rental.due_date,
@@ -215,26 +228,80 @@ def get_videos_for_rental(video_id):
 def get_rental_check_out():
     request_body = request.get_json()
 
+    if "video_id" not in request_body or "customer_id" not in request_body:
+        return jsonify(None), 400
+
     video = Video.query.get_or_404(request_body["video_id"])
     customer = Customer.query.get_or_404(request_body["customer_id"])
-    # rental = Rental.query.get_or_404(request_body["rental_id"])
 
-    available_inventory = video.total_inventory - video.rentals
+    videos_checked_out = Rental.query.filter_by(video_id=video.id, checked_out=True).count()
+    # keyword argument and wouldn't have the space
+
+    available_inventory = video.total_inventory - videos_checked_out
+
+    if available_inventory == 0:
+        return jsonify({
+            "message": "Could not perform checkout"
+        }), 400
+
+    new_rental = Rental(
+        video_id = video.id,
+        customer_id = customer.id,
+        due_date = datetime.now() + timedelta(days=7),
+        checked_out=True
+        # python - keyword argument passing through vs assignment, keyword argument to instate something or method, python convention
+    )
+
+    db.session.add(new_rental)
+    db.session.commit()
+
+    videos_checked_out = Rental.query.filter_by(customer_id=customer.id, checked_out=True).count()
+    # specific customer and how many videos they have checked, better variable name
+    # even though we are checking it again, checked out wouldn't be included since the informa, 
+
+    if new_rental.checked_out is True:
+        available_inventory -= 1
 
     return jsonify({
         "customer_id": customer.id,
         "video_id": video.id,
-        "due_date": datetime.now() + timedelta(day=7),
-        "videos_checked_out_count": video.total_inventory,
+        "due_date": datetime.now() + timedelta(days=7),
+        "videos_checked_out_count": videos_checked_out,
         "available_inventory": available_inventory
-})
-
+}), 200
 
 
 @rentals_bp.route("/check-in", methods = ["POST"])
-def get_rental_check_in(rental_id):
+def get_rental_check_in():
     request_body = request.get_json()
+
+    if "video_id" not in request_body or "customer_id" not in request_body:
+        return jsonify(None), 400
 
     video = Video.query.get_or_404(request_body["video_id"])
     customer = Customer.query.get_or_404(request_body["customer_id"])
-    # rental = Rental.query.get_or_404(request_body["rental_id"])
+    # queries automatically add to the session/db so redundate to do it again
+    
+    number_of_rentals = Rental.query.filter_by(video_id = video.id, customer_id = customer.id, checked_out = True).count()
+    videos_checked_out = Rental.query.filter_by(customer_id = customer.id, checked_out = True).count()
+
+    if number_of_rentals == 0 or videos_checked_out == 0:
+        return jsonify({
+            "message": f"No outstanding rentals for customer {customer.id} and video {video.id}"
+        }), 400
+
+    rental = Rental.query.filter_by(video_id=video.id, customer_id=customer.id, checked_out=True).one()
+    rental.checked_out = False
+
+    db.session.commit()
+
+    video_availablity = Rental.query.filter_by(video_id=video.id, checked_out=True).count()
+    available_inventory = video.total_inventory - video_availablity
+    videos_checked_out = Rental.query.filter_by(customer_id = customer.id, checked_out = True).count()
+
+    return jsonify({
+        "customer_id": customer.id,
+        "video_id": video.id,
+        "videos_checked_out_count": videos_checked_out,
+        "available_inventory": available_inventory
+    }), 200
