@@ -251,16 +251,19 @@ def handle_checkin():
 
     if "customer_id" not in request_body.keys():
         return make_response ({"details": "Customer ID required."}, 400)
-    elif Customer.query.filter_by(id=request_body['customer_id']).first():
+
+    elif Customer.query.filter_by(id=request_body['customer_id']).first() is None:
         return make_response ({"details": "Customer not found."}, 404)
+
     elif 'video_id' not in request_body.keys():
         return make_response({"details": "Request must include video id."}, 400)
+
     elif Rental.query.filter_by(video_id=request_body['video_id']).first() is None and \
             Rental.query.filter_by(customer_id=request_body['customer_id']).first() is None:
         return make_response({
             "message": f"No outstanding rentals for customer {request_body['customer_id']} and video {request_body['video_id']}"}, 400)
     
-    elif Video.query.filter_by(id=request_body['video_id']).first():
+    elif Video.query.filter_by(id=request_body['video_id']).first() is None:
         return make_response({"details": "Video not found"}, 404)
 
     else:
