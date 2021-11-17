@@ -5,6 +5,8 @@ from app.models.rental import Rental
 from app import db
 from datetime import datetime, timedelta
 
+from app.utilities import validate_request_body
+
 # assign videos_bp to the new Blueprint instance
 videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 # beginning CRUD routes/ endpoints for videos
@@ -108,8 +110,7 @@ def CRUD_one_video(video_id):
         db.session.delete(video)
         db.session.commit()
         return make_response({'id': video.id}, 200)
-        
-
+    
 # begin endpoints/ functions for Customer Model
 customers_bp = Blueprint("customers_bp", __name__, url_prefix="/customers")
 
@@ -136,13 +137,9 @@ def handle_customers():
     # POST
     else: 
         request_body = request.get_json()
-        # if post is missing postal code, name, or phone number do not post and return 400
-        if "postal_code" not in request_body:
-            return {"details": "Request body must include postal_code."}, 400
-        elif "phone" not in request_body:
-            return {"details": "Request body must include phone."}, 400
-        elif "name" not in request_body:
-            return {"details": "Request body must include name."}, 400
+        valid, missing_attributes = validate_request_body(request_body, ["postal_code", "phone", "name"])
+        if valid != True:
+            return {"details": f"Request body must include {missing_attributes[0]}."}, 400
         # if all required values are given in the request body, return the video info with 201
         else: 
             new_customer = Customer(
@@ -175,8 +172,10 @@ def handle_one_customer(id):
         
     elif request.method == "PUT":
         form_data = request.get_json()
-        if "postal_code" not in form_data or "phone" not in form_data or "name" not in form_data:
-            return jsonify(""), 400
+        valid, missing_attributes = validate_request_body(form_data, ["postal_code", "phone", "name"])
+
+        if valid != True:
+            return jsonify(f"Request body missing {missing_attributes[0]}"), 400
 
         customer.name = form_data["name"]
         customer.postal_code = form_data["postal_code"]
@@ -202,8 +201,9 @@ def check_out_one_rental():
     # request_body will be the user's input, converted to json. it will be a new record 
     # for the db, with 2 fields (a dict)    
     request_body = request.get_json()
+    valid, missing_attributes = validate_request_body(request_body, ["video_id", "customer_id"])
     # return 400 if video_id or customer_id is missing
-    if "video_id" not in request_body or "customer_id" not in request_body:
+    if valid != True:
             return jsonify({"details": "Invalid data"}), 400
 
     timestamp = datetime.now()
@@ -253,7 +253,9 @@ def check_out_one_rental():
 def check_in_one_rental():
     request_body = request.get_json()
     # return 400 if video_id or customer_id is missing
-    if "video_id" not in request_body or "customer_id" not in request_body:
+    valid, missing_attributes = validate_request_body(request_body, ["video_id", "customer_id"])
+    # return 400 if video_id or customer_id is missing
+    if valid != True:
             return jsonify({"details": "Invalid data"}), 400
     
     # getting the specific video object to access its attributes

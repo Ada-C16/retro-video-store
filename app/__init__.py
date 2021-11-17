@@ -30,10 +30,6 @@ def create_app(test_config=None):
     # Setup DB
     db.init_app(app)
     migrate.init_app(app, db)
-    
-    
-    
-    
 
     #Register Blueprints Here
     from .routes import customers_bp
