@@ -15,26 +15,12 @@ videos_bp = Blueprint("videos", __name__, url_prefix="/videos")
 customers_bp = Blueprint("customer", __name__, url_prefix="/customers")
 
 
-def return_none():
+def return_none_400():
     return jsonify(None), 400
 
 
 def word_not_included_in_request_body(missing_field):
     return jsonify({"details": f"Request body must include {missing_field}."}), 400
-    # don't need if you are only using it in one place and return in line 47 instead, make it global if it shows up more
-
-
-# def string_not_included_in_request_body(missing_field):
-#     request_body = request.get_json()
-
-#     missing_field_list = []
-
-#     for missing_field in missing_field_list:
-#         missing_field_list.append(missing_field)
-
-#     for word in missing_field_list:
-#         if word not in request_body:
-#             return jsonify({"details": f"Request body must include {missing_field}."}), 400
 
 
 @videos_bp.route("", methods=["GET", "POST"])
@@ -45,16 +31,7 @@ def handle_videos():
         return jsonify([]), 200
 
     elif request.method == "GET":
-        videos_list = []
-        for video in videos:
-            videos_list.append(
-                {
-                    "id": video.id,
-                    "title": video.title,
-                    "release_date": video.release_date,
-                    "total_inventory": video.total_inventory,
-                }
-            )
+        videos_list = [video.video_information() for video in videos]
 
         return jsonify(videos_list), 200
 
@@ -63,11 +40,7 @@ def handle_videos():
 
         missing_field_list = ["title", "release_date", "total_inventory"]
 
-        # how would I add the inputs to the list? For loop - 20 different inputs?
-
         for word in missing_field_list:
-            # instead of having the variable you could put the list in the line, think about readibility
-            # optimize for readibility, written once, and read a lot of times, how a reader is interperting
             if word not in request_body:
                 return word_not_included_in_request_body(word)
 
@@ -87,7 +60,7 @@ def handle_videos():
 def handle_video_id(video_id):
 
     if video_id.isnumeric() is False:
-        return return_none()
+        return return_none_400()
 
     video = Video.query.get(video_id)
 
@@ -105,7 +78,7 @@ def handle_video_id(video_id):
             or "release_date" not in updated_body
             or "total_inventory" not in updated_body
         ):
-            return return_none()
+            return return_none_400()
 
         video.title = updated_body["title"]
         video.release_date = updated_body["release_date"]
@@ -157,7 +130,7 @@ def active_customers():
 def retrieve_customer(customer_id):
 
     if customer_id.isdigit() is False:
-        return return_none()
+        return return_none_400()
 
     customer = Customer.query.get(customer_id)
 
@@ -175,7 +148,7 @@ def retrieve_customer(customer_id):
             or "postal_code" not in request_body
             or "phone" not in request_body
         ):
-            return return_none()
+            return return_none_400()
 
         customer.name = request_body["name"]
         customer.postal_code = request_body["postal_code"]
@@ -236,7 +209,7 @@ def get_rental_check_out():
     request_body = request.get_json()
 
     if "video_id" not in request_body or "customer_id" not in request_body:
-        return return_none()
+        return return_none_400()
 
     video = Video.query.get_or_404(request_body["video_id"])
     customer = Customer.query.get_or_404(request_body["customer_id"])
@@ -289,7 +262,7 @@ def get_rental_check_in():
     request_body = request.get_json()
 
     if "video_id" not in request_body or "customer_id" not in request_body:
-        return return_none()
+        return return_none_400()
 
     video = Video.query.get_or_404(request_body["video_id"])
     customer = Customer.query.get_or_404(request_body["customer_id"])
