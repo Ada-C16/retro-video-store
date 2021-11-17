@@ -2,6 +2,7 @@ from app import db
 from app.models.customer import Customer
 from flask import Blueprint, json, jsonify, request
 from app.models.video import Video
+from app.models.rental import Rental
 from datetime import datetime
 import requests
 import os
@@ -113,4 +114,25 @@ def get_hello():
 
 @customer_bp.route("/<customer_id>/rentals", methods=["GET"])
 def get_customers_current_rentals(customer_id):
-    pass
+    if int(customer_id) is False:
+        return jsonify(None), 400
+    
+    customer = Customer.query.get(customer_id)
+    
+    if customer == None:
+        return jsonify(message=f"Customer {customer_id} was not found"), 404
+
+    rental_list = Rental.query.filter_by(customer_id=customer.id, checked_out=True)
+
+    list_of_dicts = []
+
+    for rental in rental_list:
+        
+        video = Video.query.get(rental.video_id)
+        list_of_dicts.append({
+            "release_date": video.release_date,
+            "title": video.title,
+            "due_date": rental.due_date
+        })
+
+    return jsonify(list_of_dicts), 200

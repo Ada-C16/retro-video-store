@@ -96,4 +96,26 @@ def get_hello():
 
 @videos_bp.route("/<video_id>/rentals", methods=["GET"])
 def get_customers_with_video_rented(video_id):
-    pass
+    if int(video_id) is False:
+        return jsonify(None), 400
+    
+    video  = Video.query.get(video_id)
+    
+    if video == None:
+        return jsonify(message=f"Video {video_id} was not found"), 404
+
+    rental_list = Rental.query.filter_by(video_id=video.id, checked_out=True)
+
+    list_of_dicts = []
+
+    for rental in rental_list:
+        
+        customer = Customer.query.get(rental.video_id)
+        list_of_dicts.append({
+        "due_date": rental.due_date,
+        "name": customer.name,
+        "phone": customer.phone,
+        "postal_code": customer.postal_code
+    })
+
+    return jsonify(list_of_dicts), 200
