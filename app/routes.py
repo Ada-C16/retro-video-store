@@ -185,11 +185,18 @@ def handle_one_customer(customer_id):
 # RENTAL ENDPOINTS
 # Note: "dynamic" means an action (in this case, calculating available inventory) will be done a la minute 
 # and does not need to be stored in the database. 
+
 @rental_bp.route('/check-out', methods=['POST'])
 def handle_checkout():
     request_body = request.get_json()
 
-    if 'video_id' not in request_body.keys():
+    if 'customer_id' not in request_body.keys():
+        return make_response({"details": "Request must include customer id."}, 400)
+
+    elif Customer.query.filter_by(id=request_body['customer_id']).first() is None:
+        return make_response({"details": "Customer not found"}, 404)
+
+    elif 'video_id' not in request_body.keys():
         return make_response({"details": "Request must include video id."}, 400)
 
     elif Video.query.filter_by(id=request_body['video_id']).first() is None:
@@ -251,27 +258,17 @@ def handle_checkin():
 
 
 
-@rental_bp.route('/check-out', methods=['POST'])
-def handle_checkout():
-    request_body = request.get_json()
-    customer_ids_list = db.session.query(Customer.id)
 
-    if 'customer_id' not in request_body.keys():
-        return make_response({"details": "Request must include customer id."}, 400)
 
-    elif Customer.query.filter_by(id=request_body['customer_id']).first() is None:
-        return make_response({"details": " not found"}, 404)
+    
+    
+    # new_rental = Rental(video_id=request_body["video_id"],
+    #                     customer_id=request_body["customer_id"])
+    # updated_videos_checked_out = Customer.query.filter_by(id=request_body['customer_id']).first().videos_checked_out_count +1   
+    # Customer.query.filter_by(id=request_body['customer_id']).first().videos_checked_out_count 
 
-    today = datetime.date.today()
-    week_from_now = today + datetime.timedelta(days=7)
 
-    new_rental = Rental(video_id=request_body["video_id"],
-                        customer_id=request_body["customer_id"],
-                        due_date=week_from_now)
-    updated_videos_checked_out = Customer.query.filter_by(id=request_body['customer_id']).first().videos_checked_out_count +1   
-    Customer.query.filter_by(id=request_body['customer_id']).first().videos_checked_out_count 
 
-    return make_response({"customer_id": request_body["customer_id"] ,
-                              "video_id": request_body["video_id"],
-                              "due_date": week_from_now}, 200)
+    # return make_response({"customer_id": request_body["customer_id"] ,
+    #                           "video_id": request_body["video_id"]})
 
