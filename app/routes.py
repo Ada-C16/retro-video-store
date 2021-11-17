@@ -98,19 +98,41 @@ def handle_rentals_in():
 
 @customers_bp.route("/<customer_id>/rentals", methods=["GET"])
 def list_customer_rentals(customer_id):
-    customer_rentals = Rental.query.filter_by(customer_id=customer_id).all()
+    customer = Customer.query.get(customer_id)
+    if customer is None:
+        return jsonify({
+            "message" : f"Customer {customer_id} was not found"
+        }), 404
+    customer_rentals = Rental.query.filter_by(customer_id=customer_id, checked_in_status=False).all()
     customer_rentals_response = []
     for customer_rental in customer_rentals:
+        video = Video.query.get(customer_rental.video_id)
         customer_rentals_response.append({
-            "release_date": video.release_
-            "title":
-            "due_date"
-        }
-
-        )
+            "release_date" : video.release_date,
+            "title" : video.title,
+            "due_date" : customer_rental.due_date
+        })
+    return jsonify(customer_rentals_response)
 
 
 @videos_bp.route("/<video_id>/rentals", methods=["GET"])
+def list_video_rentals(video_id):
+    video = Video.query.get(video_id)
+    if video is None:
+        return jsonify({
+            "message" : f"Video {video_id} was not found"
+        }), 404
+    video_rentals = Rental.query.filter_by(video_id=video_id, checked_in_status=False).all()
+    video_rentals_response = []
+    for video_rental in video_rentals:
+        customer = Customer.query.get(video_rental.customer_id)
+        video_rentals_response.append({
+            "due_date" : video_rental.due_date,
+            "name" : customer.name,
+            "phone" : customer.phone,
+            "postal_code" : customer.postal_code
+        })
+    return jsonify(video_rentals_response)
 
 
 @videos_bp.route("", methods=["GET", "POST"])
