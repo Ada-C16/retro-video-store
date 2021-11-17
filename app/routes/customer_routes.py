@@ -1,9 +1,8 @@
 from app import db
 from app.models.customer import Customer
-from app.models.video import Video
 from .helper_functions import *
 from app.models.rental import Rental
-from flask import Blueprint, jsonify, make_response, request, abort
+from flask import Blueprint, jsonify, make_response, request
 
 # BLUEPRINT
 customers_bp = Blueprint("customers_bp", __name__, url_prefix = "/customers")
@@ -25,7 +24,7 @@ def create_customer():
     request_body = request.get_json()
 
     if request_body == None:
-        return make_response("You much include name, phone and postcode in order to add customer data.", 404)
+        return make_response("You must include name, phone and postcode in order to add customer data.", 404)
 
     if "name" not in request_body:
         return make_response({"details":"Request body must include name."}, 400)
@@ -96,13 +95,12 @@ def get_videos_checked_out(customer_id):
     # check if customer exists
     get_customer_data_with_id(customer_id)
 
-    rental_query = Rental.query.filter_by(customer_id=customer_id, checked_in=False)
+    rental_query = Rental.query.filter_by(customer_id=customer_id).all()
     rental_record = [record for record in rental_query]
     
     video_list = []
     for record in rental_record:
-        video = Video.query.get(record.video_id)
-        video_list.append(video.to_dict())
+        video_list.append(record.video.to_dict())
     
     return jsonify(video_list)
 

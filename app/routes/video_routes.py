@@ -2,7 +2,6 @@ from app import db
 from flask import Blueprint, jsonify, request, make_response
 from app.models.video import Video
 from app.models.rental import Rental
-from app.models.customer import Customer
 from .helper_functions import *
 from sqlalchemy.exc import DataError
 
@@ -93,17 +92,14 @@ def delete_video(video_id):
 # Rental route
 @videos_bp.route('/<id>/rentals', methods=['GET'], strict_slashes=False)
 def get_customers_currently_with_video(id):
-    # check if video exists
-    get_video_from_id(id)
-    rental_record = Rental.query.filter_by(video_id=id, checked_in=False).all()
-    record_list = [record for record in rental_record]
+    video = get_video_from_id(id)
+    rental_records = Rental.query.filter(video==video).all()
     response = []
-    for record in record_list:
-        customer = Customer.query.get(record.customer_id)
+    for record in rental_records:
         response.append({
-            "due_date": record.due_date,
-            "name": customer.name,
-            "phone": customer.phone,
-            "postal_code": customer.postal_code,
-            })
+                "due_date": record.due_date,
+                "name": record.customer.name,
+                "phone": record.customer.phone,
+                "potal_code": record.customer.postal_code
+        })
     return make_response(jsonify(response), 200)
