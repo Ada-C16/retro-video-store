@@ -235,7 +235,7 @@ def handle_checkin():
         return make_response({
             "message": f"No outstanding rentals for customer {request_body['customer_id']} and video {request_body['video_id']}"}, 400)
     
-    elif not bool(Video.query.filter_by(id=request_body['video_id'])):
+    elif Video.query.filter_by(id=request_body['video_id']).first() is not None:
         return make_response({"details": "Video not found"}, 404)
 
     else:
