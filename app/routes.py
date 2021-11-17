@@ -180,7 +180,27 @@ def handle_one_customer(customer_id):
         db.session.commit()
 
         return make_response({"id": customer.id})
-                    
+
+@customer_bp.route('/<id>/rentals', methods=['GET'])
+def handle_rentals_by_customer(id):
+   customer = Customer.query.filter_by(id=id).first()
+   if customer is None:
+       return jsonify({"message": f"Customer {id} was not found"}), 404
+
+
+   rentals = Rental.query.filter_by(customer_id=id, is_checked_in=False).all()
+
+   video_ids = []
+   for rental in rentals:
+       video_ids.append(rental.video_id)
+
+
+   videos_list = []
+   for video_id in video_ids:
+       video_object = Video.query.filter_by(id=video_id).first()
+       video_dict = {"title": video_object.title}
+       videos_list.append(video_dict)
+   return jsonify(videos_list)
 
 # RENTAL ENDPOINTS
 # Note: "dynamic" means an action (in this case, calculating available inventory) will be done a la minute 
@@ -231,7 +251,7 @@ def handle_checkin():
 
     if "customer_id" not in request_body.keys():
         return make_response ({"details": "Customer ID required."}, 400)
-    elif Customer.query.filter_by(id=request_body['customer_id']).first() is None:
+    elif Customer.query.filter_by(id=request_body['customer_id']).first():
         return make_response ({"details": "Customer not found."}, 404)
     elif 'video_id' not in request_body.keys():
         return make_response({"details": "Request must include video id."}, 400)
@@ -240,7 +260,7 @@ def handle_checkin():
         return make_response({
             "message": f"No outstanding rentals for customer {request_body['customer_id']} and video {request_body['video_id']}"}, 400)
     
-    elif Video.query.filter_by(id=request_body['video_id']).first() is not None:
+    elif Video.query.filter_by(id=request_body['video_id']).first():
         return make_response({"details": "Video not found"}, 404)
 
     else:
