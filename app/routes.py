@@ -228,7 +228,12 @@ def handle_checkout():
 @rental_bp.route('/check-in', methods=['POST'])
 def handle_checkin():
     request_body = request.get_json()
-    if 'video_id' not in request_body.keys():
+
+    if "customer_id" not in request_body.keys():
+        return make_response ({"details": "Customer ID required."}, 400)
+    elif Customer.query.filter_by(id=request_body['customer_id']).first() is None:
+        return make_response ({"details": "Customer not found."}, 404)
+    elif 'video_id' not in request_body.keys():
         return make_response({"details": "Request must include video id."}, 400)
     elif Rental.query.filter_by(video_id=request_body['video_id']).first() is None and \
             Rental.query.filter_by(customer_id=request_body['customer_id']).first() is None:
