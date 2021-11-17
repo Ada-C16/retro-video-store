@@ -99,16 +99,37 @@ def handle_customer(customer_id):
 
 
 @videos_bp.route("", methods=["GET", "POST"])
-def handle_customers():
+def handle_videos():
 
+# Wave 1 GET/videos and no saved videos
     if request.method == "GET":
-        customers = Customer.query.all()
+        videos = Video.query.all()
         
-        customers_response = []
+        videos_response = []
 
-        for customer in customers:
-            customers_response.append(customer.to_dict())      
-        return jsonify(customers_response), 200
+        for video in videos:
+            videos_response.append(video.to_dict())      
+        return jsonify(videos_response), 200
+
+# Wave 1 POST/videos and video must contain title, video must contain release_date, and video must contain total_inventory
+    elif request.method == "POST":
+
+        request_body = request.get_json()
+
+        if "title" not in request_body: 
+            return make_response({"details": "Request body must include title."}, 400) 
+        
+        elif "release_date" not in request_body: 
+            return make_response({"details": "Request body must include release_date."}, 400) 
+
+        elif "total_inventory" not in request_body: 
+            return make_response({"details": "Request body must include total_inventory."}, 400) 
+        else:
+            new_video = Video(title=request_body["title"], release_date=request_body["release_date"], total_inventory=request_body["total_inventory"]) 
+
+        db.session.add(new_video)
+        db.session.commit()
+        return make_response({"id": new_video.id}, 201)
 
 
 
