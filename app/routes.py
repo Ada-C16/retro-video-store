@@ -2,8 +2,9 @@ from flask import abort,Blueprint,jsonify,request,make_response
 from app.models.customer import Customer
 from app.models.video import Video
 from app import db
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
+
 
 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
@@ -43,12 +44,6 @@ def handle_customers():
         return make_response({"id": new_customer.id}, 201)
 
 
-# def validate_endpoint_id(id):
-#     """Validates id for endpoint is an integer."""
-#     try:
-#         int(id)
-#     except:
-#         abort(make_response({f"details": "Endpoint must be an int."}, 400))
 
 @customers_bp.route("/<customer_id>", methods=["GET", "DELETE", "PUT"])
 def handle_customer(customer_id):
@@ -56,14 +51,10 @@ def handle_customer(customer_id):
         return {"details" : "Invalid request"}, 400
     customer = Customer.query.get(customer_id)
     
-    # validate_endpoint_id(customer_id)
-
+    
     if request.method == "GET":
         if customer is None:
             return make_response({"message": f"Customer {customer_id} was not found"}, 404)
-
-        # elif not isinstance(customer_id, int):
-        #     return make_response({"message": f"{customer_id} is not a valid customer"}, 400)
 
         
         return make_response(customer.to_dict(), 200)
@@ -93,9 +84,6 @@ def handle_customer(customer_id):
         db.session.commit()
         return make_response(customer.to_dict(), 200)
 
-
-        # # return make_response({"customer": customer.to_dict()}, 200)
-        # return make_response({"name": f"Updated {customer.name}" )
 
 
 @videos_bp.route("", methods=["GET", "POST"])
@@ -129,7 +117,47 @@ def handle_videos():
 
         db.session.add(new_video)
         db.session.commit()
-        return make_response({"id": new_video.id}, 201)
+        return make_response({"id": new_video.id, "title": new_video.title, "total_inventory": new_video.total_inventory}, 201)
+
+# Wave 1 GET/DELETE/PUT
+@videos_bp.route("/<video_id>", methods=["GET", "DELETE", "PUT"])
+def handle_video(video_id):
+    if video_id.isnumeric() != True:
+        return {"details" : "Invalid request"}, 400
+    video = Video.query.get(video_id)
+    
+    
+    if request.method == "GET":
+        if video is None:
+            return make_response({"message": f"Video {video_id} was not found"}, 404)
+
+        
+        return make_response(video.to_dict(), 200)
+
+    elif request.method == "DELETE":
+        if video is None:
+            return make_response({"message": f"Video {video_id} was not found"}, 404)
+
+        db.session.delete(video)
+        db.session.commit()
+        
+        return make_response({"id": int(video_id)}, 200)
+
+    if request.method == "PUT":
+        request_body = request.get_json()
+        if video is None:
+            return make_response({"message": f"Video {video_id} was not found"}, 404)
+        elif  "title" not in request_body or "release_date" not in request_body or "total_inventory" not in request_body:
+            return make_response({"details": "Invalid data"}, 400)
+        else:
+            response_body = request.get_json()
+        
+        video.title = response_body["title"]
+        video.release_date = response_body["release_date"]
+        video.total_inventory = response_body["total_inventory"]
+    
+        db.session.commit()
+        return make_response(video.to_dict(), 200)
 
 
 
