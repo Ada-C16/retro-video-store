@@ -1,4 +1,6 @@
 from app import db
+from sqlalchemy.orm import backref
+
 
 class Customer(db.Model):
     id = db.Column(db.Integer, autoincrement = True, primary_key=True)
@@ -6,6 +8,8 @@ class Customer(db.Model):
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
     register_at = db.Column(db.DateTime)
+    rentals = db.relationship("Rental")
+    rented_videos = db.relationship("Video", secondary="rental")
 
     def to_dict(self):
         {
