@@ -70,14 +70,12 @@ def rental_check_in():
 
     customer = Customer.query.get(request_body["customer_id"])
     video = Video.query.get(request_body["video_id"])
-    rental = Rental.query.filter_by(customer_id=customer.id, video_id=video.id, checked_out=True)
     
-    if rental.customer_id is False:
-        return jsonify(None), 404
-    if rental.video_id is False:
-        return jsonify(None), 404
     if customer is None or video is None:
         return jsonify(None), 404
+    
+    rental = Rental.query.filter_by(customer_id=customer.id, video_id=video.id, checked_out=True).first()
+    
     if rental is None:
         return jsonify(message="No outstanding rentals for customer 1 and video 1"), 400
     if hasattr(video, 'rentals') is False:
