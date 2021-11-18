@@ -28,13 +28,13 @@ def handle_customers():
 
         request_body = request.get_json()
 
-        if "name" not in request_body: #or not isinstance(request_body["name"], str):
+        if "name" not in request_body: 
             return make_response({"details": "Request body must include name."}, 400) 
         
-        elif "postal_code" not in request_body: #or not isinstance(request_body["postal_code"], str):
+        elif "postal_code" not in request_body: 
             return make_response({"details": "Request body must include postal_code."}, 400) 
 
-        elif "phone" not in request_body: #or not isinstance(request_body["phone"], str):
+        elif "phone" not in request_body: 
             return make_response({"details": "Request body must include phone."}, 400) 
         else:
             new_customer = Customer(name=request_body["name"], phone=request_body["phone"], postal_code=request_body["postal_code"]) 
@@ -163,31 +163,6 @@ def handle_video(video_id):
 
 
 
-# @videos_bp.route("", methods=["GET"])
-# def get_all_videos():
-#     videos = Video.query.all()
-#     response_body = [video.to_dict() for video in videos]
-#     return jsonify(response_body), 200
-
-# @videos_bp.route("", methods=["POST"])
-# def post_videos():
-#     request_body = request.get_json()
-    
-    
-    # try:
-    #     new_video = Video(title = request_body["title"],
-    #         release_date = request_body["release_date"],
-    #         total_inventory = request_body["total_inventory"])
-    # except KeyError:
-    #     if "title" not in request_body:
-    #         return jsonify({"details": "Request body must include title."}), 400
-    #     if "release_date" not in request_body:
-    #         return jsonify({"details": "Request body must include release_date."}), 400    
-    #     if "total_inventory" not in request_body:
-    #         return jsonify({"details": "Request body must include total_inventory."}), 400
-    # db.session.add(new_video)
-    # db.session.commit()
-    # return jsonify(new_video.to_dict()), 201
 
     
 
