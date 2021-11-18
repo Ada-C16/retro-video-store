@@ -94,11 +94,12 @@ def gpd_customer(customer_id):
             return jsonify(customer.customer_information()), 200
 
 
-@customer_bp.route("/<customer_id>", methods=["DELETE"])
+@customer_bp.route("/customers/<customer_id>", methods=["DELETE"])
 def delete_single_customer(customer_id):
-    customer = Customer.query.get(customer_id)
-
-    if customer == None:
+    print("hiya")
+    try:
+        customer = Customer.query.get(customer_id)
+    except:
         return jsonify(message=f"Customer {customer_id} was not found"), 404
 
     db.session.delete(customer)
