@@ -12,11 +12,12 @@ class Customer(db.Model):
     rented_videos = db.relationship("Video", secondary="rental")
 
     def to_dict(self):
-        {
+        response={ 
         "id": self.id,
         "name": self.name,
         "postal_code": self.postal_code,
         "phone": self.phone,
         "register_at": self.register_at,
         }
+        return response
 

@@ -1,4 +1,5 @@
 from app import db
+from datetime import datetime, timedelta
 
 class Video(db.Model):
     id = db.Column(db.Integer, autoincrement = True, primary_key=True)
@@ -10,10 +11,11 @@ class Video(db.Model):
     renters = db.relationship("Customer", secondary="rental")
 
     def to_dict(self):
-        {
+        response={
         "id": self.id,
         "title": self.title,
         "release_date": self.release_date,
         "total_inventory": self.total_inventory,
         }
+        return response
 
