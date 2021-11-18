@@ -158,9 +158,9 @@ def handle_rentals():
     request_body = request.get_json()
 
     if "customer_id" not in request_body:
-        return jsonify({"details": "Request body must include customer_id."}), 400
+        return jsonify({"details": "Request body must include customer_id."}), 404
     elif "video_id" not in request_body:
-        return jsonify({"details": "Request body must include video_id."}), 400
+        return jsonify({"details": "Request body must include video_id."}), 404
 
     new_rental = Rental(customer_id=request_body["customer_id"], video_id=request_body["video_id"],
     due_date=datetime.now())
