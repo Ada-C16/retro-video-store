@@ -94,12 +94,23 @@ def gpd_customer(customer_id):
             return jsonify(customer.customer_information()), 200
 
 
-@customer_bp.route("/customers/<customer_id>", methods=["DELETE"])
+# @customer_bp.route("/customers/<customer_id>", methods=["DELETE"])
+# def delete_single_customer(customer_id):
+#     print("hiya")
+#     try:
+#         customer = Customer.query.get(customer_id)
+#     except:
+#         return jsonify(message=f"Customer {customer_id} was not found"), 404
+
+#     db.session.delete(customer)
+#     db.session.commit()
+
+#     return jsonify(id=customer.id), 200
+@customer_bp.route("/<customer_id>", methods=["DELETE"])
 def delete_single_customer(customer_id):
-    print("hiya")
-    try:
-        customer = Customer.query.get(customer_id)
-    except:
+    customer = Customer.query.get(customer_id)
+
+    if customer == None:
         return jsonify(message=f"Customer {customer_id} was not found"), 404
 
     db.session.delete(customer)
@@ -117,9 +128,9 @@ def get_hello():
 def get_customers_current_rentals(customer_id):
     if int(customer_id) is False:
         return jsonify(None), 400
-    
+
     customer = Customer.query.get(customer_id)
-    
+
     if customer == None:
         return jsonify(message=f"Customer {customer_id} was not found"), 404
 
@@ -128,12 +139,14 @@ def get_customers_current_rentals(customer_id):
     list_of_dicts = []
 
     for rental in rental_list:
-        
+
         video = Video.query.get(rental.video_id)
-        list_of_dicts.append({
-            "release_date": video.release_date,
-            "title": video.title,
-            "due_date": rental.due_date
-        })
+        list_of_dicts.append(
+            {
+                "release_date": video.release_date,
+                "title": video.title,
+                "due_date": rental.due_date,
+            }
+        )
 
     return jsonify(list_of_dicts), 200
