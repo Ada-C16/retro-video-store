@@ -5,9 +5,7 @@ from app.models.rental import Rental
 from app import db
 import requests, os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
-
-
+from datetime import datetime, timezone, timedelta, date
 
 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
@@ -170,26 +168,25 @@ def handle_video(video_id):
         db.session.commit()
         return make_response(video.to_dict(), 200)
 
-
-
-
-
-
-
 # WAVE 2
 
 @rentals_bp.route("/check-out", methods=["POST"])
 def create_rental():
+
     request_body = request.get_json()
+
+    if "customer_id" not in request_body or "video_id" not in request_body:
+        abort(400, "Request body must include a customer_id and video_id")
+
     try:
         customer_id = int(request_body["customer_id"])
         video_id = int(request_body["video_id"])
     except ValueError:
         return jsonify({"Error": "Customer ID and Video ID must be integers."}), 400
 
-
     customer = Customer.query.get(customer_id)
     video = Video.query.get(video_id)
+
     if customer is None:
         return jsonify({"message": f"Customer {customer_id} was not found"}), 404
     elif video is None:
@@ -198,56 +195,73 @@ def create_rental():
     if video.total_inventory == 0:
         return jsonify({"message": f"Video {video_id} is out of stock"}), 404
 
-    if "customer_id" not in request_body: 
-        return jsonify({"details": "Request body must include customer_id."}), 400
-    elif "video_id" not in request_body:
-        return jsonify({"details": "Request body must include video_id."}), 400
+    if video.total_inventory - len(video.rentals) == 0:
+        abort(make_response({"message": "Could not perform checkout"}, 400))
 
-    new_rental = Rental(customer_id=request_body["customer_id"],
-        video_id=request_body["video_id"])
-        # videos_checked_out_count=request_body["videos_checked_out_count"],
-        # available_inventory=request_body["available_inventory"]) 
+    new_rental = Rental(
+        customer_id=request_body["customer_id"],
+        video_id=request_body["video_id"]
+        )
 
 
     db.session.add(new_rental)
     db.session.commit()
+
+
     return jsonify(new_rental.to_dict()), 200
 
-
-@rentals_bp.route("/check_in", methods=["POST"])
+@rentals_bp.route("/check-in", methods=["POST"])
 def handle_rentals():
     request_body = request.get_json()
 
-    if "customer_id" not in request_body:
-        return jsonify({"details": "Request body must include customer_id."}), 404
-    elif "video_id" not in request_body:
-        return jsonify({"details": "Request body must include video_id."}), 404
+    if "customer_id" not in request_body or "video_id" not in request_body:
+        return jsonify({"details": "Request body must include customer_id and video_id."}), 400
 
-    new_rental = Rental(customer_id=request_body["customer_id"], video_id=request_body["video_id"],
-    due_date=datetime.now())
+    try:
+        customer_id = int(request_body["customer_id"])
+        video_id = int(request_body["video_id"])
+    except ValueError:
+        return jsonify({"Error": "Customer ID and Video ID must be integers."}), 400
 
-    db.session.add(new_rental)
+    customer = Customer.query.get(customer_id)
+    video = Video.query.get(video_id)
+
+    if customer is None:
+        return jsonify({"message": f"Customer {customer_id} was not found"}), 404
+    elif video is None:
+        return jsonify({"message": f"Video {video_id} was not found"}), 404
+
+    if video.total_inventory == 0:
+        return jsonify({"message": f"Video {video_id} is out of stock"}), 404
+
+    rental = Rental.query.filter_by(customer_id=customer.id, video_id=video.id).first()
+    if rental is None:
+        return jsonify(message=f"No outstanding rentals for customer {customer.id} and video {video.id}"), 400
+
+    rental.checked_out = False
     db.session.commit()
 
+    num_currently_checked_out = Rental.query.filter_by(video_id=video.id, checked_out=True).count()
+    available_inventory = video.total_inventory - num_currently_checked_out
+    videos_customer_checked_out = Rental.query.filter_by(customer_id=customer.id, checked_out=True).count()
+    
+    return jsonify({
+        "customer_id": customer.id,
+        "video_id": video.id,
+        "videos_checked_out_count": videos_customer_checked_out,
+        "available_inventory": available_inventory,
+    }), 200
 
-    new_video = {
-            "customer_id": new_rental.customer_id,
-            "video_id": new_rental.video_id,
-            "due_date": new_rental.due_date,
-            "videos_checked_out_count": None,
-            "available_inventory": None
-        }
-    return new_video, 201
 
 @customers_bp.route("/<customer_id>/rentals")
-def read_customer_rentals(id):
-    customer = Customer.query.get(id)
-    customer_rentals = Rental.query.filter(Rental.customer_id == id).all()
+def read_customer_rentals(customer_id):
+    customer = Customer.query.get(customer_id)
+    customer_rentals = Rental.query.filter(Rental.customer_id == customer_id).all()
 
     response = []
 
     if not customer:
-        return {"message": f"Customer {id} was not found"}, 404
+        return {"message": f"Customer {customer_id} was not found"}, 404
 
     for item in customer_rentals:
         response.append(item.rental_dict(item.video_id))
