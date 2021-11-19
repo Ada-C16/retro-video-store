@@ -22,11 +22,11 @@ def rental_check_out():
     customer = Customer.query.get(request_body["customer_id"])
     video = Video.query.get(request_body["video_id"])
 
-    if hasattr(video, 'rentals') is False:
+    if hasattr(video, 'video_rentals') is False:
         return jsonify(None), 404
-    if hasattr(customer, 'rentals') is False:
+    if hasattr(customer, 'customer_rentals') is False:
         return jsonify(None), 404
-    count_of_rentals = len(video.rentals)
+    count_of_rentals = len(video.video_rentals)
 
     video_avialable_inventory = video.total_inventory - count_of_rentals
 
@@ -78,13 +78,13 @@ def rental_check_in():
     
     if rental is None:
         return jsonify(message="No outstanding rentals for customer 1 and video 1"), 400
-    if hasattr(video, 'rentals') is False:
+    if hasattr(video, 'video_rentals') is False:
         return jsonify(None), 404
-    if hasattr(customer, 'rentals') is False:
+    if hasattr(customer, 'customer_rentals') is False:
         return jsonify(None), 404
     
     
-    count_of_rentals = len(video.rentals)
+    count_of_rentals = len(video.video_rentals)
 
     db.session.delete(rental)
     db.session.commit()
