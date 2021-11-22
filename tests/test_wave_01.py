@@ -72,7 +72,7 @@ def test_create_video(client):
     # Act
     response = client.post("/videos", json={
         "title": VIDEO_TITLE,
-        "release_date": VIDEO_RELEASE_DATE,
+       "release_date" : VIDEO_RELEASE_DATE,
         "total_inventory": VIDEO_INVENTORY
     })
 
