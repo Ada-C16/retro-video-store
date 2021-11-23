@@ -353,7 +353,7 @@ def test_update_customer(client, one_customer):
     assert customer.name == f"Updated ${CUSTOMER_NAME}"
     assert customer.phone == f"Updated ${CUSTOMER_PHONE}"
     assert customer.postal_code == f"Updated ${CUSTOMER_POSTAL_CODE}"
-    
+
 
 def test_update_customer_not_found(client):
     # Act

@@ -12,6 +12,7 @@ def create_app(test_config=None):
     app = Flask(__name__)
     app.url_map.strict_slashes = False
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SQLALCHEMY_ECHO"] = True
 
     if test_config is None:
         app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
@@ -21,7 +22,7 @@ def create_app(test_config=None):
         app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
             "SQLALCHEMY_TEST_DATABASE_URI")
 
-    
+
     # import models for Alembic Setup
     from app.models.customer import Customer
     from app.models.video import Video
@@ -32,5 +33,9 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
 
     #Register Blueprints Here
+    from .routes import videos_bp, customers_bp, rentals_bp
+    app.register_blueprint(videos_bp)
+    app.register_blueprint(customers_bp)
+    app.register_blueprint(rentals_bp)
 
     return app
