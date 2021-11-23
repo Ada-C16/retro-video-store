@@ -61,6 +61,27 @@ def one_checked_out_video(app, client, one_customer, one_video):
         "video_id": 1
     })
 
+@pytest.fixture
+def three_videos(app):
+    db.session.add_all([
+        Video(
+            title="Brand new video", release_date="02-02-2003", total_inventory=2),
+        Video(
+            title="Another video", release_date="02-02-2002", total_inventory=3),
+        Video(
+            title="Final video", release_date="04-06-1990", total_inventory=1)
+    ])
+    db.session.commit()
 
-
+@pytest.fixture
+def three_customers(app):
+    db.session.add_all([
+        Customer(
+            name="Mary Claire", phone="5555555555", postal_code="44444"),
+        Customer(
+            name="Trenisha Tea", phone="2223334444", postal_code="11111"),
+        Customer(
+            name="Candy Corn", phone="1238675309", postal_code="22222")
+    ])
+    db.session.commit()
 
