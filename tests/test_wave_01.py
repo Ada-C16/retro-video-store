@@ -65,6 +65,7 @@ def test_get_invalid_video_id(client, one_video):
 
     # Assert
     assert response.status_code == 400
+    assert response_body == {"details": "Invalid data" }
 
 
 # CREATE
