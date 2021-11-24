@@ -1,8 +1,9 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 import os
+
 from dotenv import load_dotenv
+from flask import Flask
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -24,13 +25,19 @@ def create_app(test_config=None):
     
     # import models for Alembic Setup
     from app.models.customer import Customer
-    from app.models.video import Video
     from app.models.rental import Rental
+    from app.models.video import Video
 
     # Setup DB
     db.init_app(app)
     migrate.init_app(app, db)
 
     #Register Blueprints Here
+    from .customer_routes import customers_bp
+    from .video_routes import videos_bp
+    from .rental_routes import rentals_bp
+    app.register_blueprint(customers_bp)
+    app.register_blueprint(videos_bp)
+    app.register_blueprint(rentals_bp)
 
     return app
