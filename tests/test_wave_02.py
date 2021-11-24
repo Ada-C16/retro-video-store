@@ -194,3 +194,5 @@ def test_can_delete_video_with_rental(client, one_checked_out_video):
     assert response.status_code == 200
 
 
+
+
