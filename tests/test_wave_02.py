@@ -1,6 +1,6 @@
 from app.models.video import Video
 from app.models.customer import Customer
-
+from app.models.rental import Rental
 VIDEO_TITLE = "A Brand New Video"
 VIDEO_ID = 1
 VIDEO_INVENTORY = 1
@@ -134,9 +134,9 @@ def test_rentals_by_video(client, one_checked_out_video):
 
     response_body = response.get_json()
 
-    response.status_code == 200
-    len(response_body) == 1
-    response_body[0]["name"] == CUSTOMER_NAME
+    assert response.status_code == 200
+    assert len(response_body) == 1
+    assert response_body[0]["name"] == CUSTOMER_NAME
 
 def test_rentals_by_video_not_found(client):
     response = client.get("/videos/1/rentals")
@@ -159,9 +159,9 @@ def test_rentals_by_customer(client, one_checked_out_video):
 
     response_body = response.get_json()
 
-    response.status_code == 200
-    len(response_body) == 1
-    response_body[0]["title"] == VIDEO_TITLE
+    assert response.status_code == 200
+    assert len(response_body) == 1
+    assert response_body[0]["title"] == VIDEO_TITLE
 
 def test_rentals_by_customer_not_found(client):
     response = client.get("/customers/1/rentals")

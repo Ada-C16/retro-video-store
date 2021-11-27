@@ -2,6 +2,7 @@ import pytest
 from app import create_app
 from app.models.video import Video
 from app.models.customer import Customer
+from app.models.rental import Rental
 from app import db
 from datetime import datetime
 from flask.signals import request_finished
