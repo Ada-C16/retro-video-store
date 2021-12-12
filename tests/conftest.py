@@ -2,6 +2,7 @@ import pytest
 from app import create_app
 from app.models.video import Video
 from app.models.customer import Customer
+from app.models.rental import Rental
 from app import db
 from datetime import datetime
 from flask.signals import request_finished
@@ -61,6 +62,31 @@ def one_checked_out_video(app, client, one_customer, one_video):
         "video_id": 1
     })
 
+@pytest.fixture
+def one_overdue_video(app, one_checked_out_video):
+    late_video = Rental.query.get(1)
+    late_video.due_date = datetime(2018, 6, 1)
+    db.session.commit()
 
-
+@pytest.fixture
+def three_videos(app):
+    Babe = Video(
+        title="Babe", 
+        release_date="December 14 1995",
+        total_inventory=1,
+        )
+    Zoolander = Video(
+        title="Zoolander", 
+        release_date="September 28, 2001",
+        total_inventory=2,
+        )
+    French_Dispatch = Video(
+        title="The French Dispatch",
+        release_date="October 22, 2021",
+        total_inventory =0
+        )
+    db.session.add(Babe)
+    db.session.add(Zoolander)
+    db.session.add(French_Dispatch)
+    db.session.commit()
 
