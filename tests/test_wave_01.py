@@ -10,6 +10,7 @@ VIDEO_RELEASE_DATE = "01-01-2001"
 CUSTOMER_NAME = "A Brand New Customer"
 CUSTOMER_ID = 1
 CUSTOMER_POSTAL_CODE = "12345"
+# CUSTOMER_POSTAL_CODE = 12345 
 CUSTOMER_PHONE = "123-123-1234"
 
 # --------------------------------
@@ -17,6 +18,8 @@ CUSTOMER_PHONE = "123-123-1234"
 # --------------------------------
 
 # READ
+
+
 def test_get_videos_no_saved_videos(client):
     # Act
     response = client.get("/videos")
@@ -25,6 +28,7 @@ def test_get_videos_no_saved_videos(client):
     # Assert
     assert response.status_code == 200
     assert response_body == []
+
 
 def test_get_videos_one_saved_video(client, one_video):
     # Act
@@ -38,6 +42,7 @@ def test_get_videos_one_saved_video(client, one_video):
     assert response_body[0]["id"] == VIDEO_ID
     assert response_body[0]["total_inventory"] == VIDEO_INVENTORY
 
+
 def test_get_video(client, one_video):
     # Act
     response = client.get("/videos/1")
@@ -49,6 +54,7 @@ def test_get_video(client, one_video):
     assert response_body["id"] == VIDEO_ID
     assert response_body["total_inventory"] == VIDEO_INVENTORY
 
+
 def test_get_video_not_found(client):
     # Act
     response = client.get("/videos/1")
@@ -57,6 +63,7 @@ def test_get_video_not_found(client):
     # Assert
     assert response.status_code == 404
     assert response_body == {"message": "Video 1 was not found"}
+
 
 def test_get_invalid_video_id(client, one_video):
     # Act
@@ -89,6 +96,7 @@ def test_create_video(client):
     assert new_video
     assert new_video.title == VIDEO_TITLE
 
+
 def test_create_video_must_contain_title(client):
     # Act
     response = client.post("/videos", json={
@@ -102,6 +110,7 @@ def test_create_video_must_contain_title(client):
     assert "Request body must include title." in response_body["details"]
     assert response.status_code == 400
     assert Video.query.all() == []
+
 
 def test_create_video_must_contain_release_date(client):
     # Act
@@ -117,6 +126,7 @@ def test_create_video_must_contain_release_date(client):
     assert response.status_code == 400
     assert Video.query.all() == []
 
+
 def test_create_video_must_contain_inventory(client):
     # Act
     response = client.post("/videos", json={
@@ -131,6 +141,8 @@ def test_create_video_must_contain_inventory(client):
     assert Video.query.all() == []
 
 # DELETE
+
+
 def test_delete_video(client, one_video):
     # Act
     response = client.delete("/videos/1")
@@ -142,6 +154,7 @@ def test_delete_video(client, one_video):
     assert response.status_code == 200
     assert Video.query.get(1) == None
 
+
 def test_delete_video_not_found(client):
     # Act
     response = client.delete("/videos/1")
@@ -151,6 +164,7 @@ def test_delete_video_not_found(client):
     assert response_body == {"message": "Video 1 was not found"}
     assert response.status_code == 404
     assert Video.query.all() == []
+
 
 def test_update_video(client, one_video):
     # Act
@@ -171,6 +185,7 @@ def test_update_video(client, one_video):
     assert video.title == "Updated Video Title"
     assert video.total_inventory == 2
 
+
 def test_update_video_not_found(client):
     # Act
     response = client.put("/videos/1", json={
@@ -183,6 +198,7 @@ def test_update_video_not_found(client):
     # Assert
     assert response.status_code == 404
     assert response_body == {"message": "Video 1 was not found"}
+
 
 def test_update_video_invalid_data(client, one_video):
     # Act
@@ -209,6 +225,7 @@ def test_get_customers_no_saved_customers(client):
     assert response.status_code == 200
     assert response_body == []
 
+
 def test_get_customers_one_saved_customer(client, one_customer):
     # Act
     response = client.get("/customers")
@@ -220,7 +237,8 @@ def test_get_customers_one_saved_customer(client, one_customer):
     assert response_body[0]["name"] == CUSTOMER_NAME
     assert response_body[0]["id"] == CUSTOMER_ID
     assert response_body[0]["phone"] == CUSTOMER_PHONE
-    assert response_body[0]["postal_code"] == CUSTOMER_POSTAL_CODE
+    assert response_body[0]["postal_code"] == CUSTOMER_POSTAL_CODE #another string
+
 
 def test_get_customer(client, one_customer):
     # Act
@@ -232,7 +250,8 @@ def test_get_customer(client, one_customer):
     assert response_body["name"] == CUSTOMER_NAME
     assert response_body["id"] == CUSTOMER_ID
     assert response_body["phone"] == CUSTOMER_PHONE
-    assert response_body["postal_code"] == CUSTOMER_POSTAL_CODE
+    assert response_body["postal_code"] == CUSTOMER_POSTAL_CODE #another string
+
 
 def test_get_customer_not_found(client):
     # Act
@@ -243,6 +262,7 @@ def test_get_customer_not_found(client):
     assert response.status_code == 404
     assert response_body == {"message": "Customer 1 was not found"}
 
+
 def test_get_invalid_customer_id(client, one_customer):
     # Act
     response = client.get("/customers/hello")
@@ -251,6 +271,8 @@ def test_get_invalid_customer_id(client, one_customer):
     assert response.status_code == 400
 
 # CREATE
+
+
 def test_create_customer(client):
     # Act
     response = client.post("/customers", json={
@@ -272,6 +294,7 @@ def test_create_customer(client):
     assert new_customer.postal_code == CUSTOMER_POSTAL_CODE
     assert new_customer.phone == CUSTOMER_PHONE
 
+
 def test_create_customer_must_contain_postal(client):
     # Act
     response = client.post("/customers", json={
@@ -285,6 +308,7 @@ def test_create_customer_must_contain_postal(client):
     assert "Request body must include postal_code." in response_body["details"]
     assert response.status_code == 400
     assert Customer.query.all() == []
+
 
 def test_create_customer_must_contain_name(client):
     # Act
@@ -300,6 +324,7 @@ def test_create_customer_must_contain_name(client):
     assert response.status_code == 400
     assert Customer.query.all() == []
 
+
 def test_create_customer_must_contain_phone(client):
     # Act
     response = client.post("/customers", json={
@@ -314,6 +339,8 @@ def test_create_customer_must_contain_phone(client):
     assert Customer.query.all() == []
 
 # DELETE
+
+
 def test_delete_customer(client, one_customer):
     # Act
     response = client.delete("/customers/1")
@@ -323,6 +350,7 @@ def test_delete_customer(client, one_customer):
     assert response_body["id"] == 1
     assert response.status_code == 200
     assert Customer.query.get(1) == None
+
 
 def test_delete_customer_not_found(client):
     # Act
@@ -334,12 +362,15 @@ def test_delete_customer_not_found(client):
     assert response.status_code == 404
     assert Customer.query.all() == []
 
+
 def test_update_customer(client, one_customer):
     # Act
     response = client.put("/customers/1", json={
         "name": f"Updated ${CUSTOMER_NAME}",
         "phone": f"Updated ${CUSTOMER_PHONE}",
+        # postal_code data type is an integer but the test case is passing in a string.
         "postal_code": f"Updated ${CUSTOMER_POSTAL_CODE}"
+        # "postal_code": CUSTOMER_POSTAL_CODE+5
     })
     response_body = response.get_json()
 
@@ -348,12 +379,14 @@ def test_update_customer(client, one_customer):
     assert response_body["name"] == f"Updated ${CUSTOMER_NAME}"
     assert response_body["phone"] == f"Updated ${CUSTOMER_PHONE}"
     assert response_body["postal_code"] == f"Updated ${CUSTOMER_POSTAL_CODE}"
+    # assert response_body["postal_code"] == CUSTOMER_POSTAL_CODE+5
 
     customer = Customer.query.get(1)
     assert customer.name == f"Updated ${CUSTOMER_NAME}"
     assert customer.phone == f"Updated ${CUSTOMER_PHONE}"
     assert customer.postal_code == f"Updated ${CUSTOMER_POSTAL_CODE}"
-    
+    # assert customer.postal_code == CUSTOMER_POSTAL_CODE+5
+
 
 def test_update_customer_not_found(client):
     # Act
@@ -368,6 +401,7 @@ def test_update_customer_not_found(client):
     assert response.status_code == 404
     assert response_body == {"message": "Customer 1 was not found"}
 
+
 def test_update_customer_invalid_data(client, one_customer):
     # Act
     response = client.put("/customers/1", json={
@@ -377,9 +411,3 @@ def test_update_customer_invalid_data(client, one_customer):
 
     # Assert
     assert response.status_code == 400
-
-
-
-
-
-
