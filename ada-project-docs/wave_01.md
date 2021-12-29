@@ -17,6 +17,8 @@ Videos are entities that describe a video at the video store.  They contain:
 - release date datetime of when the video was release_date
 - total inventory of how many copies are owned by the video store
 
+
+
 Our goal for this wave is to be able to do all CRUD actions for these two entities.
 
 ## Error Handling Requirements for Every Endpoint
