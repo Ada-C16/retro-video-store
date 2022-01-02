@@ -66,7 +66,6 @@ def test_get_invalid_video_id(client, one_video):
     # Assert
     assert response.status_code == 400
 
-
 # CREATE
 def test_create_video(client):
     # Act
