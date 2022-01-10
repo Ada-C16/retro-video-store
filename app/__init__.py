@@ -29,8 +29,16 @@ def create_app(test_config=None):
 
     # Setup DB
     db.init_app(app)
+    # ma.init_app(app)
+
     migrate.init_app(app, db)
 
     #Register Blueprints Here
+    from .video_routes import video_bp
+    app.register_blueprint(video_bp)
+    from .customer_routes import customers_bp
+    app.register_blueprint(customers_bp)
+    from .rentals_routes import rentals_bp
+    app.register_blueprint(rentals_bp)
 
     return app
